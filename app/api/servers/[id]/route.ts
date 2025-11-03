@@ -5,13 +5,16 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import type { 
+import type {
   GetServerResponse,
   UpdateServerRequest,
   UpdateServerResponse,
   DeleteServerResponse,
-  MCPServerConfig 
+  MCPServerConfig
 } from '@/lib/types';
+
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic';
 
 interface RouteContext {
   params: Promise<{

@@ -3,16 +3,14 @@
  * Mock implementations of @modelcontextprotocol/sdk for testing
  */
 
-import { vi } from 'vitest';
-
 /**
  * Mock MCP Client
  */
 export class MockClient {
-  connect = vi.fn(() => Promise.resolve());
-  close = vi.fn(() => Promise.resolve());
-  
-  listTools = vi.fn(() =>
+  connect = jest.fn(() => Promise.resolve());
+  close = jest.fn(() => Promise.resolve());
+
+  listTools = jest.fn(() =>
     Promise.resolve({
       tools: [
         {
@@ -28,8 +26,8 @@ export class MockClient {
       ],
     })
   );
-  
-  listResources = vi.fn(() =>
+
+  listResources = jest.fn(() =>
     Promise.resolve({
       resources: [
         {
@@ -41,8 +39,8 @@ export class MockClient {
       ],
     })
   );
-  
-  listPrompts = vi.fn(() =>
+
+  listPrompts = jest.fn(() =>
     Promise.resolve({
       prompts: [
         {
@@ -59,8 +57,8 @@ export class MockClient {
       ],
     })
   );
-  
-  callTool = vi.fn((name: string, args: unknown) =>
+
+  callTool = jest.fn((name: string, args: unknown) =>
     Promise.resolve({
       content: [
         {
@@ -70,8 +68,8 @@ export class MockClient {
       ],
     })
   );
-  
-  readResource = vi.fn((uri: string) =>
+
+  readResource = jest.fn((uri: string) =>
     Promise.resolve({
       contents: [
         {
@@ -82,8 +80,8 @@ export class MockClient {
       ],
     })
   );
-  
-  getPrompt = vi.fn((name: string, args: unknown) =>
+
+  getPrompt = jest.fn((name: string, args: unknown) =>
     Promise.resolve({
       messages: [
         {
@@ -97,8 +95,8 @@ export class MockClient {
     })
   );
 
-  setRequestHandler = vi.fn();
-  setNotificationHandler = vi.fn();
+  setRequestHandler = jest.fn();
+  setNotificationHandler = jest.fn();
 }
 
 /**
@@ -106,10 +104,10 @@ export class MockClient {
  */
 export class MockStdioClientTransport {
   constructor(public options: { command: string; args?: string[]; env?: Record<string, string> }) {}
-  
-  start = vi.fn(() => Promise.resolve());
-  close = vi.fn(() => Promise.resolve());
-  send = vi.fn(() => Promise.resolve());
+
+  start = jest.fn(() => Promise.resolve());
+  close = jest.fn(() => Promise.resolve());
+  send = jest.fn(() => Promise.resolve());
   onmessage = null;
   onerror = null;
   onclose = null;
@@ -120,10 +118,10 @@ export class MockStdioClientTransport {
  */
 export class MockSSEClientTransport {
   constructor(public url: URL) {}
-  
-  start = vi.fn(() => Promise.resolve());
-  close = vi.fn(() => Promise.resolve());
-  send = vi.fn(() => Promise.resolve());
+
+  start = jest.fn(() => Promise.resolve());
+  close = jest.fn(() => Promise.resolve());
+  send = jest.fn(() => Promise.resolve());
   onmessage = null;
   onerror = null;
   onclose = null;
@@ -134,11 +132,11 @@ export class MockSSEClientTransport {
  */
 export class MockHTTPTransport {
   constructor(public url: string, public options?: { headers?: Record<string, string> }) {}
-  
-  start = vi.fn(() => Promise.resolve());
-  close = vi.fn(() => Promise.resolve());
-  send = vi.fn(() => Promise.resolve());
-  request = vi.fn(() =>
+
+  start = jest.fn(() => Promise.resolve());
+  close = jest.fn(() => Promise.resolve());
+  send = jest.fn(() => Promise.resolve());
+  request = jest.fn(() =>
     Promise.resolve({
       result: { success: true },
     })
@@ -152,23 +150,23 @@ export class MockHTTPTransport {
  * Mock MCP Server
  */
 export class MockServer {
-  connect = vi.fn(() => Promise.resolve());
-  close = vi.fn(() => Promise.resolve());
-  
-  setRequestHandler = vi.fn();
-  setNotificationHandler = vi.fn();
-  
-  sendRequest = vi.fn(() => Promise.resolve({}));
-  sendNotification = vi.fn(() => Promise.resolve());
+  connect = jest.fn(() => Promise.resolve());
+  close = jest.fn(() => Promise.resolve());
+
+  setRequestHandler = jest.fn();
+  setNotificationHandler = jest.fn();
+
+  sendRequest = jest.fn(() => Promise.resolve({}));
+  sendNotification = jest.fn(() => Promise.resolve());
 }
 
 /**
  * Mock StdioServerTransport
  */
 export class MockStdioServerTransport {
-  start = vi.fn(() => Promise.resolve());
-  close = vi.fn(() => Promise.resolve());
-  send = vi.fn(() => Promise.resolve());
+  start = jest.fn(() => Promise.resolve());
+  close = jest.fn(() => Promise.resolve());
+  send = jest.fn(() => Promise.resolve());
   onmessage = null;
   onerror = null;
   onclose = null;
@@ -178,23 +176,23 @@ export class MockStdioServerTransport {
  * Mock the entire MCP SDK
  */
 export function mockMCPSDK() {
-  vi.mock('@modelcontextprotocol/sdk/client/index.js', () => ({
+  jest.mock('@modelcontextprotocol/sdk/client/index.js', () => ({
     Client: MockClient,
   }));
-  
-  vi.mock('@modelcontextprotocol/sdk/client/stdio.js', () => ({
+
+  jest.mock('@modelcontextprotocol/sdk/client/stdio.js', () => ({
     StdioClientTransport: MockStdioClientTransport,
   }));
-  
-  vi.mock('@modelcontextprotocol/sdk/client/sse.js', () => ({
+
+  jest.mock('@modelcontextprotocol/sdk/client/sse.js', () => ({
     SSEClientTransport: MockSSEClientTransport,
   }));
-  
-  vi.mock('@modelcontextprotocol/sdk/server/index.js', () => ({
+
+  jest.mock('@modelcontextprotocol/sdk/server/index.js', () => ({
     Server: MockServer,
   }));
-  
-  vi.mock('@modelcontextprotocol/sdk/server/stdio.js', () => ({
+
+  jest.mock('@modelcontextprotocol/sdk/server/stdio.js', () => ({
     StdioServerTransport: MockStdioServerTransport,
   }));
 }

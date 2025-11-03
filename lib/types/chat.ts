@@ -2,6 +2,8 @@
  * Chat and AI Integration Types
  */
 
+import type { FileAttachment } from './file-attachment';
+
 export type MessageRole = 'user' | 'assistant' | 'system' | 'tool';
 
 export type ClaudeModel = 
@@ -19,6 +21,7 @@ export interface ChatMessage {
   timestamp: string;
   toolCalls?: ToolCall[];
   toolResults?: ToolResult[];
+  attachments?: FileAttachment[];
 }
 
 /**

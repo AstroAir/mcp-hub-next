@@ -268,6 +268,7 @@ export interface MCPServerProcess {
   memoryUsage?: number; // In bytes
   cpuUsage?: number; // Percentage
   uptime?: number; // In seconds
+  output?: string; // Captured stdout/stderr output
 }
 
 /**
@@ -326,4 +327,47 @@ export interface InstallationValidation {
   estimatedSize?: number; // In bytes
   estimatedTime?: number; // In seconds
 }
+
+/**
+ * Cline Marketplace MCP Server Entry
+ * Data structure from Cline's marketplace API
+ */
+export interface MarketplaceMCPServer {
+  mcpId: string; // Unique identifier (e.g., "github.com/chroma-core/chroma")
+  githubUrl: string; // GitHub repository URL
+  name: string; // Server name
+  author: string; // Author/organization name
+  description: string; // Brief description
+  codiconIcon: string; // Icon identifier
+  logoUrl: string; // Logo image URL
+  category: string; // Category classification
+  tags: string[]; // Array of tag strings
+  requiresApiKey: boolean; // Whether API key is needed
+  readmeContent: string; // Full README in markdown format
+  isRecommended: boolean; // Recommended status
+  githubStars: number; // Number of GitHub stars
+  downloadCount: number; // Download count
+  createdAt: string; // ISO timestamp
+  updatedAt: string; // ISO timestamp
+  lastGithubSync: string; // ISO timestamp
+}
+
+/**
+ * Marketplace search and filter options
+ */
+export interface MarketplaceFilters {
+  query?: string; // Search by name, author, or description
+  category?: string; // Filter by category
+  tags?: string[]; // Filter by tags
+  requiresApiKey?: boolean; // Filter by API key requirement
+  isRecommended?: boolean; // Filter by recommended status
+  sortBy?: 'stars' | 'downloads' | 'updated' | 'name'; // Sort order
+  limit?: number; // Results per page
+  offset?: number; // Pagination offset
+}
+
+/**
+ * Marketplace view mode
+ */
+export type MarketplaceViewMode = 'card' | 'list';
 

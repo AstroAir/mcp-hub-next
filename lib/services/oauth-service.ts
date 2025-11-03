@@ -69,16 +69,20 @@ export async function generatePKCEChallenge(): Promise<PKCEChallenge> {
 /**
  * Build authorization URL
  */
-export function buildAuthorizationUrl(
-  config: OAuthConfig,
-  codeChallenge: string,
-  state: string
-): string {
+export async function buildAuthorizationUrl(
+  config: OAuthConfig
+): Promise<{ url: string; state: string; codeVerifier: string }> {
+  // Generate PKCE challenge
+  const pkce = await generatePKCEChallenge();
+
+  // Generate state
+  const state = generateRandomString(32);
+
   const params = new URLSearchParams({
     response_type: 'code',
     client_id: config.clientId,
     redirect_uri: config.redirectUri,
-    code_challenge: codeChallenge,
+    code_challenge: pkce.codeChallenge,
     code_challenge_method: 'S256',
     state,
   });
@@ -87,7 +91,17 @@ export function buildAuthorizationUrl(
     params.append('scope', config.scope);
   }
 
-  return `${config.authorizationEndpoint}?${params.toString()}`;
+  // Add additional params if provided
+  if (config.additionalParams) {
+    Object.entries(config.additionalParams).forEach(([key, value]) => {
+      params.append(key, value);
+    });
+  }
+
+  // Use custom encoding to ensure spaces are encoded as %20 instead of +
+  const url = `${config.authorizationEndpoint}?${params.toString().replace(/\+/g, '%20')}`;
+
+  return { url, state, codeVerifier: pkce.codeVerifier };
 }
 
 /**
@@ -175,21 +189,26 @@ export function saveOAuthState(state: OAuthState): void {
 /**
  * Get OAuth state
  */
-export function getOAuthState(): OAuthState | null {
+export function getOAuthState(stateParam?: string): OAuthState | null {
   if (typeof window === 'undefined') return null;
-  
+
   try {
     const stored = localStorage.getItem(OAUTH_STATE_KEY);
     if (!stored) return null;
-    
+
     const state = JSON.parse(stored) as OAuthState;
-    
+
+    // If state parameter is provided, check if it matches
+    if (stateParam && state.state !== stateParam) {
+      return null;
+    }
+
     // Check if state is expired (5 minutes)
     if (Date.now() - state.timestamp > 5 * 60 * 1000) {
       localStorage.removeItem(OAUTH_STATE_KEY);
       return null;
     }
-    
+
     return state;
   } catch (error) {
     console.error('Failed to get OAuth state:', error);
@@ -244,45 +263,49 @@ export function getOAuthToken(serverId: string): StoredOAuthToken | null {
 /**
  * Get all OAuth tokens
  */
-export function getAllOAuthTokens(): Record<string, StoredOAuthToken> {
-  if (typeof window === 'undefined') return {};
-  
+export function getAllOAuthTokens(): StoredOAuthToken[] {
+  if (typeof window === 'undefined') return [];
+
   try {
     const stored = localStorage.getItem(OAUTH_TOKENS_KEY);
-    return stored ? JSON.parse(stored) : {};
+    const tokens = stored ? JSON.parse(stored) : {};
+    return Object.values(tokens);
   } catch (error) {
     console.error('Failed to get OAuth tokens:', error);
-    return {};
+    return [];
   }
 }
 
 /**
  * Delete OAuth token
  */
-export function deleteOAuthToken(serverId: string): void {
-  if (typeof window === 'undefined') return;
-  
+export function deleteOAuthToken(serverId: string): boolean {
+  if (typeof window === 'undefined') return false;
+
   try {
     const stored = localStorage.getItem(OAUTH_TOKENS_KEY);
-    if (!stored) return;
-    
+    if (!stored) return false;
+
     const tokens = JSON.parse(stored);
+    const existed = serverId in tokens;
     delete tokens[serverId];
-    
+
     localStorage.setItem(OAUTH_TOKENS_KEY, JSON.stringify(tokens));
+    return existed;
   } catch (error) {
     console.error('Failed to delete OAuth token:', error);
+    return false;
   }
 }
 
 /**
  * Check if token is expired
  */
-export function isTokenExpired(token: StoredOAuthToken): boolean {
-  if (!token.expiresAt) return false;
-  
-  // Consider token expired 5 minutes before actual expiry
-  const bufferTime = 5 * 60 * 1000;
+export function isTokenExpired(token: StoredOAuthToken, bufferMs?: number): boolean {
+  if (!token.expiresAt) return true;
+
+  // Default buffer is 60 seconds (60000 ms)
+  const bufferTime = bufferMs !== undefined ? bufferMs : 60000;
   return Date.now() >= token.expiresAt - bufferTime;
 }
 
@@ -290,36 +313,37 @@ export function isTokenExpired(token: StoredOAuthToken): boolean {
  * Start OAuth flow
  */
 export async function startOAuthFlow(
-  serverId: string,
-  serverName: string,
-  config: OAuthConfig
-): Promise<void> {
-  // Generate PKCE challenge
-  const pkce = await generatePKCEChallenge();
-  
-  // Generate state
-  const state = generateRandomString(32);
-  
+  config: OAuthConfig & { serverId?: string; serverName?: string }
+): Promise<{ url: string; state: string }> {
+  // Build authorization URL (generates PKCE and state internally)
+  const { url, state, codeVerifier } = await buildAuthorizationUrl(config);
+
   // Save state
   saveOAuthState({
-    serverId,
-    serverName,
-    codeVerifier: pkce.codeVerifier,
+    state,
+    serverId: config.serverId || '',
+    serverName: config.serverName || '',
+    codeVerifier,
     redirectUri: config.redirectUri,
     timestamp: Date.now(),
   });
-  
-  // Build authorization URL
-  const authUrl = buildAuthorizationUrl(config, pkce.codeChallenge, state);
-  
-  // Open authorization URL in popup
+
+  return { url, state };
+}
+
+/**
+ * Open OAuth popup window
+ */
+export function openOAuthPopup(url: string): void {
+  if (typeof window === 'undefined') return;
+
   const width = 600;
   const height = 700;
   const left = window.screenX + (window.outerWidth - width) / 2;
   const top = window.screenY + (window.outerHeight - height) / 2;
-  
+
   window.open(
-    authUrl,
+    url,
     'oauth-popup',
     `width=${width},height=${height},left=${left},top=${top}`
   );

@@ -14,6 +14,7 @@ export interface OAuthConfig {
   scope?: string;
   redirectUri: string;
   usePKCE: boolean; // Always true for OAuth 2.1
+  additionalParams?: Record<string, string>; // Additional query parameters
 }
 
 /**
@@ -55,6 +56,7 @@ export interface PKCEChallenge {
  * OAuth state for tracking authorization flow
  */
 export interface OAuthState {
+  state: string;
   serverId: string;
   serverName: string;
   codeVerifier: string;

@@ -8,6 +8,9 @@ import Anthropic from '@anthropic-ai/sdk';
 import { callTool, getActiveClient } from '@/lib/services/mcp-client';
 import type { ChatRequest } from '@/lib/types';
 
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic';
+
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || '',
 });

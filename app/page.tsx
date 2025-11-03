@@ -15,7 +15,7 @@ import { RemoteServerLibrary } from '@/components/mcp/remote-server-library';
 import { ConfigUploader } from '@/components/mcp/config-uploader';
 import { ServerSearchFilter, type ServerFilterStatus, type ServerFilterTransport } from '@/components/mcp/server-search-filter';
 import { ErrorAlert } from '@/components/mcp/error-alert';
-import { Breadcrumbs } from '@/components/layout/breadcrumbs';
+import { useBreadcrumbs } from '@/components/layout/breadcrumb-provider';
 import { useServerStore, useConnectionStore, useUIStore } from '@/lib/stores';
 import { useHealthMonitor } from '@/lib/hooks/use-health-monitor';
 import type { MCPServerConfig, ConnectionStatus } from '@/lib/types';
@@ -24,6 +24,7 @@ import { toast } from 'sonner';
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { setBreadcrumbs } = useBreadcrumbs();
   const { servers, addServer, updateServer, removeServer } = useServerStore();
   const { connections } = useConnectionStore();
   const { isServerFormOpen, openServerForm, closeServerForm, errors, clearError } = useUIStore();
@@ -36,6 +37,11 @@ export default function DashboardPage() {
   const [statusFilter, setStatusFilter] = useState<ServerFilterStatus>('all');
   const [transportFilter, setTransportFilter] = useState<ServerFilterTransport>('all');
   const [selectedServers, setSelectedServers] = useState<Set<string>>(new Set());
+
+  // Set breadcrumbs on mount
+  useEffect(() => {
+    setBreadcrumbs([{ label: 'Dashboard' }]);
+  }, [setBreadcrumbs]);
 
   const connectedServersCount = Object.values(connections).filter(
     (conn) => conn.status === 'connected'
@@ -261,22 +267,20 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <Breadcrumbs items={[{ label: 'Dashboard' }]} className="mb-6" />
-
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-4xl font-bold">MCP Server Hub</h1>
-          <p className="text-muted-foreground mt-2">
+    <div className="container mx-auto py-4 md:py-8 px-3 md:px-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 md:mb-8">
+        <div className="w-full sm:w-auto">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold">MCP Server Hub</h1>
+          <p className="text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
             Manage your Model Context Protocol servers
           </p>
           {connectedServersCount > 0 && (
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-xs md:text-sm text-muted-foreground mt-1">
               {connectedServersCount} server{connectedServersCount !== 1 ? 's' : ''} connected
             </p>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           {selectedServers.size > 0 && (
             <>
               <Button variant="outline" size="sm" onClick={handleBulkConnect}>

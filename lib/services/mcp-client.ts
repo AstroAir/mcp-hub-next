@@ -318,7 +318,10 @@ export async function getConnectionState(
   client: Client
 ): Promise<MCPConnectionState> {
   try {
-    addDebugLog('info', 'connection', `Getting connection state for ${serverName}`, {
+    addDebugLog({
+      level: 'info',
+      category: 'connection',
+      message: `Getting connection state for ${serverName}`,
       serverId,
       serverName,
     });
@@ -326,12 +329,11 @@ export async function getConnectionState(
     // List available tools
     const toolsResult = await measurePerformance(
       serverId,
-      serverName,
       'listTools',
       () => client.listTools()
     );
 
-    logMCPResponse(serverId, serverName, 'listTools', toolsResult);
+    logMCPResponse(serverId, 'listTools', toolsResult);
 
     const tools: MCPTool[] = toolsResult.tools.map((tool) => ({
       name: tool.name,
@@ -344,11 +346,10 @@ export async function getConnectionState(
     try {
       const resourcesResult = await measurePerformance(
         serverId,
-        serverName,
         'listResources',
         () => client.listResources()
       );
-      logMCPResponse(serverId, serverName, 'listResources', resourcesResult);
+      logMCPResponse(serverId, 'listResources', resourcesResult);
       resources = resourcesResult.resources.map((resource) => ({
         uri: resource.uri,
         name: resource.name,
@@ -357,7 +358,13 @@ export async function getConnectionState(
       }));
     } catch {
       // Resources might not be supported
-      addDebugLog('debug', 'mcp', 'Resources not supported', { serverId, serverName });
+      addDebugLog({
+        level: 'debug',
+        category: 'mcp',
+        message: 'Resources not supported',
+        serverId,
+        serverName,
+      });
     }
 
     // List available prompts
@@ -365,11 +372,10 @@ export async function getConnectionState(
     try {
       const promptsResult = await measurePerformance(
         serverId,
-        serverName,
         'listPrompts',
         () => client.listPrompts()
       );
-      logMCPResponse(serverId, serverName, 'listPrompts', promptsResult);
+      logMCPResponse(serverId, 'listPrompts', promptsResult);
       prompts = promptsResult.prompts.map((prompt) => ({
         name: prompt.name,
         description: prompt.description,
@@ -381,7 +387,13 @@ export async function getConnectionState(
       }));
     } catch {
       // Prompts might not be supported
-      addDebugLog('debug', 'mcp', 'Prompts not supported', { serverId, serverName });
+      addDebugLog({
+        level: 'debug',
+        category: 'mcp',
+        message: 'Prompts not supported',
+        serverId,
+        serverName,
+      });
     }
 
     return {

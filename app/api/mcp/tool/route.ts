@@ -5,11 +5,14 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { callTool } from '@/lib/services/mcp-client';
-import type { 
-  ExecuteToolRequest, 
+import type {
+  ExecuteToolRequest,
   ExecuteToolResponse,
-  MCPToolCallResult 
+  MCPToolCallResult
 } from '@/lib/types';
+
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {

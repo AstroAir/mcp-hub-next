@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Breadcrumbs } from '@/components/layout/breadcrumbs';
+import { useBreadcrumbs } from '@/components/layout/breadcrumb-provider';
 import { ChatInterface } from '@/components/chat/chat-interface';
 import { ChatSessionSidebar } from '@/components/chat/chat-session-sidebar';
 import { useServerStore, useConnectionStore, useChatStore } from '@/lib/stores';
@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import { Zap, ZapOff } from 'lucide-react';
 
 export default function ChatPage() {
+  const { setBreadcrumbs } = useBreadcrumbs();
   const { servers } = useServerStore();
   const { connections } = useConnectionStore();
   const {
@@ -36,6 +37,7 @@ export default function ChatPage() {
     addMessage,
     setModel,
     toggleServer,
+    clearMessages,
   } = useChatStore();
   const [isLoading, setIsLoading] = useState(false);
   const [useStreaming, setUseStreaming] = useState(true);
@@ -43,12 +45,61 @@ export default function ChatPage() {
 
   const connectedServersList = servers.filter((s) => connections[s.id]?.status === 'connected');
 
+  // Set breadcrumbs on mount
+  useEffect(() => {
+    setBreadcrumbs([{ label: 'Chat' }]);
+  }, [setBreadcrumbs]);
+
   // Create initial session if none exists
   useEffect(() => {
     if (sessions.length === 0) {
       createSession('New Chat');
     }
   }, [sessions.length, createSession]);
+
+  // Listen for command palette actions
+  useEffect(() => {
+    const handleCommandAction = (event: Event) => {
+      const customEvent = event as CustomEvent<{ action: string; model?: ClaudeModel }>;
+      const { action, model: newModel } = customEvent.detail;
+
+      switch (action) {
+        case 'clear-chat':
+          clearMessages();
+          toast.success('Chat cleared');
+          break;
+        case 'export-chat':
+          if (currentSessionId) {
+            handleExportSession(currentSessionId);
+          }
+          break;
+        case 'set-model':
+          if (newModel) {
+            setModel(newModel);
+            toast.success(`Switched to ${newModel}`);
+          }
+          break;
+        case 'toggle-streaming':
+          setUseStreaming((prev) => {
+            const newValue = !prev;
+            toast.success(`Streaming ${newValue ? 'enabled' : 'disabled'}`);
+            return newValue;
+          });
+          break;
+        case 'new-session':
+          createSession('New Chat');
+          toast.success('New chat session created');
+          break;
+        case 'view-sessions':
+          // This could open a modal or sidebar - for now just show a toast
+          toast.info(`You have ${sessions.length} chat session${sessions.length !== 1 ? 's' : ''}`);
+          break;
+      }
+    };
+
+    window.addEventListener('command-palette-action', handleCommandAction);
+    return () => window.removeEventListener('command-palette-action', handleCommandAction);
+  }, [clearMessages, currentSessionId, setModel, createSession, sessions.length]);
 
   const handleExportSession = (sessionId: string) => {
     const session = sessions.find((s) => s.id === sessionId);
@@ -76,13 +127,14 @@ export default function ChatPage() {
     toast.success('Chat session exported');
   };
 
-  const handleSendMessage = async (content: string) => {
+  const handleSendMessage = async (content: string, attachments?: import('@/lib/types').FileAttachment[]) => {
     // Add user message
     const userMessage = {
       id: nanoid(),
       role: 'user' as const,
       content,
       timestamp: new Date().toISOString(),
+      attachments,
     };
     addMessage(userMessage);
 
@@ -167,7 +219,7 @@ export default function ChatPage() {
   }));
 
   return (
-    <div className="flex h-[calc(100vh-4rem)]">
+    <div className="flex h-[calc(100vh-3.5rem)] md:h-[calc(100vh-4rem)]">
       {/* Session Sidebar */}
       <ChatSessionSidebar
         sessions={chatSessions}
@@ -182,11 +234,10 @@ export default function ChatPage() {
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="border-b p-4">
+        <div className="border-b p-3 md:p-4">
           <div className="container mx-auto">
-            <Breadcrumbs items={[{ label: 'Chat' }]} className="mb-4" />
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+              <div className="flex flex-wrap items-center gap-2 md:gap-4 w-full sm:w-auto">
               {/* Streaming toggle */}
               <div className="flex items-center gap-2">
                 <Switch
@@ -194,16 +245,16 @@ export default function ChatPage() {
                   checked={useStreaming}
                   onCheckedChange={setUseStreaming}
                 />
-                <Label htmlFor="streaming" className="flex items-center gap-2 cursor-pointer">
+                <Label htmlFor="streaming" className="flex items-center gap-2 cursor-pointer text-xs md:text-sm">
                   {useStreaming ? (
                     <>
-                      <Zap className="h-4 w-4 text-yellow-500" />
-                      <span>Streaming</span>
+                      <Zap className="h-3.5 w-3.5 md:h-4 md:w-4 text-yellow-500" />
+                      <span className="hidden sm:inline">Streaming</span>
                     </>
                   ) : (
                     <>
-                      <ZapOff className="h-4 w-4" />
-                      <span>Standard</span>
+                      <ZapOff className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                      <span className="hidden sm:inline">Standard</span>
                     </>
                   )}
                 </Label>
@@ -211,7 +262,7 @@ export default function ChatPage() {
 
               {/* Model selector */}
               <Select value={model} onValueChange={(v) => setModel(v as ClaudeModel)}>
-                <SelectTrigger className="w-[200px]">
+                <SelectTrigger className="w-[160px] md:w-[200px] text-xs md:text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -222,16 +273,16 @@ export default function ChatPage() {
               </Select>
 
               {/* Connected servers */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Connected:</span>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs md:text-sm text-muted-foreground whitespace-nowrap">Connected:</span>
                 {connectedServersList.length === 0 ? (
-                  <Badge variant="outline">No servers</Badge>
+                  <Badge variant="outline" className="text-xs">No servers</Badge>
                 ) : (
                   connectedServersList.map((server) => (
                     <Badge
                       key={server.id}
                       variant={connectedServers.includes(server.id) ? 'default' : 'outline'}
-                      className="cursor-pointer"
+                      className="cursor-pointer text-xs"
                       onClick={() => toggleServer(server.id)}
                     >
                       {server.name}
@@ -245,10 +296,11 @@ export default function ChatPage() {
         </div>
 
         {/* Chat interface */}
-        <div className="flex-1 container mx-auto">
+        <div className="flex-1 overflow-hidden">
           <ChatInterface
             messages={messages}
             onSendMessage={handleSendMessage}
+            onClearMessages={clearMessages}
             isLoading={isLoading || isStreaming}
             streamedContent={isStreaming ? streamedContent : undefined}
             onStopStreaming={isStreaming ? stopStreaming : undefined}

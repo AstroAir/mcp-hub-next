@@ -7,6 +7,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getProcessState } from '@/lib/services/mcp-process-manager';
 import type { GetServerStatusResponse } from '@/lib/types';
 
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic';
+
 interface RouteContext {
   params: Promise<{
     id: string;

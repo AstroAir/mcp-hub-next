@@ -9,7 +9,10 @@ import type {
   InstallationProgress,
   InstalledServerMetadata,
   MCPServerProcess,
-  RegistryServerEntry
+  RegistryServerEntry,
+  MarketplaceMCPServer,
+  MarketplaceFilters,
+  MarketplaceViewMode
 } from './mcp';
 import type { ChatSession, ChatMessage, ClaudeModel } from './chat';
 
@@ -163,5 +166,42 @@ export interface RegistryStoreState {
   setSearchResults: (results: RegistryServerEntry[]) => void;
   setIsSearching: (searching: boolean) => void;
   clearSearch: () => void;
+}
+
+/**
+ * Marketplace Store State
+ */
+export interface MarketplaceStoreState {
+  // Marketplace data
+  servers: MarketplaceMCPServer[];
+  filteredServers: MarketplaceMCPServer[];
+  selectedServer: MarketplaceMCPServer | null;
+
+  // UI state
+  viewMode: MarketplaceViewMode;
+  filters: MarketplaceFilters;
+  isLoading: boolean;
+  error: string | null;
+  lastFetched: Date | null;
+
+  // Computed data
+  categories: string[];
+  allTags: string[];
+
+  // Actions
+  setServers: (servers: MarketplaceMCPServer[]) => void;
+  setFilteredServers: (servers: MarketplaceMCPServer[]) => void;
+  setSelectedServer: (server: MarketplaceMCPServer | null) => void;
+  setViewMode: (mode: MarketplaceViewMode) => void;
+  setFilters: (filters: Partial<MarketplaceFilters>) => void;
+  resetFilters: () => void;
+  setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
+  setLastFetched: (date: Date) => void;
+  applyFilters: () => void;
+
+  // Data fetching
+  fetchServers: () => Promise<void>;
+  refreshServers: () => Promise<void>;
 }
 

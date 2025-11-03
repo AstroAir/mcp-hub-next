@@ -6,13 +6,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { callTool, getActiveClient } from '@/lib/services/mcp-client';
-import type { 
+import type {
   ChatRequest,
   ChatResponse,
   ChatMessage,
-  MCPToolCallResult 
+  MCPToolCallResult
 } from '@/lib/types';
 import { nanoid } from 'nanoid';
+
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || '',

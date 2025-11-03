@@ -37,16 +37,20 @@ const restartAttempts = new Map<string, number>();
 /**
  * Get process state
  */
-export function getProcessState(serverId: string): MCPServerProcess | undefined {
+export function getProcessState(serverId: string): MCPServerProcess | null {
   const entry = activeProcesses.get(serverId);
-  return entry?.state;
+  return entry?.state ?? null;
 }
 
 /**
  * Get all running processes
  */
-export function getAllProcesses(): MCPServerProcess[] {
-  return Array.from(activeProcesses.values()).map((entry) => entry.state);
+export function getAllProcesses(): Record<string, MCPServerProcess> {
+  const processes: Record<string, MCPServerProcess> = {};
+  for (const [serverId, entry] of activeProcesses.entries()) {
+    processes[serverId] = entry.state;
+  }
+  return processes;
 }
 
 /**
@@ -224,11 +228,29 @@ export async function startServer(
       activeProcesses.delete(serverId);
     });
 
+    // Capture stdout
+    childProcess.stdout?.on('data', (data) => {
+      const output = data.toString();
+      console.log(`[${serverId}] stdout:`, output);
+
+      const entry = activeProcesses.get(serverId);
+      if (entry) {
+        const currentOutput = entry.state.output || '';
+        entry.state.output = (currentOutput + output).slice(-5000); // Keep last 5000 chars
+      }
+    });
+
     // Capture stderr for errors
     childProcess.stderr?.on('data', (data) => {
       const errorMessage = data.toString();
       console.error(`[${serverId}] stderr:`, errorMessage);
-      
+
+      const entry = activeProcesses.get(serverId);
+      if (entry) {
+        const currentOutput = entry.state.output || '';
+        entry.state.output = (currentOutput + errorMessage).slice(-5000); // Keep last 5000 chars
+      }
+
       updateProcessState(serverId, {
         lastError: errorMessage.slice(0, 500), // Limit error message length
       });
@@ -237,8 +259,9 @@ export async function startServer(
     // Start monitoring
     startProcessMonitoring(serverId);
 
-    // Reset restart attempts on successful start
-    restartAttempts.delete(serverId);
+    // Note: We don't delete restartAttempts here because we want to track
+    // consecutive restart attempts. They will be cleared by cleanupAllProcesses
+    // or when the process exits normally.
 
     return processState;
   } catch (error) {
@@ -255,8 +278,9 @@ export async function startServer(
  */
 export async function stopServer(
   serverId: string,
-  force: boolean = false
+  options?: { force?: boolean }
 ): Promise<void> {
+  const force = options?.force ?? false;
   const entry = activeProcesses.get(serverId);
   if (!entry) {
     throw new Error(`No running process found for server: ${serverId}`);
@@ -365,10 +389,10 @@ export async function restartServer(
  */
 export async function cleanupAllProcesses(): Promise<void> {
   const serverIds = Array.from(activeProcesses.keys());
-  
+
   await Promise.all(
-    serverIds.map((serverId) => 
-      stopServer(serverId, true).catch((error) => {
+    serverIds.map((serverId) =>
+      stopServer(serverId, { force: true }).catch((error) => {
         console.error(`Failed to stop server ${serverId}:`, error);
       })
     )
@@ -377,8 +401,29 @@ export async function cleanupAllProcesses(): Promise<void> {
   // Clear all monitoring intervals
   monitoringIntervals.forEach((interval) => clearInterval(interval));
   monitoringIntervals.clear();
-  
+
   // Clear restart attempts
+  restartAttempts.clear();
+}
+
+/**
+ * Force cleanup all processes synchronously (for testing)
+ * This directly clears all internal state without waiting for processes to exit
+ */
+export function forceCleanupSync(): void {
+  // Kill all processes without waiting
+  activeProcesses.forEach((entry) => {
+    try {
+      entry.process.kill('SIGKILL');
+    } catch (error) {
+      // Ignore errors during force cleanup
+    }
+  });
+
+  // Clear all state
+  activeProcesses.clear();
+  monitoringIntervals.forEach((interval) => clearInterval(interval));
+  monitoringIntervals.clear();
   restartAttempts.clear();
 }
 

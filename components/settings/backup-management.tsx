@@ -22,6 +22,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Archive, Clock, Download, RotateCcw, Trash2, Upload, HardDrive, FileJson, Files } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -48,6 +59,8 @@ export function BackupManagement() {
   const [backupHistory, setBackupHistory] = useState<BackupMetadata[]>([]);
   const [selectedBackup, setSelectedBackup] = useState<BackupMetadata | null>(null);
   const [showRestoreDialog, setShowRestoreDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [backupToDelete, setBackupToDelete] = useState<string | null>(null);
   const [restoreOptions, setRestoreOptions] = useState({
     servers: true,
     chatSessions: true,
@@ -163,13 +176,15 @@ export function BackupManagement() {
     }
   };
 
-  const handleDeleteBackup = (backupId: string) => {
-    if (!confirm('Are you sure you want to delete this backup?')) return;
+  const handleDeleteBackup = () => {
+    if (!backupToDelete) return;
 
     try {
-      deleteBackup(backupId);
+      deleteBackup(backupToDelete);
       loadBackupHistory();
       toast.success('Backup deleted');
+      setShowDeleteDialog(false);
+      setBackupToDelete(null);
     } catch (error) {
       toast.error('Failed to delete backup');
       console.error(error);
@@ -187,20 +202,20 @@ export function BackupManagement() {
   return (
     <div className="space-y-6">
       {/* Backup Settings */}
-      <Card>
+      <Card className="transition-all hover:shadow-md">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Archive className="h-5 w-5" />
+            <Archive className="h-5 w-5 text-primary" />
             Automatic Backups
           </CardTitle>
           <CardDescription>
             Configure automatic backup schedule and retention policy
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
+        <CardContent className="space-y-5">
+          <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
             <div className="space-y-0.5">
-              <Label>Enable Automatic Backups</Label>
+              <Label className="text-base">Enable Automatic Backups</Label>
               <p className="text-sm text-muted-foreground">
                 Automatically create backups based on schedule
               </p>
@@ -213,103 +228,124 @@ export function BackupManagement() {
 
           <Separator />
 
-          <div className="space-y-2">
-            <Label>Backup Frequency</Label>
-            <Select
-              value={settings.frequency}
-              onValueChange={(value) => handleSettingsChange('frequency', value)}
-              disabled={!settings.enabled}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="daily">Daily</SelectItem>
-                <SelectItem value="weekly">Weekly</SelectItem>
-                <SelectItem value="monthly">Monthly</SelectItem>
-                <SelectItem value="manual">Manual Only</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <div className="grid gap-5 md:grid-cols-2">
+            <div className="space-y-3">
+              <Label htmlFor="frequency" className="text-base">Backup Frequency</Label>
+              <Select
+                value={settings.frequency}
+                onValueChange={(value) => handleSettingsChange('frequency', value)}
+                disabled={!settings.enabled}
+              >
+                <SelectTrigger id="frequency" className="transition-all">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="manual">Manual Only</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className="space-y-2">
-            <Label>Retention Period (days)</Label>
-            <Select
-              value={settings.retentionDays.toString()}
-              onValueChange={(value) => handleSettingsChange('retentionDays', parseInt(value))}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="7">7 days</SelectItem>
-                <SelectItem value="14">14 days</SelectItem>
-                <SelectItem value="30">30 days</SelectItem>
-                <SelectItem value="60">60 days</SelectItem>
-                <SelectItem value="90">90 days</SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              Backups older than this will be automatically deleted
-            </p>
+            <div className="space-y-3">
+              <Label htmlFor="retention" className="text-base">Retention Period</Label>
+              <Select
+                value={settings.retentionDays.toString()}
+                onValueChange={(value) => handleSettingsChange('retentionDays', parseInt(value))}
+              >
+                <SelectTrigger id="retention" className="transition-all">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="7">7 days</SelectItem>
+                  <SelectItem value="14">14 days</SelectItem>
+                  <SelectItem value="30">30 days</SelectItem>
+                  <SelectItem value="60">60 days</SelectItem>
+                  <SelectItem value="90">90 days</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Backups older than this will be automatically deleted
+              </p>
+            </div>
           </div>
 
           {settings.lastBackupTime && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              Last backup: {formatDate(settings.lastBackupTime)}
-            </div>
+            <>
+              <Separator />
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900">
+                <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                <span className="text-sm text-blue-900 dark:text-blue-100">
+                  Last backup: {formatDate(settings.lastBackupTime)}
+                </span>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
 
       {/* Manual Backup */}
-      <Card>
+      <Card className="transition-all hover:shadow-md">
         <CardHeader>
-          <CardTitle>Manual Backup</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Archive className="h-5 w-5 text-primary" />
+            Manual Backup
+          </CardTitle>
           <CardDescription>
             Create, import, or export backups manually
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex gap-2">
-            <Button onClick={handleCreateBackup} className="flex-1">
-              <Archive className="h-4 w-4 mr-2" />
-              Create Backup Now
-            </Button>
-          </div>
+        <CardContent className="space-y-5">
+          <Button
+            onClick={handleCreateBackup}
+            className="w-full h-auto py-4 transition-all hover:shadow-md"
+            size="lg"
+          >
+            <Archive className="h-5 w-5 mr-2" />
+            Create Backup Now
+          </Button>
 
           <Separator />
 
           {/* Import Mode Selector */}
-          <div className="space-y-3">
-            <Label>Import Backup(s)</Label>
-            <div className="flex gap-2">
-              <Button
-                variant={importMode === 'single' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => {
-                  setImportMode('single');
-                  resetImportMode();
-                }}
-                className="flex-1"
-              >
-                <FileJson className="h-4 w-4 mr-2" />
-                Single File
-              </Button>
-              <Button
-                variant={importMode === 'multiple' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => {
-                  setImportMode('multiple');
-                  resetImportMode();
-                }}
-                className="flex-1"
-              >
-                <Files className="h-4 w-4 mr-2" />
-                Multiple Files
-              </Button>
-            </div>
+          <div className="space-y-4">
+            <Label className="text-base">Import Backup(s)</Label>
+            <RadioGroup
+              value={importMode}
+              onValueChange={(value: ImportMode) => {
+                setImportMode(value);
+                resetImportMode();
+              }}
+              className="grid grid-cols-1 md:grid-cols-2 gap-4"
+            >
+              <div>
+                <RadioGroupItem value="single" id="backup-single" className="peer sr-only" />
+                <Label
+                  htmlFor="backup-single"
+                  className="flex flex-col items-center justify-between rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer transition-all"
+                >
+                  <FileJson className="mb-3 h-6 w-6" />
+                  <div className="space-y-1 text-center">
+                    <p className="text-sm font-medium leading-none">Single File</p>
+                    <p className="text-xs text-muted-foreground">Import one backup file</p>
+                  </div>
+                </Label>
+              </div>
+              <div>
+                <RadioGroupItem value="multiple" id="backup-multiple" className="peer sr-only" />
+                <Label
+                  htmlFor="backup-multiple"
+                  className="flex flex-col items-center justify-between rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer transition-all"
+                >
+                  <Files className="mb-3 h-6 w-6" />
+                  <div className="space-y-1 text-center">
+                    <p className="text-sm font-medium leading-none">Multiple Files</p>
+                    <p className="text-xs text-muted-foreground">Import multiple backups</p>
+                  </div>
+                </Label>
+              </div>
+            </RadioGroup>
 
             {/* Hidden file input */}
             <input
@@ -324,7 +360,7 @@ export function BackupManagement() {
 
             <Button
               variant="outline"
-              className="w-full"
+              className="w-full transition-all hover:bg-accent"
               onClick={() => fileInputRef.current?.click()}
             >
               <Upload className="h-4 w-4 mr-2" />
@@ -335,11 +371,14 @@ export function BackupManagement() {
       </Card>
 
       {/* Backup History */}
-      <Card>
+      <Card className="transition-all hover:shadow-md">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span>Backup History</span>
-            <Badge variant="secondary">{backupHistory.length} backups</Badge>
+            <span className="flex items-center gap-2">
+              <HardDrive className="h-5 w-5 text-primary" />
+              Backup History
+            </span>
+            <Badge variant="secondary" className="text-sm">{backupHistory.length} backups</Badge>
           </CardTitle>
           <CardDescription>
             View and manage your backup history
@@ -347,33 +386,39 @@ export function BackupManagement() {
         </CardHeader>
         <CardContent>
           {backupHistory.length === 0 ? (
-            <div className="text-center text-muted-foreground py-8">
-              <HardDrive className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No backups yet</p>
-              <p className="text-sm">Create your first backup to get started</p>
+            <div className="text-center text-muted-foreground py-12">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
+                <HardDrive className="h-8 w-8 opacity-50" />
+              </div>
+              <p className="text-lg font-medium">No backups yet</p>
+              <p className="text-sm mt-1">Create your first backup to get started</p>
             </div>
           ) : (
-            <ScrollArea className="h-[400px]">
-              <div className="space-y-2">
+            <ScrollArea className="h-[400px] pr-4">
+              <div className="space-y-3">
                 {backupHistory.map((backup) => (
                   <div
                     key={backup.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border rounded-lg hover:bg-accent/50 transition-all hover:shadow-sm"
                   >
-                    <div className="space-y-1">
+                    <div className="space-y-2 flex-1">
                       <div className="flex items-center gap-2">
-                        <Archive className="h-4 w-4" />
+                        <Archive className="h-4 w-4 text-primary" />
                         <span className="font-medium">{formatDate(backup.timestamp)}</span>
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span>{formatSize(backup.size)}</span>
-                        <span>•</span>
-                        <span>{backup.itemCounts.servers} servers</span>
-                        <span>•</span>
-                        <span>{backup.itemCounts.chatSessions} sessions</span>
+                      <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                        <Badge variant="outline" className="font-mono text-xs">
+                          {formatSize(backup.size)}
+                        </Badge>
+                        <span className="flex items-center gap-1">
+                          <span className="font-medium">{backup.itemCounts.servers}</span> servers
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <span className="font-medium">{backup.itemCounts.chatSessions}</span> sessions
+                        </span>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-shrink-0">
                       <Button
                         variant="outline"
                         size="sm"
@@ -381,21 +426,27 @@ export function BackupManagement() {
                           setSelectedBackup(backup);
                           setShowRestoreDialog(true);
                         }}
+                        className="transition-all hover:bg-primary hover:text-primary-foreground"
                       >
-                        <RotateCcw className="h-4 w-4 mr-2" />
-                        Restore
+                        <RotateCcw className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Restore</span>
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleExportBackup(backup.id)}
+                        className="transition-all hover:bg-accent"
                       >
                         <Download className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleDeleteBackup(backup.id)}
+                        onClick={() => {
+                          setBackupToDelete(backup.id);
+                          setShowDeleteDialog(true);
+                        }}
+                        className="transition-all hover:bg-destructive hover:text-destructive-foreground"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -410,17 +461,20 @@ export function BackupManagement() {
 
       {/* Restore Dialog */}
       <Dialog open={showRestoreDialog} onOpenChange={setShowRestoreDialog}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Restore Backup</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <RotateCcw className="h-5 w-5 text-primary" />
+              Restore Backup
+            </DialogTitle>
             <DialogDescription>
-              Select which data to restore from this backup
+              Select which data to restore from this backup. This will overwrite your current data.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             {Object.entries(restoreOptions).map(([key, value]) => (
-              <div key={key} className="flex items-center justify-between">
-                <Label htmlFor={key} className="capitalize">
+              <div key={key} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 transition-all hover:bg-muted">
+                <Label htmlFor={key} className="capitalize cursor-pointer">
                   {key.replace(/([A-Z])/g, ' $1').trim()}
                 </Label>
                 <Switch
@@ -433,17 +487,38 @@ export function BackupManagement() {
               </div>
             ))}
           </div>
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => setShowRestoreDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={handleRestoreBackup}>
-              <RotateCcw className="h-4 w-4 mr-2" />
-              Restore
+            <Button onClick={handleRestoreBackup} className="gap-2">
+              <RotateCcw className="h-4 w-4" />
+              Restore Backup
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Backup?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this backup? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setBackupToDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteBackup}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Backup
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

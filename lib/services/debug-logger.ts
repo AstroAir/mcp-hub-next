@@ -10,12 +10,13 @@ export type LogCategory = 'mcp' | 'connection' | 'tool' | 'chat' | 'system';
 
 export interface LogEntry {
   id: string;
-  timestamp: string;
+  timestamp: number;
   level: LogLevel;
-  category: LogCategory;
+  category?: LogCategory;
   serverId?: string;
   serverName?: string;
   message: string;
+  metadata?: unknown;
   data?: unknown;
   error?: {
     name: string;
@@ -33,6 +34,7 @@ export interface PerformanceMetric {
   duration: number;
   success: boolean;
   error?: string;
+  metadata?: unknown;
 }
 
 const MAX_LOGS = 1000;
@@ -43,38 +45,56 @@ const METRICS_KEY = 'mcp-hub-performance-metrics';
 /**
  * Get all debug logs
  */
-export function getDebugLogs(): LogEntry[] {
+export function getDebugLogs(serverId?: string, level?: LogLevel): LogEntry[] {
   if (typeof window === 'undefined') return [];
 
   const stored = localStorage.getItem(LOGS_KEY);
   if (!stored) return [];
 
-  return JSON.parse(stored);
+  try {
+    let logs: LogEntry[] = JSON.parse(stored);
+
+    if (serverId) {
+      logs = logs.filter(log => log.serverId === serverId);
+    }
+
+    if (level) {
+      logs = logs.filter(log => log.level === level);
+    }
+
+    return logs;
+  } catch {
+    return [];
+  }
 }
 
 /**
  * Add a debug log entry
  */
 export function addDebugLog(
-  level: LogLevel,
-  category: LogCategory,
-  message: string,
   options: {
+    level: LogLevel;
+    category?: LogCategory;
+    message: string;
     serverId?: string;
     serverName?: string;
+    metadata?: unknown;
     data?: unknown;
     error?: Error;
-  } = {}
+  }
 ): void {
   if (typeof window === 'undefined') return;
 
   const entry: LogEntry = {
     id: nanoid(),
-    timestamp: new Date().toISOString(),
-    level,
-    category,
-    message,
-    ...options,
+    timestamp: Date.now(),
+    level: options.level,
+    category: options.category,
+    message: options.message,
+    serverId: options.serverId,
+    serverName: options.serverName,
+    metadata: options.metadata,
+    data: options.data,
   };
 
   if (options.error) {
@@ -97,50 +117,61 @@ export function addDebugLog(
 
   // Also log to console in development
   if (process.env.NODE_ENV === 'development') {
-    const consoleMethod = level === 'error' ? 'error' : level === 'warn' ? 'warn' : 'log';
-    console[consoleMethod](`[${category}] ${message}`, options.data || '');
+    const consoleMethod = options.level === 'error' ? 'error' : options.level === 'warn' ? 'warn' : 'log';
+    console[consoleMethod](`[${options.category || 'log'}] ${options.message}`, options.metadata || options.data || '');
   }
 }
 
 /**
  * Clear all debug logs
  */
-export function clearDebugLogs(): void {
+export function clearDebugLogs(serverId?: string): void {
   if (typeof window === 'undefined') return;
-  localStorage.removeItem(LOGS_KEY);
+
+  if (!serverId) {
+    localStorage.removeItem(LOGS_KEY);
+    return;
+  }
+
+  const logs = getDebugLogs();
+  const filtered = logs.filter(log => log.serverId !== serverId);
+  localStorage.setItem(LOGS_KEY, JSON.stringify(filtered));
 }
 
 /**
  * Export debug logs as JSON
  */
-export function exportDebugLogs(): void {
-  if (typeof window === 'undefined') return;
+export function exportDebugLogs(serverId?: string): string {
+  if (typeof window === 'undefined') return '[]';
 
-  const logs = getDebugLogs();
-  const blob = new Blob([JSON.stringify(logs, null, 2)], {
-    type: 'application/json',
-  });
-
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `mcp-hub-debug-logs-${new Date().toISOString()}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  const logs = getDebugLogs(serverId);
+  return JSON.stringify(logs, null, 2);
 }
 
 /**
  * Get performance metrics
  */
-export function getPerformanceMetrics(): PerformanceMetric[] {
+export function getPerformanceMetrics(serverId?: string, operation?: string): PerformanceMetric[] {
   if (typeof window === 'undefined') return [];
 
   const stored = localStorage.getItem(METRICS_KEY);
   if (!stored) return [];
 
-  return JSON.parse(stored);
+  try {
+    let metrics: PerformanceMetric[] = JSON.parse(stored);
+
+    if (serverId) {
+      metrics = metrics.filter(m => m.serverId === serverId);
+    }
+
+    if (operation) {
+      metrics = metrics.filter(m => m.operation === operation);
+    }
+
+    return metrics;
+  } catch {
+    return [];
+  }
 }
 
 /**
@@ -151,8 +182,9 @@ export function addPerformanceMetric(
   serverName: string,
   operation: string,
   duration: number,
-  success: boolean,
-  error?: string
+  success: boolean = true,
+  error?: string,
+  metadata?: unknown
 ): void {
   if (typeof window === 'undefined') return;
 
@@ -165,7 +197,8 @@ export function addPerformanceMetric(
     duration,
     success,
     error,
-  };
+    metadata,
+  } as PerformanceMetric;
 
   const metrics = getPerformanceMetrics();
   metrics.unshift(metric);
@@ -181,27 +214,31 @@ export function addPerformanceMetric(
 /**
  * Clear all performance metrics
  */
-export function clearPerformanceMetrics(): void {
+export function clearPerformanceMetrics(serverId?: string): void {
   if (typeof window === 'undefined') return;
-  localStorage.removeItem(METRICS_KEY);
+
+  if (!serverId) {
+    localStorage.removeItem(METRICS_KEY);
+    return;
+  }
+
+  const metrics = getPerformanceMetrics();
+  const filtered = metrics.filter(m => m.serverId !== serverId);
+  localStorage.setItem(METRICS_KEY, JSON.stringify(filtered));
 }
 
 /**
  * Get average performance for a server
  */
-export function getServerPerformanceStats(serverId: string): {
+export function getServerPerformanceStats(serverId: string, operation?: string): {
   avgDuration: number;
   successRate: number;
   totalOperations: number;
-} {
-  const metrics = getPerformanceMetrics().filter((m) => m.serverId === serverId);
+} | null {
+  const metrics = getPerformanceMetrics(serverId, operation);
 
   if (metrics.length === 0) {
-    return {
-      avgDuration: 0,
-      successRate: 0,
-      totalOperations: 0,
-    };
+    return null;
   }
 
   const totalDuration = metrics.reduce((sum, m) => sum + m.duration, 0);
@@ -219,24 +256,31 @@ export function getServerPerformanceStats(serverId: string): {
  */
 export async function measurePerformance<T>(
   serverId: string,
-  serverName: string,
   operation: string,
-  fn: () => Promise<T>
+  fn: () => Promise<T> | T
 ): Promise<T> {
   const startTime = performance.now();
-  let success = false;
-  let error: string | undefined;
+  let success = true;
+  let errorOccurred = false;
 
   try {
     const result = await fn();
-    success = true;
     return result;
   } catch (err) {
-    error = err instanceof Error ? err.message : String(err);
+    errorOccurred = true;
+    success = false;
     throw err;
   } finally {
     const duration = performance.now() - startTime;
-    addPerformanceMetric(serverId, serverName, operation, duration, success, error);
+    addPerformanceMetric(
+      serverId,
+      '',
+      operation,
+      duration,
+      success,
+      undefined,
+      errorOccurred ? { error: true } : undefined
+    );
   }
 }
 
@@ -245,14 +289,15 @@ export async function measurePerformance<T>(
  */
 export function logMCPRequest(
   serverId: string,
-  serverName: string,
   method: string,
   params?: unknown
 ): void {
-  addDebugLog('debug', 'mcp', `Request: ${method}`, {
+  addDebugLog({
+    level: 'debug',
+    category: 'mcp',
+    message: `MCP Request: ${method}`,
     serverId,
-    serverName,
-    data: { method, params },
+    metadata: { method, params },
   });
 }
 
@@ -261,15 +306,22 @@ export function logMCPRequest(
  */
 export function logMCPResponse(
   serverId: string,
-  serverName: string,
   method: string,
-  response: unknown
+  result: unknown,
+  duration?: number
 ): void {
-  addDebugLog('debug', 'mcp', `Response: ${method}`, {
+  addDebugLog({
+    level: 'debug',
+    category: 'mcp',
+    message: `MCP Response: ${method}`,
     serverId,
-    serverName,
-    data: { method, response },
+    metadata: { method, result, duration },
   });
+
+  // If duration is provided, also add a performance metric
+  if (duration !== undefined) {
+    addPerformanceMetric(serverId, '', method, duration, true);
+  }
 }
 
 /**
@@ -277,14 +329,22 @@ export function logMCPResponse(
  */
 export function logMCPError(
   serverId: string,
-  serverName: string,
   method: string,
-  error: Error
+  error: Error | string,
+  context?: unknown
 ): void {
-  addDebugLog('error', 'mcp', `Error: ${method}`, {
+  const errorObj = error instanceof Error ? error : new Error(String(error));
+  addDebugLog({
+    level: 'error',
+    category: 'mcp',
+    message: `MCP Error: ${method}`,
     serverId,
-    serverName,
-    error,
+    metadata: {
+      method,
+      error: error instanceof Error ? error.message : error,
+      stack: errorObj.stack,
+      context,
+    },
   });
 }
 

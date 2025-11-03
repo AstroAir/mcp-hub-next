@@ -2,13 +2,39 @@
 
 /**
  * ChatMessage Component
- * Displays a single chat message
+ * Displays a single chat message with enhanced features
  */
 
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import type { ChatMessage as ChatMessageType } from '@/lib/types';
-import { User, Bot } from 'lucide-react';
+import {
+  User,
+  Bot,
+  Copy,
+  Check,
+  AlertCircle,
+  Download,
+  File,
+  Image as ImageIcon,
+  FileText,
+  Archive,
+  Code as CodeIcon,
+  Music,
+  Video,
+} from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { CodeBlock } from './code-block';
+import {
+  formatFileSize,
+  isImageFile,
+  getFileIcon,
+  downloadAttachment,
+} from '@/lib/utils/file-upload';
 
 // Helper function to parse markdown code blocks
 function parseMessageContent(content: string) {
@@ -49,22 +75,97 @@ function parseMessageContent(content: string) {
 
 interface ChatMessageProps {
   message: ChatMessageType;
+  onRetry?: (messageId: string) => void;
 }
 
-export function ChatMessage({ message }: ChatMessageProps) {
+export function ChatMessage({ message, onRetry }: ChatMessageProps) {
   const isUser = message.role === 'user';
   const contentParts = parseMessageContent(message.content);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(message.content);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy message:', error);
+    }
+  };
+
+  const formatTimestamp = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+
+    if (diffInHours < 24) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    return date.toLocaleString([], {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   return (
-    <div className={cn('flex gap-3 p-4', isUser ? 'bg-muted/50' : 'bg-background')}>
-      <div className={cn('flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center', isUser ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground')}>
-        {isUser ? <User className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
-      </div>
-      <div className="flex-1 space-y-2">
-        <div className="text-sm font-medium">
-          {isUser ? 'You' : 'Assistant'}
+    <div
+      className={cn(
+        'group flex gap-3 p-4 transition-colors hover:bg-muted/30',
+        isUser ? 'bg-muted/50' : 'bg-background'
+      )}
+    >
+      {/* Avatar */}
+      <Avatar className="size-8 shrink-0">
+        <AvatarFallback className={cn(
+          isUser
+            ? 'bg-primary text-primary-foreground'
+            : 'bg-secondary text-secondary-foreground'
+        )}>
+          {isUser ? <User className="size-4" /> : <Bot className="size-4" />}
+        </AvatarFallback>
+      </Avatar>
+
+      {/* Message Content */}
+      <div className="flex-1 space-y-2 min-w-0">
+        {/* Header with name and actions */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold">
+              {isUser ? 'You' : 'Assistant'}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {formatTimestamp(message.timestamp)}
+            </span>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-7"
+                  onClick={handleCopy}
+                >
+                  {copied ? (
+                    <Check className="size-3.5 text-green-500" />
+                  ) : (
+                    <Copy className="size-3.5" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {copied ? 'Copied!' : 'Copy message'}
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </div>
-        <div className="text-sm space-y-2">
+
+        {/* Message content */}
+        <div className="text-sm space-y-2 leading-relaxed">
           {contentParts.map((part, index) => (
             part.type === 'code' ? (
               <CodeBlock
@@ -73,41 +174,147 @@ export function ChatMessage({ message }: ChatMessageProps) {
                 language={part.language}
               />
             ) : (
-              <div key={index} className="whitespace-pre-wrap">{part.content}</div>
+              <div key={index} className="whitespace-pre-wrap break-words">
+                {part.content}
+              </div>
             )
           ))}
         </div>
+
+        {/* File attachments */}
+        {message.attachments && message.attachments.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="text-xs">
+                {message.attachments.length} attachment{message.attachments.length > 1 ? 's' : ''}
+              </Badge>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {message.attachments.map((attachment) => {
+                const isImage = isImageFile(attachment.type);
+                const iconName = getFileIcon(attachment.type);
+                const IconComponent = {
+                  Image: ImageIcon,
+                  FileText: FileText,
+                  Archive: Archive,
+                  Code: CodeIcon,
+                  Music: Music,
+                  Video: Video,
+                  File: File,
+                }[iconName] || File;
+
+                return (
+                  <Card
+                    key={attachment.id}
+                    className="p-3 bg-muted/30 border-muted hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-start gap-3">
+                      {/* Preview or icon */}
+                      {isImage && attachment.url ? (
+                        <div className="size-16 rounded overflow-hidden flex-shrink-0 bg-muted">
+                          <img
+                            src={attachment.url}
+                            alt={attachment.name}
+                            className="size-full object-cover cursor-pointer"
+                            onClick={() => window.open(attachment.url, '_blank')}
+                          />
+                        </div>
+                      ) : (
+                        <div className="size-16 rounded bg-muted flex items-center justify-center flex-shrink-0">
+                          <IconComponent className="size-8 text-muted-foreground" />
+                        </div>
+                      )}
+
+                      {/* File info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-medium truncate" title={attachment.name}>
+                          {attachment.name}
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {formatFileSize(attachment.size)}
+                        </div>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 mt-2 text-xs"
+                              onClick={() => downloadAttachment(attachment)}
+                            >
+                              <Download className="size-3 mr-1" />
+                              Download
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            Download {attachment.name}
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        {/* Tool calls */}
         {message.toolCalls && message.toolCalls.length > 0 && (
-          <div className="mt-2 space-y-2">
+          <div className="space-y-2">
             {message.toolCalls.map((toolCall) => (
-              <div key={toolCall.id} className="text-xs bg-muted p-2 rounded border">
-                <div className="font-medium">Tool: {toolCall.name}</div>
-                <div className="text-muted-foreground mt-1">
-                  Input: {JSON.stringify(toolCall.input, null, 2)}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-        {message.toolResults && message.toolResults.length > 0 && (
-          <div className="mt-2 space-y-2">
-            {message.toolResults.map((result) => (
-              <div key={result.toolCallId} className={cn('text-xs p-2 rounded border', result.isError ? 'bg-destructive/10 border-destructive' : 'bg-muted')}>
-                <div className="font-medium">Result: {result.toolName}</div>
-                {result.isError ? (
-                  <div className="text-destructive mt-1">Error: {result.error}</div>
-                ) : (
-                  <div className="text-muted-foreground mt-1">
-                    {JSON.stringify(result.result, null, 2)}
+              <Card key={toolCall.id} className="p-3 bg-muted/50 border-muted">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="size-4 text-blue-500 mt-0.5 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-medium">Tool: {toolCall.name}</div>
+                    <div className="text-xs text-muted-foreground mt-1 font-mono break-all">
+                      {JSON.stringify(toolCall.input, null, 2)}
+                    </div>
                   </div>
-                )}
-              </div>
+                </div>
+              </Card>
             ))}
           </div>
         )}
-        <div className="text-xs text-muted-foreground">
-          {new Date(message.timestamp).toLocaleTimeString()}
-        </div>
+
+        {/* Tool results */}
+        {message.toolResults && message.toolResults.length > 0 && (
+          <div className="space-y-2">
+            {message.toolResults.map((result) => (
+              <Card
+                key={result.toolCallId}
+                className={cn(
+                  'p-3 border',
+                  result.isError
+                    ? 'bg-destructive/10 border-destructive/50'
+                    : 'bg-muted/50 border-muted'
+                )}
+              >
+                <div className="flex items-start gap-2">
+                  <AlertCircle
+                    className={cn(
+                      'size-4 mt-0.5 shrink-0',
+                      result.isError ? 'text-destructive' : 'text-green-500'
+                    )}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-medium">
+                      Result: {result.toolName}
+                    </div>
+                    {result.isError ? (
+                      <div className="text-xs text-destructive mt-1">
+                        Error: {result.error}
+                      </div>
+                    ) : (
+                      <div className="text-xs text-muted-foreground mt-1 font-mono break-all">
+                        {JSON.stringify(result.result, null, 2)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

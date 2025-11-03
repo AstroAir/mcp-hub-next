@@ -5,12 +5,14 @@
 
 export interface PooledConnection {
   id: string;
+  serverId: string;
   url: string;
   headers?: Record<string, string>;
   createdAt: number;
   lastUsedAt: number;
   useCount: number;
   isActive: boolean;
+  inUse: boolean;
 }
 
 export interface ConnectionPoolOptions {
@@ -49,6 +51,7 @@ export class ConnectionPool {
     if (available) {
       // Reuse existing connection
       available.isActive = true;
+      available.inUse = true;
       available.lastUsedAt = Date.now();
       available.useCount++;
       return available;
@@ -63,12 +66,14 @@ export class ConnectionPool {
     // Create new connection
     const connection: PooledConnection = {
       id: `${serverId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      serverId,
       url,
       headers,
       createdAt: Date.now(),
       lastUsedAt: Date.now(),
       useCount: 1,
       isActive: true,
+      inUse: true,
     };
 
     pool.push(connection);
@@ -80,12 +85,14 @@ export class ConnectionPool {
   /**
    * Release a connection back to the pool
    */
-  release(connectionId: string): void {
+  release(connection: PooledConnection | string): void {
+    const connectionId = typeof connection === 'string' ? connection : connection.id;
     for (const pool of this.pools.values()) {
-      const connection = pool.find((conn) => conn.id === connectionId);
-      if (connection) {
-        connection.isActive = false;
-        connection.lastUsedAt = Date.now();
+      const conn = pool.find((c) => c.id === connectionId);
+      if (conn) {
+        conn.isActive = false;
+        conn.inUse = false;
+        conn.lastUsedAt = Date.now();
         return;
       }
     }
@@ -125,18 +132,28 @@ export class ConnectionPool {
    * Get pool statistics
    */
   getStats(serverId?: string): {
-    total: number;
-    active: number;
-    idle: number;
-    servers: number;
+    totalConnections: number;
+    activeConnections: number;
+    idleConnections: number;
+    byServer: Record<string, { total: number; active: number; idle: number }>;
   } {
-    if (serverId) {
-      const pool = this.pools.get(serverId) || [];
-      return {
+    const byServer: Record<string, { total: number; active: number; idle: number }> = {};
+
+    for (const [sid, pool] of this.pools.entries()) {
+      byServer[sid] = {
         total: pool.length,
         active: pool.filter((c) => c.isActive).length,
         idle: pool.filter((c) => !c.isActive).length,
-        servers: 1,
+      };
+    }
+
+    if (serverId) {
+      const pool = this.pools.get(serverId) || [];
+      return {
+        totalConnections: pool.length,
+        activeConnections: pool.filter((c) => c.isActive).length,
+        idleConnections: pool.filter((c) => !c.isActive).length,
+        byServer: { [serverId]: byServer[serverId] || { total: 0, active: 0, idle: 0 } },
       };
     }
 
@@ -151,10 +168,10 @@ export class ConnectionPool {
     }
 
     return {
-      total,
-      active,
-      idle,
-      servers: this.pools.size,
+      totalConnections: total,
+      activeConnections: active,
+      idleConnections: idle,
+      byServer,
     };
   }
 
@@ -210,8 +227,9 @@ export class ConnectionPool {
   /**
    * Clean up stale connections
    */
-  private cleanup(): void {
+  private cleanup(): number {
     const now = Date.now();
+    let removed = 0;
 
     for (const [serverId, pool] of this.pools.entries()) {
       const toRemove: number[] = [];
@@ -230,6 +248,7 @@ export class ConnectionPool {
       // Remove in reverse order to maintain indices
       toRemove.reverse().forEach((index) => {
         pool.splice(index, 1);
+        removed++;
       });
 
       // Remove empty pools
@@ -237,6 +256,8 @@ export class ConnectionPool {
         this.pools.delete(serverId);
       }
     }
+
+    return removed;
   }
 
   /**

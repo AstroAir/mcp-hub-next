@@ -5,12 +5,36 @@
 
 import '@testing-library/jest-dom';
 import React from 'react';
+import { TextEncoder, TextDecoder } from 'util';
+
+// Polyfill TextEncoder/TextDecoder for Node environment
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder as any;
+
+// Polyfill setImmediate for jsdom environment
+if (typeof global.setImmediate === 'undefined') {
+  global.setImmediate = ((callback: (...args: any[]) => void, ...args: any[]) => {
+    return setTimeout(callback, 0, ...args) as any;
+  }) as typeof setImmediate;
+}
+
+// Mock nanoid to avoid ESM issues
+jest.mock('nanoid', () => ({
+  nanoid: jest.fn(() => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let id = '';
+    for (let i = 0; i < 21; i++) {
+      id += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return id;
+  }),
+}));
 
 // Mock Next.js Image component
 jest.mock('next/image', () => ({
   __esModule: true,
   default: (props: any) => {
-    // eslint-disable-next-line jsx-a11y/alt-text
+     
     return React.createElement('img', props);
   },
 }));

@@ -6,15 +6,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-
-// Define UpdatePreferences type locally for the component
-interface UpdatePreferences {
-  autoDownload: boolean;
-  autoInstallOnAppQuit: boolean;
-  channel: 'stable' | 'beta' | 'alpha';
-  checkOnStartup: boolean;
-  lastCheckTime?: number;
-}
+import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
+import type { UpdatePreferences, UpdateStatus } from '@/lib/types/tauri';
 import { Download, RefreshCw, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -31,52 +25,56 @@ export function UpdateSettings() {
   });
   const [checking, setChecking] = useState(false);
   const [currentVersion, setCurrentVersion] = useState('0.1.0');
-  const [updateStatus, setUpdateStatus] = useState<{
-    event: string;
-    data?: unknown;
-    updateDownloaded?: boolean;
-  } | null>(null);
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null);
 
   useEffect(() => {
-    // Load current preferences from Electron
-    if (window.electronAPI?.getUpdatePreferences) {
-      window.electronAPI.getUpdatePreferences().then((prefs: UpdatePreferences) => {
-        setPreferences(prefs);
-      });
+    // Check if running in Tauri
+    if (typeof window === 'undefined' || !window.__TAURI__) {
+      return;
     }
+
+    // Load current preferences from Tauri
+    invoke<UpdatePreferences>('get_update_preferences')
+      .then((prefs) => {
+        setPreferences(prefs);
+      })
+      .catch((error) => {
+        console.error('Failed to get update preferences:', error);
+      });
 
     // Get current app version
-    if (window.electronAPI?.getAppVersion) {
-      window.electronAPI.getAppVersion().then((version: string) => {
+    invoke<string>('get_app_version')
+      .then((version) => {
         setCurrentVersion(version);
+      })
+      .catch((error) => {
+        console.error('Failed to get app version:', error);
       });
-    }
 
     // Get update status
-    if (window.electronAPI?.getUpdateStatus) {
-      window.electronAPI.getUpdateStatus().then((status: { event: string; data?: unknown; updateDownloaded?: boolean }) => {
-        setUpdateStatus(status);
+    invoke<UpdateStatus | null>('get_update_status')
+      .then((status) => {
+        if (status) {
+          setUpdateStatus(status);
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to get update status:', error);
       });
-    }
 
     // Listen for update status changes
-    const handleUpdateStatus = (_event: unknown, status: { event: string; data?: unknown }) => {
+    const unlistenPromise = listen<UpdateStatus>('update-status', (event) => {
+      const status = event.payload;
       setUpdateStatus(status);
       if (status.event === 'checking-for-update') {
         setChecking(true);
       } else {
         setChecking(false);
       }
-    };
-
-    if (window.electronAPI?.on) {
-      window.electronAPI.on('update-status', handleUpdateStatus as (...args: unknown[]) => void);
-    }
+    });
 
     return () => {
-      if (window.electronAPI?.removeListener) {
-        window.electronAPI.removeListener('update-status', handleUpdateStatus as (...args: unknown[]) => void);
-      }
+      unlistenPromise.then((unlisten) => unlisten());
     };
   }, []);
 
@@ -84,22 +82,28 @@ export function UpdateSettings() {
     const newPreferences = { ...preferences, [key]: value };
     setPreferences(newPreferences);
 
-    // Save to Electron
-    if (window.electronAPI?.setUpdatePreferences) {
-      window.electronAPI.setUpdatePreferences(newPreferences);
-      toast.success('Update preferences saved');
+    // Save to Tauri
+    if (typeof window !== 'undefined' && window.__TAURI__) {
+      invoke('set_update_preferences', { preferences: newPreferences })
+        .then(() => {
+          toast.success('Update preferences saved');
+        })
+        .catch((error) => {
+          console.error('Failed to save preferences:', error);
+          toast.error('Failed to save preferences');
+        });
     }
   };
 
   const handleCheckForUpdates = async () => {
-    if (!window.electronAPI?.checkForUpdates) {
+    if (typeof window === 'undefined' || !window.__TAURI__) {
       toast.error('Update check not available in browser mode');
       return;
     }
 
     setChecking(true);
     try {
-      await window.electronAPI.checkForUpdates();
+      await invoke('check_for_updates');
     } catch (error) {
       console.error('Error checking for updates:', error);
       toast.error('Failed to check for updates');

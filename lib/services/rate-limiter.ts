@@ -158,14 +158,17 @@ export class RateLimiter {
   /**
    * Get current usage for a key
    */
-  getUsage(key: string): { count: number; limit: number; remaining: number } {
+  getUsage(key: string): { requestCount: number; count: number; limit: number; remaining: number; resetTime?: number } {
     if (this.options.strategy === 'token-bucket') {
       const bucket = this.buckets.get(key);
       const tokens = bucket?.tokens || this.options.maxRequests;
+      const requestCount = this.options.maxRequests - Math.floor(tokens);
       return {
-        count: this.options.maxRequests - Math.floor(tokens),
+        requestCount,
+        count: requestCount,
         limit: this.options.maxRequests,
         remaining: Math.floor(tokens),
+        resetTime: bucket?.lastRefill ? bucket.lastRefill + this.options.windowMs : Date.now() + this.options.windowMs,
       };
     } else {
       const now = Date.now();
@@ -175,9 +178,11 @@ export class RateLimiter {
       const count = validRecords.reduce((sum, record) => sum + record.count, 0);
 
       return {
+        requestCount: count,
         count,
         limit: this.options.maxRequests,
         remaining: Math.max(0, this.options.maxRequests - count),
+        resetTime: windowStart + this.options.windowMs,
       };
     }
   }
@@ -185,15 +190,17 @@ export class RateLimiter {
   /**
    * Clean up old records
    */
-  cleanup(): void {
+  cleanup(): number {
     const now = Date.now();
     const windowStart = now - this.options.windowMs;
+    let removed = 0;
 
     // Clean up sliding window records
     for (const [key, records] of this.requests.entries()) {
       const validRecords = records.filter((record) => record.timestamp > windowStart);
       if (validRecords.length === 0) {
         this.requests.delete(key);
+        removed++;
       } else {
         this.requests.set(key, validRecords);
       }
@@ -203,8 +210,11 @@ export class RateLimiter {
     for (const [key, bucket] of this.buckets.entries()) {
       if (now - bucket.lastRefill > this.options.windowMs * 2) {
         this.buckets.delete(key);
+        removed++;
       }
     }
+
+    return removed;
   }
 }
 
@@ -309,5 +319,6 @@ export function getRateLimiter(key: string, options: RateLimitOptions): RateLimi
  */
 export function cleanupRateLimiters(): void {
   limiters.forEach((limiter) => limiter.cleanup());
+  limiters.clear();
 }
 

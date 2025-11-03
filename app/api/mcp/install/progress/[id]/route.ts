@@ -14,6 +14,9 @@ import type {
   CancelInstallResponse,
 } from '@/lib/types';
 
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic';
+
 interface RouteContext {
   params: Promise<{
     id: string;

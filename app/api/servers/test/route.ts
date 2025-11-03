@@ -22,6 +22,9 @@ import type {
 } from '@/lib/types';
 import { nanoid } from 'nanoid';
 
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   const tempId = `test-${nanoid()}`;
   

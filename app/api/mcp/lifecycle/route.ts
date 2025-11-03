@@ -21,6 +21,9 @@ import type {
   ListRunningServersResponse,
 } from '@/lib/types';
 
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic';
+
 /**
  * POST /api/mcp/lifecycle - Start a server
  */

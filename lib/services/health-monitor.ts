@@ -173,7 +173,10 @@ class HealthMonitor {
       this.healthStatus.set(id, health);
       this.notifyListeners(health);
 
-      addDebugLog('error', 'connection', `Health check failed for ${name}`, {
+      addDebugLog({
+        level: 'error',
+        category: 'connection',
+        message: `Health check failed for ${name}`,
         serverId: id,
         serverName: name,
         error: error instanceof Error ? error : new Error(String(error)),

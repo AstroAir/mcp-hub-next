@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/sonner";
-import { Navbar } from "@/components/layout/navbar";
+import { AppSidebar } from "@/components/layout/app-sidebar";
+import { SiteHeader } from "@/components/layout/site-header";
 import { KeyboardShortcuts } from "@/components/layout/keyboard-shortcuts";
 import { CleanupHandler } from "@/components/layout/cleanup-handler";
 import { CommandPaletteProvider } from "@/components/command-palette/command-palette-provider";
+import { BreadcrumbProvider } from "@/components/layout/breadcrumb-provider";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import "./globals.css";
 
 // Use system fonts as fallback when Google Fonts are unavailable
@@ -33,13 +36,20 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <CommandPaletteProvider>
-          <Navbar />
-          <main className="min-h-[calc(100vh-4rem)]">
-            {children}
-          </main>
-          <Toaster />
-          <KeyboardShortcuts />
-          <CleanupHandler />
+          <BreadcrumbProvider>
+            <SidebarProvider>
+              <AppSidebar />
+              <SidebarInset>
+                <SiteHeader />
+                <main className="flex flex-1 flex-col">
+                  {children}
+                </main>
+              </SidebarInset>
+            </SidebarProvider>
+            <Toaster />
+            <KeyboardShortcuts />
+            <CleanupHandler />
+          </BreadcrumbProvider>
         </CommandPaletteProvider>
       </body>
     </html>

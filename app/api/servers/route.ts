@@ -13,6 +13,9 @@ import type {
   MCPServerConfig
 } from '@/lib/types';
 
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic';
+
 /**
  * POST /api/servers - Create a new server configuration
  */

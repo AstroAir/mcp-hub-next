@@ -13,6 +13,9 @@ import {
   type MCPServerDoc,
 } from '@/lib/data/mcp-server-docs';
 
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic';
+
 interface DocsResponse {
   success: boolean;
   data?: MCPServerDoc[] | MCPServerDoc | string[];

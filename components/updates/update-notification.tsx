@@ -6,29 +6,13 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
+import type { UpdateStatus, UpdateNotificationData } from '@/lib/types/tauri';
 import { Download, RefreshCw, X, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress as ProgressBar } from '@/components/ui/progress';
 import { toast } from 'sonner';
-
-interface UpdateInfo {
-  version?: string;
-  releaseNotes?: string;
-  percent?: number;
-  message?: string;
-}
-
-interface UpdateStatus {
-  event: 'checking-for-update' | 'update-available' | 'update-not-available' |
-         'download-progress' | 'update-downloaded' | 'update-error';
-  data?: UpdateInfo;
-}
-
-interface UpdateNotificationData {
-  title: string;
-  message: string;
-  actions?: Array<{ label: string; action: string }>;
-}
 
 interface UpdateNotificationProps {
   onInstall?: () => void;
@@ -38,25 +22,28 @@ interface UpdateNotificationProps {
 export function UpdateNotification({ onInstall, onDismiss }: UpdateNotificationProps) {
   const [status, setStatus] = useState<UpdateStatus | null>(null);
   const [downloadProgress, setDownloadProgress] = useState(0);
-  const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
+  const [updateInfo, setUpdateInfo] = useState<UpdateStatus['data'] | null>(null);
   const [visible, setVisible] = useState(false);
 
   const handleInstall = useCallback(() => {
-    if (window.electronAPI?.quitAndInstall) {
-      window.electronAPI.quitAndInstall();
+    if (typeof window !== 'undefined' && window.__TAURI__) {
+      invoke('quit_and_install').catch((error) => {
+        console.error('Failed to quit and install:', error);
+        toast.error('Failed to install update');
+      });
     }
     onInstall?.();
   }, [onInstall]);
 
   useEffect(() => {
-    // Check if running in Electron
-    if (typeof window === 'undefined' || !window.electronAPI) {
+    // Check if running in Tauri
+    if (typeof window === 'undefined' || !window.__TAURI__) {
       return;
     }
 
-    // Listen for update status from Electron
-    const handleUpdateStatus = (...args: unknown[]) => {
-      const statusData = args[1] as UpdateStatus;
+    // Listen for update status from Tauri
+    const unlistenStatusPromise = listen<UpdateStatus>('update-status', (event) => {
+      const statusData = event.payload;
       setStatus(statusData);
 
       switch (statusData.event) {
@@ -89,11 +76,11 @@ export function UpdateNotification({ onInstall, onDismiss }: UpdateNotificationP
           setVisible(false);
           break;
       }
-    };
+    });
 
     // Listen for custom update notifications
-    const handleUpdateNotification = (...args: unknown[]) => {
-      const notification = args[1] as UpdateNotificationData;
+    const unlistenNotificationPromise = listen<UpdateNotificationData>('update-notification', (event) => {
+      const notification = event.payload;
       const firstAction = notification.actions?.[0];
       toast(notification.message, {
         description: notification.title,
@@ -106,16 +93,11 @@ export function UpdateNotification({ onInstall, onDismiss }: UpdateNotificationP
           },
         } : undefined,
       });
-    };
-
-    window.electronAPI.on('update-status', handleUpdateStatus);
-    window.electronAPI.on('update-notification', handleUpdateNotification);
+    });
 
     return () => {
-      if (window.electronAPI) {
-        window.electronAPI.off('update-status', handleUpdateStatus);
-        window.electronAPI.off('update-notification', handleUpdateNotification);
-      }
+      unlistenStatusPromise.then((unlisten) => unlisten());
+      unlistenNotificationPromise.then((unlisten) => unlisten());
     };
   }, [handleInstall]);
 

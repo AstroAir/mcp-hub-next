@@ -2,20 +2,39 @@
 
 /**
  * ChatInterface Component
- * Complete chat interface with messages and input
+ * Enhanced chat interface with messages and input
  */
 
 import { useEffect, useRef } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { ChatMessage } from './chat-message';
 import { ChatInput } from './chat-input';
 import type { ChatMessage as ChatMessageType } from '@/lib/types';
-import { StopCircle, Loader2 } from 'lucide-react';
+import {
+  StopCircle,
+  Loader2,
+  Trash2,
+  MessageSquare,
+  Sparkles
+} from 'lucide-react';
 
 interface ChatInterfaceProps {
   messages: ChatMessageType[];
   onSendMessage: (message: string) => void;
+  onClearMessages?: () => void;
   isLoading?: boolean;
   streamedContent?: string;
   onStopStreaming?: () => void;
@@ -24,49 +43,119 @@ interface ChatInterfaceProps {
 export function ChatInterface({
   messages,
   onSendMessage,
+  onClearMessages,
   isLoading,
   streamedContent,
   onStopStreaming,
 }: ChatInterfaceProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Smooth scroll to bottom
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   useEffect(() => {
     // Scroll to bottom when new messages arrive or streaming content updates
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    scrollToBottom();
   }, [messages, streamedContent]);
 
   return (
     <div className="flex flex-col h-full">
+      {/* Header with clear button */}
+      {messages.length > 0 && onClearMessages && (
+        <div className="border-b px-4 py-2 flex items-center justify-between bg-muted/30">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <MessageSquare className="size-4" />
+            <span>{messages.length} message{messages.length !== 1 ? 's' : ''}</span>
+          </div>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8">
+                <Trash2 className="size-4 mr-2" />
+                Clear Chat
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Clear chat history?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will permanently delete all messages in this conversation.
+                  This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={onClearMessages}>
+                  Clear Messages
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      )}
+
+      {/* Messages area */}
       <ScrollArea className="flex-1" ref={scrollRef}>
         {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-muted-foreground">
-            <div className="text-center">
-              <p className="text-lg">No messages yet</p>
-              <p className="text-sm mt-2">Start a conversation by typing a message below</p>
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center space-y-4 p-8 max-w-md">
+              <div className="flex justify-center">
+                <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Sparkles className="size-8 text-primary" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold">Start a conversation</h3>
+                <p className="text-sm text-muted-foreground">
+                  Send a message to begin chatting with Claude. You can ask questions,
+                  request help, or have a conversation about anything.
+                </p>
+              </div>
+              <div className="grid gap-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <div className="size-1.5 rounded-full bg-primary" />
+                  <span>Use tools from connected MCP servers</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="size-1.5 rounded-full bg-primary" />
+                  <span>Get real-time streaming responses</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="size-1.5 rounded-full bg-primary" />
+                  <span>Copy messages and code snippets</span>
+                </div>
+              </div>
             </div>
           </div>
         ) : (
           <div className="divide-y">
-            {messages.map((message) => (
-              <ChatMessage key={message.id} message={message} />
+            {messages.map((message, index) => (
+              <div
+                key={message.id}
+                className="animate-in fade-in-0 slide-in-from-bottom-4 duration-300"
+                style={{ animationDelay: `${Math.min(index * 50, 300)}ms` }}
+              >
+                <ChatMessage message={message} />
+              </div>
             ))}
 
             {/* Streaming message */}
             {streamedContent && (
-              <div className="flex gap-3 p-4">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
-                  <Loader2 className="h-4 w-4 animate-spin" />
+              <div className="flex gap-3 p-4 animate-in fade-in-0 slide-in-from-bottom-4">
+                <div className="flex-shrink-0 size-8 rounded-full bg-secondary flex items-center justify-center">
+                  <Loader2 className="size-4 animate-spin" />
                 </div>
                 <div className="flex-1 space-y-2">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold">Assistant</span>
+                    <span className="font-semibold text-sm">Assistant</span>
                     <span className="text-xs text-muted-foreground">Streaming...</span>
                   </div>
-                  <div className="prose prose-sm max-w-none whitespace-pre-wrap">
+                  <div className="text-sm leading-relaxed whitespace-pre-wrap">
                     {streamedContent}
-                    <span className="inline-block w-2 h-4 bg-primary animate-pulse ml-1" />
+                    <span className="inline-block w-0.5 h-4 bg-primary animate-pulse ml-1" />
                   </div>
                   {onStopStreaming && (
                     <Button
@@ -75,27 +164,34 @@ export function ChatInterface({
                       onClick={onStopStreaming}
                       className="mt-2"
                     >
-                      <StopCircle className="h-4 w-4 mr-2" />
+                      <StopCircle className="size-4 mr-2" />
                       Stop Generation
                     </Button>
                   )}
                 </div>
               </div>
             )}
-          </div>
-        )}
-        {isLoading && !streamedContent && (
-          <div className="flex gap-3 p-4">
-            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
-              <Loader2 className="h-4 w-4 animate-spin" />
-            </div>
-            <div className="flex-1">
-              <div className="text-sm font-medium">Assistant</div>
-              <div className="text-sm text-muted-foreground">Thinking...</div>
-            </div>
+
+            {/* Loading state */}
+            {isLoading && !streamedContent && (
+              <div className="flex gap-3 p-4 animate-in fade-in-0">
+                <div className="flex-shrink-0 size-8 rounded-full bg-secondary flex items-center justify-center">
+                  <Loader2 className="size-4 animate-spin" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm font-medium">Assistant</div>
+                  <div className="text-sm text-muted-foreground">Thinking...</div>
+                </div>
+              </div>
+            )}
+
+            {/* Scroll anchor */}
+            <div ref={messagesEndRef} />
           </div>
         )}
       </ScrollArea>
+
+      {/* Input area */}
       <ChatInput onSend={onSendMessage} disabled={isLoading} />
     </div>
   );

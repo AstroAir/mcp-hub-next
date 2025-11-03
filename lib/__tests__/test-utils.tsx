@@ -5,7 +5,6 @@
 
 import { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
-import { vi } from 'vitest';
 
 /**
  * Custom render function that wraps components with providers
@@ -24,20 +23,20 @@ export function mockLocalStorage() {
   const store: Record<string, string> = {};
 
   return {
-    getItem: vi.fn((key: string) => store[key] || null),
-    setItem: vi.fn((key: string, value: string) => {
+    getItem: jest.fn((key: string) => store[key] || null),
+    setItem: jest.fn((key: string, value: string) => {
       store[key] = value;
     }),
-    removeItem: vi.fn((key: string) => {
+    removeItem: jest.fn((key: string) => {
       delete store[key];
     }),
-    clear: vi.fn(() => {
+    clear: jest.fn(() => {
       Object.keys(store).forEach((key) => delete store[key]);
     }),
     get length() {
       return Object.keys(store).length;
     },
-    key: vi.fn((index: number) => {
+    key: jest.fn((index: number) => {
       const keys = Object.keys(store);
       return keys[index] || null;
     }),
@@ -48,7 +47,7 @@ export function mockLocalStorage() {
  * Mock fetch
  */
 export function mockFetch() {
-  return vi.fn(() => {
+  return jest.fn(() => {
     return Promise.resolve({
       ok: true,
       status: 200,
@@ -93,10 +92,10 @@ export function createMockFile(
  */
 export function mockConsole() {
   return {
-    log: vi.spyOn(console, 'log').mockImplementation(() => {}),
-    error: vi.spyOn(console, 'error').mockImplementation(() => {}),
-    warn: vi.spyOn(console, 'warn').mockImplementation(() => {}),
-    info: vi.spyOn(console, 'info').mockImplementation(() => {}),
+    log: jest.spyOn(console, 'log').mockImplementation(() => {}),
+    error: jest.spyOn(console, 'error').mockImplementation(() => {}),
+    warn: jest.spyOn(console, 'warn').mockImplementation(() => {}),
+    info: jest.spyOn(console, 'info').mockImplementation(() => {}),
   };
 }
 
@@ -134,17 +133,17 @@ export function createDeferred<T>() {
  */
 export function mockCrypto() {
   const originalCrypto = global.crypto;
-  
+
   Object.defineProperty(global, 'crypto', {
     value: {
-      getRandomValues: vi.fn((arr: Uint8Array) => {
+      getRandomValues: jest.fn((arr: Uint8Array) => {
         for (let i = 0; i < arr.length; i++) {
           arr[i] = Math.floor(Math.random() * 256);
         }
         return arr;
       }),
       subtle: {
-        digest: vi.fn(async (algorithm: string, data: BufferSource) => {
+        digest: jest.fn(async (algorithm: string, data: BufferSource) => {
           // Simple mock hash
           const str = new TextDecoder().decode(data);
           const hash = new Uint8Array(32);
@@ -174,15 +173,15 @@ export function mockCrypto() {
 export function mockMatchMedia() {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
-    value: vi.fn().mockImplementation((query: string) => ({
+    value: jest.fn().mockImplementation((query: string) => ({
       matches: false,
       media: query,
       onchange: null,
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      dispatchEvent: vi.fn(),
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
     })),
   });
 }

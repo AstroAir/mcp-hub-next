@@ -27,8 +27,15 @@ import {
   Download,
   Upload,
   Server,
+  Trash2,
+  FileDown,
+  Sparkles,
+  ToggleLeft,
+  PlusCircle,
+  List,
 } from 'lucide-react';
 import { useServerStore, useConnectionStore } from '@/lib/stores';
+import { useChatStore } from '@/lib/stores/chat-store';
 import type { LucideIcon } from 'lucide-react';
 
 export interface Command {
@@ -115,6 +122,119 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         category: 'navigation',
         action: () => router.push('/settings'),
         keywords: ['config', 'preferences', 'backup'],
+      },
+      // Chat commands
+      {
+        id: 'chat-clear',
+        label: 'Clear Chat',
+        description: 'Clear all messages in current chat',
+        icon: Trash2,
+        category: 'chat',
+        action: () => {
+          const event = new CustomEvent('command-palette-action', {
+            detail: { action: 'clear-chat' },
+          });
+          window.dispatchEvent(event);
+        },
+        keywords: ['delete', 'remove', 'reset'],
+      },
+      {
+        id: 'chat-export',
+        label: 'Export Chat Session',
+        description: 'Download current chat session',
+        icon: FileDown,
+        category: 'chat',
+        action: () => {
+          const event = new CustomEvent('command-palette-action', {
+            detail: { action: 'export-chat' },
+          });
+          window.dispatchEvent(event);
+        },
+        keywords: ['download', 'save', 'backup'],
+      },
+      {
+        id: 'chat-model-sonnet',
+        label: 'Switch to Claude Sonnet',
+        description: 'Use Claude 3.5 Sonnet model',
+        icon: Sparkles,
+        category: 'chat',
+        action: () => {
+          const event = new CustomEvent('command-palette-action', {
+            detail: { action: 'set-model', model: 'claude-3-5-sonnet-20241022' },
+          });
+          window.dispatchEvent(event);
+        },
+        keywords: ['model', 'ai', 'change'],
+      },
+      {
+        id: 'chat-model-haiku',
+        label: 'Switch to Claude Haiku',
+        description: 'Use Claude 3.5 Haiku model',
+        icon: Sparkles,
+        category: 'chat',
+        action: () => {
+          const event = new CustomEvent('command-palette-action', {
+            detail: { action: 'set-model', model: 'claude-3-5-haiku-20241022' },
+          });
+          window.dispatchEvent(event);
+        },
+        keywords: ['model', 'ai', 'change', 'fast'],
+      },
+      {
+        id: 'chat-model-opus',
+        label: 'Switch to Claude Opus',
+        description: 'Use Claude 3 Opus model',
+        icon: Sparkles,
+        category: 'chat',
+        action: () => {
+          const event = new CustomEvent('command-palette-action', {
+            detail: { action: 'set-model', model: 'claude-3-opus-20240229' },
+          });
+          window.dispatchEvent(event);
+        },
+        keywords: ['model', 'ai', 'change', 'powerful'],
+      },
+      {
+        id: 'chat-toggle-streaming',
+        label: 'Toggle Streaming Mode',
+        description: 'Enable or disable streaming responses',
+        icon: ToggleLeft,
+        category: 'chat',
+        action: () => {
+          const event = new CustomEvent('command-palette-action', {
+            detail: { action: 'toggle-streaming' },
+          });
+          window.dispatchEvent(event);
+        },
+        keywords: ['stream', 'response', 'mode'],
+      },
+      {
+        id: 'chat-new-session',
+        label: 'Create New Chat Session',
+        description: 'Start a new conversation',
+        icon: PlusCircle,
+        category: 'chat',
+        action: () => {
+          const event = new CustomEvent('command-palette-action', {
+            detail: { action: 'new-session' },
+          });
+          window.dispatchEvent(event);
+        },
+        keywords: ['new', 'conversation', 'start'],
+      },
+      {
+        id: 'chat-sessions',
+        label: 'View All Sessions',
+        description: 'Browse and switch between chat sessions',
+        icon: List,
+        category: 'chat',
+        action: () => {
+          const event = new CustomEvent('command-palette-action', {
+            detail: { action: 'view-sessions' },
+          });
+          window.dispatchEvent(event);
+        },
+        keywords: ['history', 'conversations', 'switch'],
       },
       // Server commands
       {
