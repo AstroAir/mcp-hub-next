@@ -1,65 +1,376 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+/**
+ * Dashboard Page
+ * Main page for managing MCP servers
+ */
+
+import { useState, useMemo, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { ServerList } from '@/components/mcp/server-list';
+import { ServerFormDialog } from '@/components/mcp/server-form-dialog';
+import { ServerTemplatesDialog } from '@/components/mcp/server-templates-dialog';
+import { RemoteServerLibrary } from '@/components/mcp/remote-server-library';
+import { ConfigUploader } from '@/components/mcp/config-uploader';
+import { ServerSearchFilter, type ServerFilterStatus, type ServerFilterTransport } from '@/components/mcp/server-search-filter';
+import { ErrorAlert } from '@/components/mcp/error-alert';
+import { Breadcrumbs } from '@/components/layout/breadcrumbs';
+import { useServerStore, useConnectionStore, useUIStore } from '@/lib/stores';
+import { useHealthMonitor } from '@/lib/hooks/use-health-monitor';
+import type { MCPServerConfig, ConnectionStatus } from '@/lib/types';
+import { Plus, MessageSquare, Library, Power, PowerOff, Globe, FileJson } from 'lucide-react';
+import { toast } from 'sonner';
+
+export default function DashboardPage() {
+  const router = useRouter();
+  const { servers, addServer, updateServer, removeServer } = useServerStore();
+  const { connections } = useConnectionStore();
+  const { isServerFormOpen, openServerForm, closeServerForm, errors, clearError } = useUIStore();
+  const { healthStatuses, startMonitoring, stopMonitoring, manualReconnect } = useHealthMonitor();
+  const [editingServer, setEditingServer] = useState<MCPServerConfig | undefined>();
+  const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
+  const [isRemoteLibraryOpen, setIsRemoteLibraryOpen] = useState(false);
+  const [isConfigUploaderOpen, setIsConfigUploaderOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<ServerFilterStatus>('all');
+  const [transportFilter, setTransportFilter] = useState<ServerFilterTransport>('all');
+  const [selectedServers, setSelectedServers] = useState<Set<string>>(new Set());
+
+  const connectedServersCount = Object.values(connections).filter(
+    (conn) => conn.status === 'connected'
+  ).length;
+
+  // Filter servers based on search and filters
+  const filteredServers = useMemo(() => {
+    return servers.filter((server) => {
+      // Search filter
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchesSearch =
+          server.name.toLowerCase().includes(query) ||
+          server.description?.toLowerCase().includes(query);
+        if (!matchesSearch) return false;
+      }
+
+      // Status filter
+      if (statusFilter !== 'all') {
+        const connection = connections[server.id];
+        const status = connection?.status || 'disconnected';
+        if (statusFilter === 'connected' && status !== 'connected') return false;
+        if (statusFilter === 'disconnected' && status !== 'disconnected') return false;
+        if (statusFilter === 'error' && status !== 'error') return false;
+      }
+
+      // Transport filter
+      if (transportFilter !== 'all' && server.transportType !== transportFilter) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [servers, searchQuery, statusFilter, transportFilter, connections]);
+
+  const getServerStatus = (serverId: string): ConnectionStatus => {
+    return connections[serverId]?.status || 'disconnected';
+  };
+
+  // Start health monitoring for connected servers
+  useEffect(() => {
+    servers.forEach((server) => {
+      const connection = connections[server.id];
+      if (connection?.status === 'connected') {
+        startMonitoring(server);
+      } else {
+        stopMonitoring(server.id);
+      }
+    });
+
+    // Cleanup on unmount
+    return () => {
+      servers.forEach((server) => {
+        stopMonitoring(server.id);
+      });
+    };
+  }, [servers, connections, startMonitoring, stopMonitoring]);
+
+  const handleConnect = async (serverId: string) => {
+    const server = servers.find((s) => s.id === serverId);
+    if (!server) return;
+
+    try {
+      const response = await fetch('/api/mcp/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ config: server }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success('Connected to server');
+        // Start health monitoring
+        startMonitoring(server);
+      } else {
+        toast.error(data.error || 'Failed to connect');
+      }
+    } catch (error) {
+      toast.error('Failed to connect to server');
+      console.error(error);
+    }
+  };
+
+  const handleDisconnect = async (serverId: string) => {
+    try {
+      const response = await fetch('/api/mcp/disconnect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ serverId }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success('Disconnected from server');
+        // Stop health monitoring
+        stopMonitoring(serverId);
+      } else {
+        toast.error(data.error || 'Failed to disconnect');
+      }
+    } catch (error) {
+      toast.error('Failed to disconnect from server');
+      console.error(error);
+    }
+  };
+
+  const handleReconnect = async (serverId: string) => {
+    const server = servers.find((s) => s.id === serverId);
+    if (!server) return;
+
+    try {
+      toast.info('Reconnecting...');
+      await manualReconnect(server);
+      toast.success('Reconnected successfully');
+    } catch (error) {
+      toast.error('Failed to reconnect');
+      console.error(error);
+    }
+  };
+
+  const handleDelete = (serverId: string) => {
+    if (confirm('Are you sure you want to delete this server?')) {
+      removeServer(serverId);
+      toast.success('Server deleted');
+    }
+  };
+
+  const handleEdit = (server: MCPServerConfig) => {
+    setEditingServer(server);
+    openServerForm();
+  };
+
+  const handleBulkConnect = async () => {
+    const serverIds = Array.from(selectedServers);
+    let successCount = 0;
+
+    for (const serverId of serverIds) {
+      try {
+        const server = servers.find((s) => s.id === serverId);
+        if (!server) continue;
+
+        const response = await fetch('/api/mcp/connect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ config: server }),
+        });
+
+        const data = await response.json();
+        if (data.success) successCount++;
+      } catch (error) {
+        console.error(`Failed to connect to server ${serverId}:`, error);
+      }
+    }
+
+    toast.success(`Connected to ${successCount} of ${serverIds.length} servers`);
+    setSelectedServers(new Set());
+  };
+
+  const handleBulkDisconnect = async () => {
+    const serverIds = Array.from(selectedServers);
+    let successCount = 0;
+
+    for (const serverId of serverIds) {
+      try {
+        const response = await fetch('/api/mcp/disconnect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ serverId }),
+        });
+
+        const data = await response.json();
+        if (data.success) successCount++;
+      } catch (error) {
+        console.error(`Failed to disconnect from server ${serverId}:`, error);
+      }
+    }
+
+    toast.success(`Disconnected from ${successCount} of ${serverIds.length} servers`);
+    setSelectedServers(new Set());
+  };
+
+  const handleTemplateSelect = (config: MCPServerConfig) => {
+    addServer(config);
+    toast.success('Server added from template');
+  };
+
+  const handleSubmit = async (config: Omit<MCPServerConfig, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      if (editingServer) {
+        // Update existing server
+        updateServer(editingServer.id, config);
+        toast.success('Server updated');
+      } else {
+        // Create new server
+        const response = await fetch('/api/servers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ config }),
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.data) {
+          addServer(data.data);
+          toast.success('Server created');
+        } else {
+          toast.error(data.error || 'Failed to create server');
+        }
+      }
+
+      setEditingServer(undefined);
+      closeServerForm();
+    } catch (error) {
+      toast.error('Failed to save server');
+      console.error(error);
+    }
+  };
+
+  const handleViewDetails = (serverId: string) => {
+    // Navigate to server details page
+    window.location.href = `/servers/${serverId}`;
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="container mx-auto py-8 px-4">
+      <Breadcrumbs items={[{ label: 'Dashboard' }]} className="mb-6" />
+
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-4xl font-bold">MCP Server Hub</h1>
+          <p className="text-muted-foreground mt-2">
+            Manage your Model Context Protocol servers
           </p>
+          {connectedServersCount > 0 && (
+            <p className="text-sm text-muted-foreground mt-1">
+              {connectedServersCount} server{connectedServersCount !== 1 ? 's' : ''} connected
+            </p>
+          )}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <div className="flex gap-2">
+          {selectedServers.size > 0 && (
+            <>
+              <Button variant="outline" size="sm" onClick={handleBulkConnect}>
+                <Power className="h-4 w-4 mr-2" />
+                Connect ({selectedServers.size})
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleBulkDisconnect}>
+                <PowerOff className="h-4 w-4 mr-2" />
+                Disconnect ({selectedServers.size})
+              </Button>
+            </>
+          )}
+          {connectedServersCount > 0 && (
+            <Button variant="outline" onClick={() => router.push('/chat')}>
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Go to Chat
+            </Button>
+          )}
+          <Button variant="outline" onClick={() => setIsRemoteLibraryOpen(true)}>
+            <Globe className="h-4 w-4 mr-2" />
+            Remote Servers
+          </Button>
+          <Button variant="outline" onClick={() => setIsTemplatesOpen(true)}>
+            <Library className="h-4 w-4 mr-2" />
+            Templates
+          </Button>
+          <Button variant="outline" onClick={() => setIsConfigUploaderOpen(true)}>
+            <FileJson className="h-4 w-4 mr-2" />
+            Import/Export
+          </Button>
+          <Button onClick={() => { setEditingServer(undefined); openServerForm(); }}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Server
+          </Button>
         </div>
-      </main>
+      </div>
+
+      {/* Search and Filters */}
+      <ServerSearchFilter
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        transportFilter={transportFilter}
+        onTransportFilterChange={setTransportFilter}
+        resultCount={filteredServers.length}
+      />
+
+      {errors['dashboard'] && (
+        <div className="mb-6">
+          <ErrorAlert
+            message={errors['dashboard']}
+            onDismiss={() => clearError('dashboard')}
+          />
+        </div>
+      )}
+
+      <ServerList
+        servers={filteredServers}
+        getServerStatus={getServerStatus}
+        getServerHealth={(serverId) => healthStatuses.get(serverId)}
+        onConnect={handleConnect}
+        onDisconnect={handleDisconnect}
+        onDelete={handleDelete}
+        onEdit={handleEdit}
+        onViewDetails={handleViewDetails}
+        onReconnect={handleReconnect}
+      />
+
+      <ServerFormDialog
+        open={isServerFormOpen}
+        onOpenChange={(open) => {
+          if (!open) setEditingServer(undefined);
+          closeServerForm();
+        }}
+        onSubmit={handleSubmit}
+        initialData={editingServer}
+      />
+
+      <ServerTemplatesDialog
+        open={isTemplatesOpen}
+        onOpenChange={setIsTemplatesOpen}
+        onSelectTemplate={handleTemplateSelect}
+      />
+
+      <RemoteServerLibrary
+        open={isRemoteLibraryOpen}
+        onOpenChange={setIsRemoteLibraryOpen}
+      />
+
+      <ConfigUploader
+        open={isConfigUploaderOpen}
+        onOpenChange={setIsConfigUploaderOpen}
+      />
     </div>
   );
 }
