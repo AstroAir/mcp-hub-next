@@ -15,7 +15,7 @@ import type {
   RegistryServerEntry,
   RegistrySearchFilters
 } from './mcp';
-import type { ChatMessage, ClaudeModel } from './chat';
+import type { ChatMessage, ModelId } from './chat';
 
 /**
  * Generic API response wrapper
@@ -85,7 +85,7 @@ export type ExecuteToolResponse = APIResponse<MCPToolCallResult>;
  */
 export interface ChatRequest {
   messages: ChatMessage[];
-  model: ClaudeModel;
+  model: ModelId;
   connectedServers: string[]; // Server IDs to use for tool calls
   stream?: boolean;
 }

@@ -11,20 +11,23 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { CheckCircle2, XCircle, Loader2, X } from 'lucide-react';
+import { CheckCircle2, XCircle, Loader2, X, RotateCcw, LifeBuoy } from 'lucide-react';
 import { installationAPI } from '@/lib/services/api-client';
 import { useServerStore } from '@/lib/stores/server-store';
 import type { InstallationProgress } from '@/lib/types';
+import { getTroubleshootingTips } from '@/lib/utils/error-dedupe';
 
 interface InstallationProgressProps {
   installId: string;
   onComplete?: () => void;
   onError?: (error: string) => void;
+  onRetry?: () => void | Promise<void>;
 }
 
-export function InstallationProgressCard({ installId, onComplete, onError }: InstallationProgressProps) {
+export function InstallationProgressCard({ installId, onComplete, onError, onRetry }: InstallationProgressProps) {
   const [progress, setProgress] = useState<InstallationProgress | null>(null);
   const [showLogs, setShowLogs] = useState(false);
+  const [retrying, setRetrying] = useState(false);
   const { setInstallationProgress, removeInstallation } = useServerStore();
 
   useEffect(() => {
@@ -69,6 +72,16 @@ export function InstallationProgressCard({ installId, onComplete, onError }: Ins
       removeInstallation(installId);
     } catch (error) {
       console.error('Error cancelling installation:', error);
+    }
+  };
+
+  const handleRetry = async () => {
+    if (!onRetry) return;
+    setRetrying(true);
+    try {
+      await onRetry();
+    } finally {
+      setRetrying(false);
     }
   };
 
@@ -138,11 +151,23 @@ export function InstallationProgressCard({ installId, onComplete, onError }: Ins
           <Progress value={progress.progress} />
         </div>
 
-        {/* Error Message */}
+        {/* Error Message + Guidance */}
         {progress.error && (
-          <div className="rounded-md bg-red-50 p-3 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-200">
-            <div className="font-semibold">Error:</div>
-            <div>{progress.error}</div>
+          <div className="space-y-3">
+            <div className="rounded-md bg-red-50 p-3 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-200">
+              <div className="font-semibold">Error:</div>
+              <div className="mt-1">{progress.error}</div>
+            </div>
+            <div className="rounded-md border p-3 bg-muted/40">
+              <div className="flex items-center gap-2 mb-2 text-sm font-medium">
+                <LifeBuoy className="h-4 w-4" /> Troubleshooting
+              </div>
+              <ul className="list-disc list-inside text-xs text-muted-foreground space-y-1">
+                {getTroubleshootingTips(progress.error).map((tip, i) => (
+                  <li key={i}>{tip}</li>
+                ))}
+              </ul>
+            </div>
           </div>
         )}
 
@@ -180,6 +205,12 @@ export function InstallationProgressCard({ installId, onComplete, onError }: Ins
             <Button variant="destructive" size="sm" onClick={handleCancel}>
               <X className="h-4 w-4 mr-1" />
               Cancel
+            </Button>
+          )}
+          {progress.status === 'failed' && onRetry && (
+            <Button size="sm" onClick={handleRetry} disabled={retrying}>
+              <RotateCcw className="h-4 w-4 mr-1" />
+              {retrying ? 'Retrying…' : 'Retry'}
             </Button>
           )}
         </div>

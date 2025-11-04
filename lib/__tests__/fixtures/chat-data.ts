@@ -3,7 +3,7 @@
  * Mock chat sessions and messages for testing
  */
 
-import type { ChatSession, ChatMessage, ClaudeModel } from '@/lib/types';
+import type { ChatSession, ChatMessage, ModelId } from '@/lib/types';
 
 /**
  * Mock chat messages
@@ -223,7 +223,7 @@ export function createStreamingChunk(
 /**
  * Mock Claude models
  */
-export const mockClaudeModels: ClaudeModel[] = [
+export const mockClaudeModels: ModelId[] = [
   'claude-3-5-sonnet-20241022',
   'claude-3-5-haiku-20241022',
   'claude-3-opus-20240229',

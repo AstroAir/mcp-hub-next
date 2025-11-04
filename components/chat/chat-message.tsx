@@ -30,6 +30,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CodeBlock } from './code-block';
 import { ImagePreviewDialog } from './image-preview-dialog';
+import { PdfPreviewDialog } from './pdf-preview-dialog';
 import {
   formatFileSize,
   isImageFile,
@@ -79,11 +80,12 @@ interface ChatMessageProps {
   onRetry?: (messageId: string) => void;
 }
 
-export function ChatMessage({ message, onRetry }: ChatMessageProps) {
+export function ChatMessage({ message }: ChatMessageProps) {
   const isUser = message.role === 'user';
   const contentParts = parseMessageContent(message.content);
   const [copied, setCopied] = useState(false);
   const [previewSrc, setPreviewSrc] = useState<string | null>(null);
+  const [pdfPreviewSrc, setPdfPreviewSrc] = useState<string | null>(null);
 
   const handleCopy = async () => {
     try {
@@ -194,6 +196,7 @@ export function ChatMessage({ message, onRetry }: ChatMessageProps) {
             <div className="grid w-full grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2">
               {message.attachments.map((attachment) => {
                 const isImage = isImageFile(attachment.type);
+                const isPdf = attachment.type === 'application/pdf';
                 const iconName = getFileIcon(attachment.type);
                 const IconComponent = {
                   Image: ImageIcon,
@@ -223,9 +226,14 @@ export function ChatMessage({ message, onRetry }: ChatMessageProps) {
                           />
                         </div>
                       ) : (
-                        <div className="size-16 rounded bg-muted flex items-center justify-center flex-shrink-0">
+                        <button
+                          type="button"
+                          className="size-16 rounded bg-muted flex items-center justify-center flex-shrink-0 hover:bg-muted/80 transition"
+                          onClick={() => isPdf && attachment.url ? setPdfPreviewSrc(attachment.url) : undefined}
+                          aria-label={isPdf ? 'Preview PDF' : 'Attachment icon'}
+                        >
                           <IconComponent className="size-8 text-muted-foreground" />
-                        </div>
+                        </button>
                       )}
 
                       {/* File info */}
@@ -236,12 +244,31 @@ export function ChatMessage({ message, onRetry }: ChatMessageProps) {
                         <div className="text-xs text-muted-foreground mt-1">
                           {formatFileSize(attachment.size)}
                         </div>
-                        <Tooltip>
+                        <div className="flex items-center gap-1 mt-2">
+                          {isPdf && attachment.url && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 text-xs"
+                                  onClick={() => setPdfPreviewSrc(attachment.url!)}
+                                >
+                                  <FileText className="size-3 mr-1" />
+                                  Preview
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                Preview {attachment.name}
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                          <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-7 mt-2 text-xs"
+                              className="h-7 text-xs"
                               onClick={() => downloadAttachment(attachment)}
                             >
                               <Download className="size-3 mr-1" />
@@ -251,7 +278,8 @@ export function ChatMessage({ message, onRetry }: ChatMessageProps) {
                           <TooltipContent>
                             Download {attachment.name}
                           </TooltipContent>
-                        </Tooltip>
+                          </Tooltip>
+                        </div>
                       </div>
                     </div>
                   </Card>
@@ -268,62 +296,91 @@ export function ChatMessage({ message, onRetry }: ChatMessageProps) {
             onOpenChange={(o) => !o && setPreviewSrc(null)}
           />
         )}
+        {pdfPreviewSrc && (
+          <PdfPreviewDialog
+            open={!!pdfPreviewSrc}
+            src={pdfPreviewSrc}
+            title="PDF attachment preview"
+            onOpenChange={(o) => !o && setPdfPreviewSrc(null)}
+          />
+        )}
         {/* Tool calls */}
         {message.toolCalls && message.toolCalls.length > 0 && (
           <div className="space-y-2">
-            {message.toolCalls.map((toolCall) => (
-              <Card key={toolCall.id} className="p-3 bg-muted/50 border-muted">
-                <div className="flex items-start gap-2">
-                  <AlertCircle className="size-4 text-blue-500 mt-0.5 shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-medium">Tool: {toolCall.name}</div>
-                    <div className="text-xs text-muted-foreground mt-1 font-mono break-all">
-                      {JSON.stringify(toolCall.input, null, 2)}
+            {message.toolCalls.map((toolCall) => {
+              const matchingResult = message.toolResults?.find(r => r.toolCallId === toolCall.id);
+              const status: 'requested' | 'success' | 'error' = matchingResult ? (matchingResult.isError ? 'error' : 'success') : 'requested';
+              return (
+                <Card key={toolCall.id} className="p-3 bg-muted/50 border-muted">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className={cn('size-4 mt-0.5 shrink-0', status === 'requested' ? 'text-blue-500' : status === 'success' ? 'text-green-600' : 'text-destructive')} />
+                    <div className="flex-1 min-w-0 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="text-xs font-medium">Tool call • {toolCall.name}</div>
+                        <Badge variant={status === 'success' ? 'default' : status === 'error' ? 'destructive' : 'secondary'} className="text-[10px]">
+                          {status === 'requested' ? 'Requested' : status === 'success' ? 'Completed' : 'Error'}
+                        </Badge>
+                      </div>
+                      <div>
+                        <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">Parameters</div>
+                        <CodeBlock language="json" code={JSON.stringify(toolCall.input, null, 2)} />
+                      </div>
+                      {matchingResult && (
+                        <div>
+                          <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">Response</div>
+                          {matchingResult.isError ? (
+                            <div className="text-xs text-destructive">{matchingResult.error || 'Unknown error'}</div>
+                          ) : (
+                            <CodeBlock language="json" code={JSON.stringify(matchingResult.result, null, 2)} />
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
           </div>
         )}
 
         {/* Tool results */}
+        {/* Results are inlined above per tool call; keep legacy block for any stray results without a matching call */}
         {message.toolResults && message.toolResults.length > 0 && (
           <div className="space-y-2">
-            {message.toolResults.map((result) => (
-              <Card
-                key={result.toolCallId}
-                className={cn(
-                  'p-3 border',
-                  result.isError
-                    ? 'bg-destructive/10 border-destructive/50'
-                    : 'bg-muted/50 border-muted'
-                )}
-              >
-                <div className="flex items-start gap-2">
-                  <AlertCircle
-                    className={cn(
-                      'size-4 mt-0.5 shrink-0',
-                      result.isError ? 'text-destructive' : 'text-green-500'
-                    )}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-medium">
-                      Result: {result.toolName}
+            {message.toolResults
+              .filter(r => !(message.toolCalls || []).some(tc => tc.id === r.toolCallId))
+              .map((result) => (
+                <Card
+                  key={result.toolCallId}
+                  className={cn(
+                    'p-3 border',
+                    result.isError
+                      ? 'bg-destructive/10 border-destructive/50'
+                      : 'bg-muted/50 border-muted'
+                  )}
+                >
+                  <div className="flex items-start gap-2">
+                    <AlertCircle
+                      className={cn(
+                        'size-4 mt-0.5 shrink-0',
+                        result.isError ? 'text-destructive' : 'text-green-500'
+                      )}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-medium">
+                        Result: {result.toolName}
+                      </div>
+                      {result.isError ? (
+                        <div className="text-xs text-destructive mt-1">
+                          Error: {result.error}
+                        </div>
+                      ) : (
+                        <CodeBlock language="json" code={JSON.stringify(result.result, null, 2)} />
+                      )}
                     </div>
-                    {result.isError ? (
-                      <div className="text-xs text-destructive mt-1">
-                        Error: {result.error}
-                      </div>
-                    ) : (
-                      <div className="text-xs text-muted-foreground mt-1 font-mono break-all">
-                        {JSON.stringify(result.result, null, 2)}
-                      </div>
-                    )}
                   </div>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              ))}
           </div>
         )}
       </div>

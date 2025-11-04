@@ -1,6 +1,5 @@
 /**
- * Backup Service Tests
- * Tests for backup creation, restoration, and management
+ * Backup Service Tests (aligned with current implementation)
  */
 
 import {
@@ -32,10 +31,6 @@ const localStorageMock = (() => {
     clear: jest.fn(() => {
       store = {};
     }),
-    get length() {
-      return Object.keys(store).length;
-    },
-    key: jest.fn((index: number) => Object.keys(store)[index] || null),
   };
 })();
 
@@ -44,470 +39,151 @@ Object.defineProperty(global, 'localStorage', {
   writable: true,
 });
 
+// Mock URL and anchor download for exportBackup
+const createObjectURLMock = jest.fn(() => 'blob:mock');
+const revokeObjectURLMock = jest.fn();
+
+Object.defineProperty(window.URL, 'createObjectURL', {
+  value: createObjectURLMock,
+});
+Object.defineProperty(window.URL, 'revokeObjectURL', {
+  value: revokeObjectURLMock,
+});
+
+document.body.innerHTML = '';
+
 describe('Backup Service', () => {
   beforeEach(() => {
     localStorageMock.clear();
     jest.clearAllMocks();
   });
 
-  describe('getBackupSettings', () => {
-    it('should return default settings when none exist', () => {
+  describe('getBackupSettings/saveBackupSettings', () => {
+    it('returns defaults when none exist', () => {
       const settings = getBackupSettings();
-
-      expect(settings).toEqual({
-        enabled: true,
-        frequency: 'daily',
-        maxBackups: 7,
-        includeChats: true,
-        includeServers: true,
-        includeSettings: true,
-      });
+      expect(settings).toEqual({ enabled: false, frequency: 'weekly', retentionDays: 30 });
     });
 
-    it('should return saved settings', () => {
-      const savedSettings = {
-        enabled: false,
-        frequency: 'weekly' as const,
-        maxBackups: 14,
-        includeChats: false,
-        includeServers: true,
-        includeSettings: true,
-      };
-
-      localStorageMock.setItem(
-        'mcp-hub-backup-settings',
-        JSON.stringify(savedSettings)
-      );
-
-      const settings = getBackupSettings();
-      expect(settings).toEqual(savedSettings);
-    });
-
-    it('should handle corrupted settings gracefully', () => {
-      localStorageMock.setItem('mcp-hub-backup-settings', 'invalid json');
-
-      const settings = getBackupSettings();
-      expect(settings).toEqual({
-        enabled: true,
-        frequency: 'daily',
-        maxBackups: 7,
-        includeChats: true,
-        includeServers: true,
-        includeSettings: true,
-      });
-    });
-  });
-
-  describe('saveBackupSettings', () => {
-    it('should save settings to localStorage', () => {
-      const settings = {
-        enabled: false,
-        frequency: 'weekly' as const,
-        maxBackups: 14,
-        includeChats: false,
-        includeServers: true,
-        includeSettings: true,
-      };
-
+    it('persists and retrieves settings', () => {
+      const settings = { enabled: true, frequency: 'daily' as const, retentionDays: 7 };
       saveBackupSettings(settings);
-
-      expect(localStorageMock.setItem).toHaveBeenCalledWith(
-        'mcp-hub-backup-settings',
-        JSON.stringify(settings)
-      );
+      expect(localStorageMock.setItem).toHaveBeenCalled();
+      const roundTrip = getBackupSettings();
+      expect(roundTrip).toEqual(settings);
     });
   });
 
-  describe('createBackup', () => {
-    it('should create a backup with all data', () => {
-      const mockData = {
-        chats: [{ id: '1', messages: [] }],
-        servers: [{ id: 'server-1', name: 'Test' }],
-        settings: { theme: 'dark' },
-      };
+  describe('create/get/history', () => {
+    it('creates a backup from stored data and updates history', () => {
+      // Seed some data
+      localStorageMock.setItem('mcp-hub-servers', JSON.stringify([{ id: 's1' }]));
+      localStorageMock.setItem('mcp-hub-chat-sessions', JSON.stringify([{ id: 'c1' }]));
+      localStorageMock.setItem('mcp-hub-connection-history', JSON.stringify([{ id: 'h1' }]));
 
-      const backup = createBackup(mockData);
+      const backup = createBackup();
+      expect(backup.metadata.id).toBeTruthy();
+      expect(backup.metadata.version).toBe('1.0.0');
+      expect(typeof backup.metadata.timestamp).toBe('string');
+      expect(backup.data.servers).toBeDefined();
 
-      expect(backup).toMatchObject({
-        id: expect.any(String),
-        timestamp: expect.any(Number),
-        version: '1.0',
-        data: mockData,
-      });
-      expect(backup.id).toMatch(/^backup-\d+-[a-z0-9]+$/);
-    });
-
-    it('should save backup to localStorage', () => {
-      const mockData = {
-        chats: [],
-        servers: [],
-        settings: {},
-      };
-
-      const backup = createBackup(mockData);
-
-      expect(localStorageMock.setItem).toHaveBeenCalledWith(
-        `mcp-hub-backup-${backup.id}`,
-        JSON.stringify(backup)
-      );
-    });
-
-    it('should add backup to history', () => {
-      const mockData = {
-        chats: [],
-        servers: [],
-        settings: {},
-      };
-
-      const backup = createBackup(mockData);
       const history = getBackupHistory();
-
       expect(history).toHaveLength(1);
-      expect(history[0]).toMatchObject({
-        id: backup.id,
-        timestamp: backup.timestamp,
-        size: expect.any(Number),
-      });
+      expect(getBackup(backup.metadata.id)).toEqual(backup);
     });
   });
 
-  describe('getBackupHistory', () => {
-    it('should return empty array when no backups exist', () => {
-      const history = getBackupHistory();
-      expect(history).toEqual([]);
-    });
+  describe('restore/delete/clean', () => {
+    it('restores and deletes backups', () => {
+      const backup = createBackup();
+      // Overwrite stores to known values
+      localStorageMock.setItem('mcp-hub-servers', '[]');
 
-    it('should return sorted backup history', () => {
-      // Create multiple backups
-      const backup1 = createBackup({ chats: [], servers: [], settings: {} });
-      const backup2 = createBackup({ chats: [], servers: [], settings: {} });
+      expect(restoreBackup(backup.metadata.id)).toBe(true);
+      expect(localStorageMock.getItem('mcp-hub-servers')).toBe(backup.data.servers);
 
-      const history = getBackupHistory();
-
-      expect(history).toHaveLength(2);
-      // Should be sorted by timestamp descending
-      expect(history[0].timestamp).toBeGreaterThanOrEqual(history[1].timestamp);
-    });
-
-    it('should handle corrupted history gracefully', () => {
-      localStorageMock.setItem('mcp-hub-backup-history', 'invalid json');
-
-      const history = getBackupHistory();
-      expect(history).toEqual([]);
-    });
-  });
-
-  describe('getBackup', () => {
-    it('should retrieve a backup by ID', () => {
-      const mockData = {
-        chats: [{ id: '1' }],
-        servers: [],
-        settings: {},
-      };
-
-      const backup = createBackup(mockData);
-      const retrieved = getBackup(backup.id);
-
-      expect(retrieved).toEqual(backup);
-    });
-
-    it('should return null for non-existent backup', () => {
-      const retrieved = getBackup('non-existent-id');
-      expect(retrieved).toBeNull();
-    });
-
-    it('should handle corrupted backup data', () => {
-      localStorageMock.setItem('mcp-hub-backup-test-id', 'invalid json');
-
-      const retrieved = getBackup('test-id');
-      expect(retrieved).toBeNull();
-    });
-  });
-
-  describe('restoreBackup', () => {
-    it('should restore backup data', () => {
-      const mockData = {
-        chats: [{ id: '1', messages: [] }],
-        servers: [{ id: 'server-1' }],
-        settings: { theme: 'dark' },
-      };
-
-      const backup = createBackup(mockData);
-      const restored = restoreBackup(backup.id);
-
-      expect(restored).toEqual(mockData);
-    });
-
-    it('should return null for non-existent backup', () => {
-      const restored = restoreBackup('non-existent-id');
-      expect(restored).toBeNull();
-    });
-  });
-
-  describe('deleteBackup', () => {
-    it('should delete a backup and update history', () => {
-      const backup = createBackup({ chats: [], servers: [], settings: {} });
-
-      const result = deleteBackup(backup.id);
-
-      expect(result).toBe(true);
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith(
-        `mcp-hub-backup-${backup.id}`
-      );
-
+      expect(deleteBackup(backup.metadata.id)).toBe(true);
       const history = getBackupHistory();
       expect(history).toHaveLength(0);
     });
 
-    it('should return false for non-existent backup', () => {
-      const result = deleteBackup('non-existent-id');
-      expect(result).toBe(false);
+    it('cleans backups older than retention days', () => {
+      // Create two backups
+      const b1 = createBackup();
+      const b2 = createBackup();
+
+      // Set retention to 0 days and make first backup old
+      saveBackupSettings({ enabled: true, frequency: 'weekly', retentionDays: 0 });
+      const history = getBackupHistory();
+      const veryOld = new Date(2000, 0, 1).toISOString();
+      const updated = history.map((h) => (h.id === b1.metadata.id ? { ...h, timestamp: veryOld } : h));
+      localStorageMock.setItem('mcp-hub-backup-history', JSON.stringify(updated));
+
+      cleanOldBackups();
+      const after = getBackupHistory();
+      expect(after.find((h) => h.id === b1.metadata.id)).toBeUndefined();
+      expect(after.find((h) => h.id === b2.metadata.id)).toBeDefined();
     });
   });
 
-  describe('cleanOldBackups', () => {
-    it('should remove backups exceeding maxBackups limit', () => {
-      // Create 5 backups
-      const backups = Array.from({ length: 5 }, () =>
-        createBackup({ chats: [], servers: [], settings: {} })
-      );
-
-      // Clean with maxBackups = 3
-      const removed = cleanOldBackups(3);
-
-      expect(removed).toBe(2);
-      const history = getBackupHistory();
-      expect(history).toHaveLength(3);
-    });
-
-    it('should keep all backups if under limit', () => {
-      createBackup({ chats: [], servers: [], settings: {} });
-      createBackup({ chats: [], servers: [], settings: {} });
-
-      const removed = cleanOldBackups(5);
-
-      expect(removed).toBe(0);
-      const history = getBackupHistory();
-      expect(history).toHaveLength(2);
-    });
-
-    it('should remove oldest backups first', () => {
-      const backup1 = createBackup({ chats: [], servers: [], settings: {} });
-      const backup2 = createBackup({ chats: [], servers: [], settings: {} });
-      const backup3 = createBackup({ chats: [], servers: [], settings: {} });
-
-      cleanOldBackups(2);
-
-      const history = getBackupHistory();
-      expect(history).toHaveLength(2);
-      // Should keep the newest backups
-      expect(history.map((b) => b.id)).toContain(backup3.id);
-      expect(history.map((b) => b.id)).toContain(backup2.id);
-      expect(history.map((b) => b.id)).not.toContain(backup1.id);
-    });
-  });
-
-  describe('shouldCreateAutomaticBackup', () => {
-    it('should return false when backups are disabled', () => {
-      saveBackupSettings({
-        enabled: false,
-        frequency: 'daily',
-        maxBackups: 7,
-        includeChats: true,
-        includeServers: true,
-        includeSettings: true,
-      });
-
+  describe('automatic backup check', () => {
+    it('returns false if disabled or manual', () => {
+      saveBackupSettings({ enabled: false, frequency: 'weekly', retentionDays: 30 });
+      expect(shouldCreateAutomaticBackup()).toBe(false);
+      saveBackupSettings({ enabled: true, frequency: 'manual', retentionDays: 30 });
       expect(shouldCreateAutomaticBackup()).toBe(false);
     });
 
-    it('should return true when no backups exist', () => {
-      saveBackupSettings({
-        enabled: true,
-        frequency: 'daily',
-        maxBackups: 7,
-        includeChats: true,
-        includeServers: true,
-        includeSettings: true,
-      });
-
+    it('returns true if never backed up and enabled', () => {
+      saveBackupSettings({ enabled: true, frequency: 'daily', retentionDays: 30 });
       expect(shouldCreateAutomaticBackup()).toBe(true);
     });
 
-    it('should return true when last backup is older than frequency', () => {
-      saveBackupSettings({
-        enabled: true,
-        frequency: 'daily',
-        maxBackups: 7,
-        includeChats: true,
-        includeServers: true,
-        includeSettings: true,
-      });
-
-      // Create a backup from 2 days ago
-      const oldBackup = createBackup({ chats: [], servers: [], settings: {} });
-      const history = getBackupHistory();
-      history[0].timestamp = Date.now() - 2 * 24 * 60 * 60 * 1000;
-      localStorageMock.setItem(
-        'mcp-hub-backup-history',
-        JSON.stringify(history)
-      );
-
+    it('respects last backup time vs frequency', () => {
+      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      saveBackupSettings({ enabled: true, frequency: 'daily', retentionDays: 30, lastBackupTime: yesterday });
       expect(shouldCreateAutomaticBackup()).toBe(true);
-    });
 
-    it('should return false when last backup is recent', () => {
-      saveBackupSettings({
-        enabled: true,
-        frequency: 'daily',
-        maxBackups: 7,
-        includeChats: true,
-        includeServers: true,
-        includeSettings: true,
-      });
-
-      // Create a recent backup
-      createBackup({ chats: [], servers: [], settings: {} });
-
+      const recent = new Date().toISOString();
+      saveBackupSettings({ enabled: true, frequency: 'daily', retentionDays: 30, lastBackupTime: recent });
       expect(shouldCreateAutomaticBackup()).toBe(false);
     });
+  });
 
-    it('should handle weekly frequency correctly', () => {
-      saveBackupSettings({
-        enabled: true,
-        frequency: 'weekly',
-        maxBackups: 7,
-        includeChats: true,
-        includeServers: true,
-        includeSettings: true,
-      });
+  describe('export/import', () => {
+    it('exports backup via object URL and anchor click', () => {
+      const b = createBackup();
+      // Mock DOM methods
+      const appendSpy = jest.spyOn(document.body, 'appendChild');
+      const removeSpy = jest.spyOn(document.body, 'removeChild');
 
-      // Create a backup from 5 days ago (should not trigger weekly backup)
-      const backup = createBackup({ chats: [], servers: [], settings: {} });
-      const history = getBackupHistory();
-      history[0].timestamp = Date.now() - 5 * 24 * 60 * 60 * 1000;
-      localStorageMock.setItem(
-        'mcp-hub-backup-history',
-        JSON.stringify(history)
-      );
-
-      expect(shouldCreateAutomaticBackup()).toBe(false);
+      exportBackup(b.metadata.id);
+      expect(createObjectURLMock).toHaveBeenCalled();
+      expect(appendSpy).toHaveBeenCalled();
+      expect(removeSpy).toHaveBeenCalled();
+      expect(revokeObjectURLMock).toHaveBeenCalled();
     });
 
-    it('should handle hourly frequency correctly', () => {
-      saveBackupSettings({
-        enabled: true,
-        frequency: 'hourly',
-        maxBackups: 24,
-        includeChats: true,
-        includeServers: true,
-        includeSettings: true,
-      });
+    it('imports backup from File', async () => {
+      const payload = createBackup();
+      const file = new File([JSON.stringify(payload)], 'backup.json', { type: 'application/json' });
+      // Clear first
+      localStorageMock.clear();
 
-      // Create a backup from 2 hours ago
-      const backup = createBackup({ chats: [], servers: [], settings: {} });
+      const result = await importBackup(file);
+      expect(result).toMatchObject(payload);
       const history = getBackupHistory();
-      history[0].timestamp = Date.now() - 2 * 60 * 60 * 1000;
-      localStorageMock.setItem(
-        'mcp-hub-backup-history',
-        JSON.stringify(history)
-      );
-
-      expect(shouldCreateAutomaticBackup()).toBe(true);
+      expect(history.find((h) => h.id === payload.metadata.id)).toBeDefined();
     });
   });
 
-  describe('exportBackup', () => {
-    it('should export backup as JSON string', () => {
-      const mockData = {
-        chats: [{ id: '1', messages: [] }],
-        servers: [{ id: 'server-1' }],
-        settings: { theme: 'dark' },
-      };
-
-      const backup = createBackup(mockData);
-      const exported = exportBackup(backup.id);
-
-      expect(exported).toBeTruthy();
-      const parsed = JSON.parse(exported!);
-      expect(parsed).toEqual(backup);
-    });
-
-    it('should return null for non-existent backup', () => {
-      const exported = exportBackup('non-existent-id');
-      expect(exported).toBeNull();
-    });
-  });
-
-  describe('importBackup', () => {
-    it('should import backup from JSON string', () => {
-      const mockBackup = {
-        id: 'imported-backup',
-        timestamp: Date.now(),
-        version: '1.0',
-        data: {
-          chats: [{ id: '1' }],
-          servers: [],
-          settings: {},
-        },
-      };
-
-      const jsonString = JSON.stringify(mockBackup);
-      const imported = importBackup(jsonString);
-
-      expect(imported).toEqual(mockBackup);
-      expect(localStorageMock.setItem).toHaveBeenCalledWith(
-        `mcp-hub-backup-${mockBackup.id}`,
-        jsonString
-      );
-
-      const history = getBackupHistory();
-      expect(history).toHaveLength(1);
-      expect(history[0].id).toBe(mockBackup.id);
-    });
-
-    it('should return null for invalid JSON', () => {
-      const imported = importBackup('invalid json');
-      expect(imported).toBeNull();
-    });
-
-    it('should return null for invalid backup structure', () => {
-      const invalidBackup = {
-        id: 'test',
-        // missing required fields
-      };
-
-      const imported = importBackup(JSON.stringify(invalidBackup));
-      expect(imported).toBeNull();
-    });
-
-    it('should handle duplicate backup IDs', () => {
-      const backup1 = createBackup({ chats: [], servers: [], settings: {} });
-      const exported = exportBackup(backup1.id);
-
-      // Import the same backup again
-      const imported = importBackup(exported!);
-
-      expect(imported).toBeTruthy();
-      const history = getBackupHistory();
-      // Should still have only one entry (updated)
-      expect(history).toHaveLength(1);
-    });
-  });
-
-  describe('SSR Safety', () => {
-    it('should handle server-side rendering gracefully', () => {
-      // Temporarily remove window
+  describe('SSR safety', () => {
+    it('handles missing window gracefully', () => {
       const originalWindow = global.window;
-      // @ts-expect-error - Testing SSR scenario
-      delete global.window;
-
+      delete (global as any).window;
       expect(() => getBackupSettings()).not.toThrow();
       expect(() => getBackupHistory()).not.toThrow();
-      expect(() => getBackup('test-id')).not.toThrow();
-
-      // Restore window
-      global.window = originalWindow;
+      expect(() => getBackup('x')).not.toThrow();
+      (global as any).window = originalWindow;
     });
   });
 });

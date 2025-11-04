@@ -35,6 +35,7 @@ import {
 } from '@/lib/utils/file-upload';
 import { toast } from 'sonner';
 import { ImagePreviewDialog } from './image-preview-dialog';
+import { PdfPreviewDialog } from './pdf-preview-dialog';
 
 interface FileUploadProps {
   attachments: FileAttachment[];
@@ -72,6 +73,7 @@ export function FileUpload({
 }: FileUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [previewSrc, setPreviewSrc] = useState<string | null>(null);
+  const [pdfPreviewSrc, setPdfPreviewSrc] = useState<string | null>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -173,6 +175,7 @@ export function FileUpload({
           {attachments.map((attachment) => {
             const Icon = getIconComponent(attachment.type);
             const isImage = isImageFile(attachment.type);
+            const isPdf = attachment.type === 'application/pdf';
 
             return (
               <Card
@@ -191,9 +194,14 @@ export function FileUpload({
                     />
                   </div>
                 ) : (
-                  <div className="size-10 rounded bg-muted flex items-center justify-center shrink-0">
+                  <button
+                    type="button"
+                    className="size-10 rounded bg-muted flex items-center justify-center shrink-0 hover:bg-muted/80 transition"
+                    onClick={() => isPdf && attachment.url ? setPdfPreviewSrc(attachment.url) : undefined}
+                    aria-label={isPdf ? 'Preview PDF' : 'Attachment icon'}
+                  >
                     <Icon className="size-5 text-muted-foreground" />
-                  </div>
+                  </button>
                 )}
 
                 {/* File info */}
@@ -242,6 +250,16 @@ export function FileUpload({
           src={previewSrc}
           alt="attachment preview"
           onOpenChange={(o) => !o && setPreviewSrc(null)}
+        />
+      )}
+
+      {/* PDF preview dialog */}
+      {pdfPreviewSrc && (
+        <PdfPreviewDialog
+          open={!!pdfPreviewSrc}
+          src={pdfPreviewSrc}
+          title="PDF attachment preview"
+          onOpenChange={(o) => !o && setPdfPreviewSrc(null)}
         />
       )}
     </div>

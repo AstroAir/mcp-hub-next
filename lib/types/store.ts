@@ -14,7 +14,7 @@ import type {
   MarketplaceFilters,
   MarketplaceViewMode
 } from './mcp';
-import type { ChatSession, ChatMessage, ClaudeModel } from './chat';
+import type { ChatSession, ChatMessage, ModelId } from './chat';
 
 /**
  * Server Store State
@@ -26,6 +26,7 @@ export interface ServerStoreState {
   // Installation state
   installations: Record<string, InstallationProgress>;
   installedServers: Record<string, InstalledServerMetadata>;
+  installationRequests?: Record<string, { config: import('./mcp').InstallConfig; serverName?: string; serverDescription?: string; createdAt: string }>;
 
   // Actions
   addServer: (server: MCPServerConfig) => void;
@@ -38,6 +39,9 @@ export interface ServerStoreState {
   setInstallationProgress: (installId: string, progress: InstallationProgress) => void;
   removeInstallation: (installId: string) => void;
   getInstallation: (installId: string) => InstallationProgress | undefined;
+  registerInstallationRequest?: (installId: string, request: { config: import('./mcp').InstallConfig; serverName?: string; serverDescription?: string }) => void;
+  getInstallationRequest?: (installId: string) => { config: import('./mcp').InstallConfig; serverName?: string; serverDescription?: string; createdAt: string } | undefined;
+  removeInstallationRequest?: (installId: string) => void;
   addInstalledServer: (metadata: InstalledServerMetadata) => void;
   removeInstalledServer: (serverId: string) => void;
   getInstalledServer: (serverId: string) => InstalledServerMetadata | undefined;
@@ -107,9 +111,11 @@ export interface ChatStoreState {
   
   // Current chat state
   messages: ChatMessage[];
-  model: ClaudeModel;
+  model: ModelId;
   connectedServers: string[];
   isStreaming: boolean;
+  activeServerId: string | null;
+  optimizePrompts: boolean;
   
   // Actions
   createSession: (title?: string) => string;
@@ -118,9 +124,11 @@ export interface ChatStoreState {
   setCurrentSession: (sessionId: string) => void;
   addMessage: (message: ChatMessage) => void;
   updateMessage: (messageId: string, updates: Partial<ChatMessage>) => void;
-  setModel: (model: ClaudeModel) => void;
+  setModel: (model: ModelId) => void;
   toggleServer: (serverId: string) => void;
   setStreaming: (streaming: boolean) => void;
+  setActiveServer: (serverId: string | null) => void;
+  setOptimizePrompts: (enabled: boolean) => void;
   clearMessages: () => void;
 
   // Persistence

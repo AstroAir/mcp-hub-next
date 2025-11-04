@@ -10,6 +10,8 @@ export interface PooledConnection {
   headers?: Record<string, string>;
   createdAt: number;
   lastUsedAt: number;
+  // Alias used by some callers/tests
+  lastUsed?: number;
   useCount: number;
   isActive: boolean;
   inUse: boolean;
@@ -53,6 +55,7 @@ export class ConnectionPool {
       available.isActive = true;
       available.inUse = true;
       available.lastUsedAt = Date.now();
+      available.lastUsed = available.lastUsedAt;
       available.useCount++;
       return available;
     }
@@ -71,6 +74,7 @@ export class ConnectionPool {
       headers,
       createdAt: Date.now(),
       lastUsedAt: Date.now(),
+      lastUsed: Date.now(),
       useCount: 1,
       isActive: true,
       inUse: true,
@@ -93,6 +97,7 @@ export class ConnectionPool {
         conn.isActive = false;
         conn.inUse = false;
         conn.lastUsedAt = Date.now();
+        conn.lastUsed = conn.lastUsedAt;
         return;
       }
     }
@@ -117,8 +122,11 @@ export class ConnectionPool {
   /**
    * Clear all connections for a server
    */
-  clearServer(serverId: string): void {
+  clearServer(serverId: string): number {
+    const pool = this.pools.get(serverId);
+    const removed = pool ? pool.length : 0;
     this.pools.delete(serverId);
+    return removed;
   }
 
   /**

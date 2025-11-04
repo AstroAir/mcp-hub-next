@@ -9,6 +9,7 @@ export * from './store';
 export * from './oauth';
 export * from './file-attachment';
 export * from './tauri';
+export * from './models';
 
 
 

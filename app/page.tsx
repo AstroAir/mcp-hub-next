@@ -271,7 +271,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="container mx-auto py-4 md:py-8 px-3 md:px-4">
+    <div className="w-full py-4 md:py-8 px-3 md:px-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 md:mb-8">
         <div className="w-full sm:w-auto">
           <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold">MCP Server Hub</h1>

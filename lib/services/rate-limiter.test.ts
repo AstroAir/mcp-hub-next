@@ -313,8 +313,8 @@ describe('RateLimitedQueue', () => {
     queue.enqueue('key1', task1);
     queue.enqueue('key1', task2);
 
-    // First task should execute immediately
-    await jest.runOnlyPendingTimersAsync();
+  // First task should execute immediately (no timers yet)
+  await Promise.resolve();
     expect(task1).toHaveBeenCalled();
     expect(task2).not.toHaveBeenCalled();
 

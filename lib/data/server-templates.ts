@@ -143,8 +143,8 @@ export const serverTemplates: ServerTemplate[] = [
     requiresConfiguration: ['env.SLACK_BOT_TOKEN'],
   },
   {
-    id: 'google-drive',
-    name: 'Google Drive Server',
+    id: 'google-drive-oauth',
+    name: 'Google Drive Server (OAuth)',
     description: 'Access and manage Google Drive files',
     category: 'filesystem',
     config: {

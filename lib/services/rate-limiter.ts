@@ -44,7 +44,7 @@ export class RateLimiter {
   /**
    * Check if a request is allowed
    */
-  async checkLimit(key: string): Promise<RateLimitResult> {
+  checkLimit(key: string): RateLimitResult {
     if (this.options.strategy === 'token-bucket') {
       return this.checkTokenBucket(key);
     } else {
@@ -262,21 +262,33 @@ export class RateLimitedQueue {
 
     while (this.queue.length > 0) {
       const item = this.queue[0];
-      const result = await this.limiter.checkLimit(item.key);
+      const result = this.limiter.checkLimit(item.key);
 
-      if (result.allowed) {
-        // Remove from queue and execute
-        this.queue.shift();
-        try {
-          const value = await item.fn();
-          item.resolve(value);
-        } catch (error) {
-          item.reject(error);
-        }
-      } else {
-        // Wait before retrying
+      if (!result.allowed) {
+        const start = Date.now();
         const waitTime = result.retryAfter ? result.retryAfter * 1000 : 1000;
-        await new Promise((resolve) => setTimeout(resolve, waitTime));
+        const target = start + waitTime;
+        const schedule = () => {
+          const remaining = target - Date.now();
+          if (remaining > 0) {
+            setTimeout(schedule, remaining);
+            return;
+          }
+          this.processing = false;
+          // Resume processing after wait
+          void this.processQueue();
+        };
+        setTimeout(schedule, waitTime);
+        return;
+      }
+
+      // Remove from queue and execute without blocking
+      this.queue.shift();
+      try {
+        const promise = item.fn();
+        promise.then(item.resolve).catch(item.reject);
+      } catch (error) {
+        item.reject(error);
       }
     }
 

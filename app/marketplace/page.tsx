@@ -14,8 +14,8 @@ export default function MarketplacePage() {
   }, [setBreadcrumbs]);
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
-      <MarketplaceView />
+    <div className="w-full px-4 md:px-6 py-6">
+      <MarketplaceView gridColumns={{ base: 1, md: 2, lg: 3, xl: 4, ['2xl']: 5 }} />
     </div>
   );
 }

@@ -172,7 +172,7 @@ export default function ServersManagementPage() {
   const connectedCount = useMemo(() => Object.values(connections).filter(c => c?.status === 'connected').length, [connections]);
 
   return (
-    <div className="container mx-auto py-4 md:py-8 px-3 md:px-4">
+    <div className="w-full py-4 md:py-8 px-3 md:px-6">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6 md:mb-8">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold">Servers Management</h1>

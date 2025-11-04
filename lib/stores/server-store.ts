@@ -7,17 +7,20 @@ import type {
   ServerStoreState,
   MCPServerConfig,
   InstallationProgress,
-  InstalledServerMetadata
+  InstalledServerMetadata,
+  InstallConfig
 } from '@/lib/types';
 
 const STORAGE_KEY = 'mcp-servers';
 const INSTALLATIONS_KEY = 'mcp-installations';
+const INSTALL_REQUESTS_KEY = 'mcp-install-requests';
 const INSTALLED_SERVERS_KEY = 'mcp-installed-servers';
 
 export const useServerStore = create<ServerStoreState>((set, get) => ({
   servers: [],
   installations: {},
   installedServers: {},
+  installationRequests: {},
 
   addServer: (server: MCPServerConfig) => {
     set((state) => ({
@@ -66,6 +69,37 @@ export const useServerStore = create<ServerStoreState>((set, get) => ({
         [installId]: progress,
       },
     }));
+    get().saveInstallations();
+  },
+
+  registerInstallationRequest: (
+    installId: string,
+    request: { config: InstallConfig; serverName?: string; serverDescription?: string }
+  ) => {
+    set((state) => ({
+      installationRequests: {
+        ...state.installationRequests,
+        [installId]: {
+          ...request,
+          createdAt: new Date().toISOString(),
+        },
+      },
+    }));
+    get().saveInstallations();
+  },
+
+  getInstallationRequest: (installId: string) => {
+    const map = get().installationRequests || {} as Record<string, unknown>;
+    return (map as Record<string, { config: InstallConfig; serverName?: string; serverDescription?: string; createdAt: string }>)[installId];
+  },
+
+  removeInstallationRequest: (installId: string) => {
+    set((state) => {
+      const src = (state.installationRequests || {}) as Record<string, unknown>;
+      const { [installId]: __removed, ...rest } = src;
+      void __removed;
+      return { installationRequests: rest } as Partial<ServerStoreState>;
+    });
     get().saveInstallations();
   },
 
@@ -136,6 +170,7 @@ export const useServerStore = create<ServerStoreState>((set, get) => ({
     try {
       const installationsStored = localStorage.getItem(INSTALLATIONS_KEY);
       const installedServersStored = localStorage.getItem(INSTALLED_SERVERS_KEY);
+      const installRequestsStored = localStorage.getItem(INSTALL_REQUESTS_KEY);
 
       if (installationsStored) {
         const installations = JSON.parse(installationsStored);
@@ -146,6 +181,11 @@ export const useServerStore = create<ServerStoreState>((set, get) => ({
         const installedServers = JSON.parse(installedServersStored);
         set({ installedServers });
       }
+
+      if (installRequestsStored) {
+        const installationRequests = JSON.parse(installRequestsStored);
+        set({ installationRequests });
+      }
     } catch (error) {
       console.error('Failed to load installations from localStorage:', error);
     }
@@ -155,9 +195,11 @@ export const useServerStore = create<ServerStoreState>((set, get) => ({
     if (typeof window === 'undefined') return;
 
     try {
-      const { installations, installedServers } = get();
+  const { installations, installedServers } = get();
+  const installationRequests = (get().installationRequests || {}) as Record<string, unknown>;
       localStorage.setItem(INSTALLATIONS_KEY, JSON.stringify(installations));
       localStorage.setItem(INSTALLED_SERVERS_KEY, JSON.stringify(installedServers));
+      localStorage.setItem(INSTALL_REQUESTS_KEY, JSON.stringify(installationRequests));
     } catch (error) {
       console.error('Failed to save installations to localStorage:', error);
     }

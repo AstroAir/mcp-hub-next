@@ -18,8 +18,8 @@ export default function DeveloperPage() {
   }, [setBreadcrumbs]);
 
   return (
-    <div className="container mx-auto py-4 md:py-8 px-3 md:px-4">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="w-full py-4 md:py-8 px-3 md:px-6">
+      <div className="space-y-6">
         {/* Header */}
         <div className="space-y-1">
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Developer Tools</h1>

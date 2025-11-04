@@ -11,6 +11,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { ThemeBridge } from "@/components/layout/theme-bridge";
+import { ErrorBoundary } from "@/components/error/error-boundary";
 
 // Use system fonts as fallback when Google Fonts are unavailable
 const geistSans = {
@@ -45,9 +46,11 @@ export default function RootLayout({
                 <AppSidebar />
                 <SidebarInset>
                   <SiteHeader />
-                  <main className="flex flex-1 flex-col">
-                    {children}
-                  </main>
+                  <ErrorBoundary fallbackTitle="Section failed to render">
+                    <main className="flex flex-1 flex-col">
+                      {children}
+                    </main>
+                  </ErrorBoundary>
                 </SidebarInset>
               </SidebarProvider>
               <Toaster />

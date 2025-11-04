@@ -125,8 +125,8 @@ describe('MCP Installer Service', () => {
         path: '../../../etc/passwd',
       });
 
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain(expect.stringContaining('outside allowed directories'));
+  expect(result.valid).toBe(false);
+  expect(result.errors).toContainEqual(expect.stringContaining('outside allowed directories'));
     });
   });
 
@@ -170,9 +170,11 @@ describe('MCP Installer Service', () => {
 
       mockSpawn.mockReturnValue(mockProcess);
 
-      await expect(
-        installNPMPackage({ packageName: '@test/package' })
-      ).rejects.toThrow();
+      const installId = await installNPMPackage({ packageName: '@test/package' });
+      // Allow mocked close callback to fire
+      await new Promise((r) => setTimeout(r, 120));
+      const progress = getInstallationProgress(installId);
+      expect(progress?.status).toBe('failed');
     });
 
     it('should sanitize package arguments', async () => {

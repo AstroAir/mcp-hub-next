@@ -24,7 +24,8 @@ import { AdvancedSettings } from '@/components/settings/advanced-settings';
 import { KeyboardShortcutsEditor } from '@/components/settings/keyboard-shortcuts-editor';
 import { Input } from '@/components/ui/input';
 import { useSettingsStore } from '@/lib/stores/settings-store';
-import { Database, Trash2, Download, Upload, Info, FileJson, Files, Keyboard, HelpCircle, Settings as SettingsIcon } from 'lucide-react';
+import { Database, Trash2, Download, Upload, Info, FileJson, Files, Keyboard, HelpCircle, Settings as SettingsIcon, Bot } from 'lucide-react';
+import { ModelSettings } from '@/components/settings/model-settings';
 import { toast } from 'sonner';
 
 type ImportMode = 'single' | 'multiple';
@@ -145,8 +146,8 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="container mx-auto py-4 md:py-8 px-3 md:px-4">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="w-full py-4 md:py-8 px-3 md:px-6">
+      <div className="space-y-6">
         {/* Header */}
         <div className="space-y-1">
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Settings</h1>
@@ -167,10 +168,14 @@ export default function SettingsPage() {
 
         {/* Tabbed Interface */}
         <Tabs defaultValue="general" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:inline-grid lg:grid-cols-6 h-auto">
+          <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:inline-grid lg:grid-cols-7 h-auto">
             <TabsTrigger value="general" className="gap-2 py-2.5">
               <SettingsIcon className="h-4 w-4" />
               <span className="hidden sm:inline">General</span>
+            </TabsTrigger>
+            <TabsTrigger value="models" className="gap-2 py-2.5">
+              <Bot className="h-4 w-4" />
+              <span className="hidden sm:inline">AI Models</span>
             </TabsTrigger>
             <TabsTrigger value="data" className="gap-2 py-2.5">
               <Database className="h-4 w-4" />
@@ -193,6 +198,11 @@ export default function SettingsPage() {
               <span className="hidden sm:inline">About</span>
             </TabsTrigger>
           </TabsList>
+
+          {/* Models Tab */}
+          <TabsContent value="models" className="space-y-6">
+            <ModelSettings />
+          </TabsContent>
 
           {/* General Tab */}
           <TabsContent value="general" className="space-y-6">

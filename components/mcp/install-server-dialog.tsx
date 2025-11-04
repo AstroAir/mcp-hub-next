@@ -12,10 +12,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Package, Github, FolderOpen, AlertCircle } from 'lucide-react';
+import { Loader2, Package, Github, FolderOpen, AlertCircle, LifeBuoy } from 'lucide-react';
 import { installationAPI } from '@/lib/services/api-client';
 import { useServerStore } from '@/lib/stores/server-store';
 import type { InstallConfig, NPMInstallConfig, GitHubInstallConfig, LocalInstallConfig } from '@/lib/types';
+import { getTroubleshootingTips } from '@/lib/utils/error-dedupe';
 
 interface InstallServerDialogProps {
   open: boolean;
@@ -131,7 +132,8 @@ export function InstallServerDialog({ open, onOpenChange }: InstallServerDialogP
         setError(response.error || 'Validation failed');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Validation failed');
+      const msg = err instanceof Error ? err.message : 'Validation failed';
+      setError(msg);
     } finally {
       setIsValidating(false);
     }
@@ -161,15 +163,18 @@ export function InstallServerDialog({ open, onOpenChange }: InstallServerDialogP
       if (response.success && response.data) {
         // Store installation progress
         setInstallationProgress(response.data.installId, response.data.progress);
+        useServerStore.getState().registerInstallationRequest?.(response.data.installId, { config, serverName, serverDescription });
 
         // Close dialog
         resetForm();
         onOpenChange(false);
       } else {
-        setError(response.error || 'Installation failed');
+        const msg = response.error || 'Installation failed';
+        setError(msg);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Installation failed');
+      const msg = err instanceof Error ? err.message : 'Installation failed';
+      setError(msg);
     } finally {
       setIsInstalling(false);
     }
@@ -186,12 +191,24 @@ export function InstallServerDialog({ open, onOpenChange }: InstallServerDialogP
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Error Alert */}
+          {/* Error Alert with guidance and retry */}
           {error && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
+            <div className="space-y-3">
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+              <div className="rounded-md border p-3 bg-muted/40">
+                <div className="flex items-center gap-2 mb-2 text-sm font-medium">
+                  <LifeBuoy className="h-4 w-4" /> Troubleshooting
+                </div>
+                <ul className="list-disc list-inside text-xs text-muted-foreground space-y-1">
+                  {getTroubleshootingTips(error).map((tip, i) => (
+                    <li key={i}>{tip}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
           )}
 
           {/* Validation Warnings */}
@@ -351,7 +368,7 @@ export function InstallServerDialog({ open, onOpenChange }: InstallServerDialogP
               </Button>
               <Button onClick={handleInstall} disabled={isValidating || isInstalling}>
                 {isInstalling && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Install
+                {error ? 'Retry Install' : 'Install'}
               </Button>
             </div>
           </div>

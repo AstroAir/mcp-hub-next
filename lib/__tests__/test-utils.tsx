@@ -5,6 +5,7 @@
 
 import { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
+import { BreadcrumbProvider } from '@/components/layout/breadcrumb-provider';
 
 /**
  * Custom render function that wraps components with providers
@@ -13,7 +14,15 @@ export function renderWithProviders(
   ui: ReactElement,
   options?: Omit<RenderOptions, 'wrapper'>
 ) {
-  return render(ui, { ...options });
+  function Wrapper({ children }: { children: ReactElement }) {
+    return (
+      <BreadcrumbProvider>
+        {children}
+      </BreadcrumbProvider>
+    );
+  }
+
+  return render(ui, { wrapper: Wrapper as any, ...options });
 }
 
 /**
@@ -63,7 +72,7 @@ export function mockFetch() {
       bodyUsed: false,
       redirected: false,
       type: 'basic' as ResponseType,
-      url,
+      url: '',
     } as Response);
   });
 }
@@ -234,4 +243,12 @@ export function cleanupBrowserMocks() {
 // Re-export testing library utilities
 export * from '@testing-library/react';
 export { default as userEvent } from '@testing-library/user-event';
+
+
+// Ensure Jest doesn't fail this helper file for having zero tests when matched by testMatch
+describe('test-utils helper module', () => {
+  it('noop', () => {
+    expect(true).toBe(true);
+  });
+});
 

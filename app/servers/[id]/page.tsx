@@ -35,7 +35,7 @@ export default function ServerDetailPage({ params }: { params: Promise<{ id: str
 
   if (!server) {
     return (
-      <div className="container mx-auto py-4 md:py-8 px-3 md:px-4">
+      <div className="w-full py-4 md:py-8 px-3 md:px-6">
         <div className="text-center">
           <h1 className="text-xl md:text-2xl font-bold mb-4">Server Not Found</h1>
           <p className="text-muted-foreground mb-6 text-sm md:text-base">
@@ -51,7 +51,7 @@ export default function ServerDetailPage({ params }: { params: Promise<{ id: str
   }
 
   return (
-    <div className="container mx-auto py-4 md:py-8 px-3 md:px-4">
+    <div className="w-full py-4 md:py-8 px-3 md:px-6">
       <ServerDetailView server={server} connectionState={connectionState} />
     </div>
   );

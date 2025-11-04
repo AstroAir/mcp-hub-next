@@ -4,7 +4,7 @@
 
 import { create } from 'zustand';
 import { nanoid } from 'nanoid';
-import type { ChatStoreState, ChatSession, ChatMessage, ClaudeModel } from '@/lib/types';
+import type { ChatStoreState, ChatSession, ChatMessage, ModelId } from '@/lib/types';
 
 const SESSIONS_STORAGE_KEY = 'mcp-chat-sessions';
 const CURRENT_SESSION_KEY = 'mcp-current-session';
@@ -16,6 +16,8 @@ export const useChatStore = create<ChatStoreState>((set, get) => ({
   model: 'claude-3-5-sonnet-20241022',
   connectedServers: [],
   isStreaming: false,
+  activeServerId: null,
+  optimizePrompts: false,
 
   createSession: (title?: string) => {
     const sessionId = nanoid();
@@ -34,6 +36,8 @@ export const useChatStore = create<ChatStoreState>((set, get) => ({
       currentSessionId: sessionId,
       messages: [],
       connectedServers: [],
+      activeServerId: null,
+      optimizePrompts: false,
     }));
 
     get().saveSessions();
@@ -78,6 +82,8 @@ export const useChatStore = create<ChatStoreState>((set, get) => ({
         messages: session.messages,
         model: session.model,
         connectedServers: session.connectedServers,
+        activeServerId: session.activeServerId ?? null,
+        optimizePrompts: session.optimizePrompts ?? false,
       });
       
       if (typeof window !== 'undefined') {
@@ -122,7 +128,7 @@ export const useChatStore = create<ChatStoreState>((set, get) => ({
     get().saveSessions();
   },
 
-  setModel: (model: ClaudeModel) => {
+  setModel: (model: ModelId) => {
     set((state) => {
       const updatedSessions = state.sessions.map((session) =>
         session.id === state.currentSessionId
@@ -159,6 +165,36 @@ export const useChatStore = create<ChatStoreState>((set, get) => ({
   },
 
   setStreaming: (streaming: boolean) => set({ isStreaming: streaming }),
+
+  setActiveServer: (serverId: string | null) => {
+    set((state) => {
+      const updatedSessions = state.sessions.map((session) =>
+        session.id === state.currentSessionId
+          ? { ...session, activeServerId: serverId, updatedAt: new Date().toISOString() }
+          : session
+      );
+      return {
+        activeServerId: serverId,
+        sessions: updatedSessions,
+      };
+    });
+    get().saveSessions();
+  },
+
+  setOptimizePrompts: (enabled: boolean) => {
+    set((state) => {
+      const updatedSessions = state.sessions.map((session) =>
+        session.id === state.currentSessionId
+          ? { ...session, optimizePrompts: enabled, updatedAt: new Date().toISOString() }
+          : session
+      );
+      return {
+        optimizePrompts: enabled,
+        sessions: updatedSessions,
+      };
+    });
+    get().saveSessions();
+  },
 
   clearMessages: () => {
     set((state) => {
@@ -197,6 +233,8 @@ export const useChatStore = create<ChatStoreState>((set, get) => ({
           messages: currentSession?.messages || [],
           model: currentSession?.model || 'claude-3-5-sonnet-20241022',
           connectedServers: currentSession?.connectedServers || [],
+          activeServerId: currentSession?.activeServerId ?? null,
+          optimizePrompts: currentSession?.optimizePrompts ?? false,
         });
       }
     } catch (error) {

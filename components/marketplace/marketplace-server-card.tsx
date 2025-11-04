@@ -4,15 +4,77 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Star, Download, Key, ExternalLink, Info } from 'lucide-react';
+import { Star, Download, Key, ExternalLink, Info, DownloadCloud } from 'lucide-react';
 import type { MarketplaceMCPServer } from '@/lib/types';
+import { useState, useCallback } from 'react';
+import { installationAPI } from '@/lib/services/api-client';
+import { useServerStore } from '@/lib/stores';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { InstallationProgressCard } from '@/components/mcp/installation-progress';
+import { toast } from 'sonner';
+import { shouldNotify, buildErrorKey } from '@/lib/utils/error-dedupe';
 
 interface MarketplaceServerCardProps {
   server: MarketplaceMCPServer;
   onViewDetails: (server: MarketplaceMCPServer) => void;
 }
 
+function parseGithubRepo(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (u.hostname !== 'github.com') return null;
+    const parts = u.pathname.replace(/\.git$/, '').split('/').filter(Boolean);
+    if (parts.length < 2) return null;
+    return `${parts[0]}/${parts[1]}`;
+  } catch {
+    return null;
+  }
+}
+
 export function MarketplaceServerCard({ server, onViewDetails }: MarketplaceServerCardProps) {
+  const { setInstallationProgress } = useServerStore();
+  const [installing, setInstalling] = useState(false);
+  const [progressOpen, setProgressOpen] = useState(false);
+  const [installId, setInstallId] = useState<string | null>(null);
+
+  const handleInstall = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setInstalling(true);
+    try {
+      const repo = parseGithubRepo(server.githubUrl);
+      if (!repo) {
+        toast.error('Unable to parse GitHub repository for this server');
+        setInstalling(false);
+        return;
+      }
+
+      const res = await installationAPI.install({
+        config: { source: 'github', repository: repo },
+        serverName: server.name,
+        serverDescription: server.description,
+      });
+
+      if (res.success && res.data) {
+        setInstallationProgress(res.data.installId, res.data.progress);
+        useServerStore.getState().registerInstallationRequest?.(res.data.installId, { config: { source: 'github', repository: repo }, serverName: server.name, serverDescription: server.description });
+        setInstallId(res.data.installId);
+        setProgressOpen(true);
+        toast.success(`Installing ${server.name}...`);
+      } else {
+        const msg = res.error || 'Failed to start installation';
+        if (shouldNotify(buildErrorKey('install-start', server.mcpId, msg))) {
+          toast.error(msg);
+        }
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to start installation';
+      if (shouldNotify(buildErrorKey('install-start', server.mcpId, msg))) {
+        toast.error(msg);
+      }
+    } finally {
+      setInstalling(false);
+    }
+  }, [server, setInstallationProgress]);
   const handleGitHubClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     window.open(server.githubUrl, '_blank', 'noopener,noreferrer');
@@ -113,6 +175,16 @@ export function MarketplaceServerCard({ server, onViewDetails }: MarketplaceServ
           variant="default"
           size="sm"
           className="flex-1"
+          onClick={handleInstall}
+          disabled={installing}
+        >
+          <DownloadCloud className="h-4 w-4 mr-1.5" />
+          {installing ? 'Installing...' : 'Install'}
+        </Button>
+        <Button
+          variant="default"
+          size="sm"
+          className="flex-1"
           onClick={(e) => {
             e.stopPropagation();
             onViewDetails(server);
@@ -122,6 +194,47 @@ export function MarketplaceServerCard({ server, onViewDetails }: MarketplaceServ
           Details
         </Button>
       </CardFooter>
+
+      {/* Progress Dialog */}
+      <Dialog open={progressOpen} onOpenChange={setProgressOpen}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Installing {server.name}</DialogTitle>
+          </DialogHeader>
+          {installId && (
+            <div className="mt-2">
+              <InstallationProgressCard
+                installId={installId}
+                onComplete={() => toast.success(`${server.name} installed`)}
+                onError={(msg) => {
+                  if (shouldNotify(buildErrorKey('install-fail', installId || server.mcpId, msg))) {
+                    toast.error(msg);
+                  }
+                }}
+                onRetry={async () => {
+                  const repo = parseGithubRepo(server.githubUrl);
+                  if (!repo) return;
+                  const res = await installationAPI.install({
+                    config: { source: 'github', repository: repo },
+                    serverName: server.name,
+                    serverDescription: server.description,
+                  });
+                  if (res.success && res.data) {
+                    setInstallationProgress(res.data.installId, res.data.progress);
+                    useServerStore.getState().registerInstallationRequest?.(res.data.installId, { config: { source: 'github', repository: repo }, serverName: server.name, serverDescription: server.description });
+                    setInstallId(res.data.installId);
+                  } else {
+                    const msg = res.error || 'Failed to start installation';
+                    if (shouldNotify(buildErrorKey('install-retry', installId || server.mcpId, msg))) {
+                      toast.error(msg);
+                    }
+                  }
+                }}
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

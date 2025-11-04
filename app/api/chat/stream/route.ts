@@ -34,6 +34,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Only Anthropic streaming is supported currently
+    if (!model.startsWith('claude')) {
+      return new Response(
+        JSON.stringify({ error: 'Streaming not supported for this provider', code: 'STREAMING_UNSUPPORTED' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Get available tools from connected servers
     const tools: Anthropic.Tool[] = [];
     const serverToolMap: Record<string, string> = {};

@@ -9,10 +9,12 @@ import { useState, useRef, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Send, Loader2 } from 'lucide-react';
+import { Send, Loader2, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { FileUpload } from './file-upload';
 import type { FileAttachment } from '@/lib/types';
+import { useChatStore } from '@/lib/stores';
+import { toast } from 'sonner';
 
 interface ChatInputProps {
   onSend: (message: string, attachments?: FileAttachment[]) => void;
@@ -30,6 +32,10 @@ export function ChatInput({
   const [message, setMessage] = useState('');
   const [attachments, setAttachments] = useState<FileAttachment[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [optimizing, setOptimizing] = useState(false);
+
+  // Pull current model and recent messages for optimization context
+  const { model, messages: priorMessages } = useChatStore();
 
   // Auto-focus on mount
   useEffect(() => {
@@ -70,6 +76,35 @@ export function ChatInput({
         textareaRef.current.style.height = 'auto';
         textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
       }
+    }
+  };
+
+  const handleOptimize = async () => {
+    if (!message.trim() || optimizing || disabled) return;
+    setOptimizing(true);
+    try {
+      const res = await fetch('/api/chat/optimize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: priorMessages.slice(-10), newMessage: message.trim(), model }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.error || 'Failed to optimize');
+      }
+      const optimized = data?.data?.optimized || message.trim();
+      setMessage(optimized);
+      // Resize textarea to content
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+        textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+      }
+      toast.success('Prompt optimized');
+    } catch (err) {
+      console.error(err);
+      toast.error('Optimization failed');
+    } finally {
+      setOptimizing(false);
     }
   };
 
@@ -133,14 +168,37 @@ export function ChatInput({
             </div>
           </div>
 
+          {/* Optimize button */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                aria-label="Optimize prompt"
+                onClick={handleOptimize}
+                disabled={disabled || optimizing || message.trim().length === 0}
+                className="size-10 shrink-0"
+              >
+                {optimizing ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Sparkles className="size-4" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Optimize prompt</TooltipContent>
+          </Tooltip>
+
           {/* Send button */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 type="submit"
-                disabled={!canSend}
+                disabled={!canSend || optimizing}
                 size="icon"
                 className="size-[60px] shrink-0"
+                aria-label="Send message"
               >
                 {disabled ? (
                   <Loader2 className="size-5 animate-spin" />

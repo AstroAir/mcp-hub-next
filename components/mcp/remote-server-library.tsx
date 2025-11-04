@@ -161,7 +161,7 @@ export function RemoteServerLibrary({ open, onOpenChange }: RemoteServerLibraryP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[80vh]">
+      <DialogContent className="max-w-[min(100vw-2rem,1100px)] max-h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>Remote MCP Server Library</DialogTitle>
           <DialogDescription>
@@ -169,7 +169,7 @@ export function RemoteServerLibrary({ open, onOpenChange }: RemoteServerLibraryP
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-4 overflow-hidden flex-1 flex flex-col">
           {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -183,7 +183,7 @@ export function RemoteServerLibrary({ open, onOpenChange }: RemoteServerLibraryP
 
           {/* Categories */}
           <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-            <TabsList className="w-full justify-start overflow-x-auto">
+            <TabsList className="w-full justify-start overflow-x-auto scrollbar-hide">
               {categories.map((category) => (
                 <TabsTrigger key={category} value={category}>
                   {getCategoryLabel(category)}
@@ -191,8 +191,8 @@ export function RemoteServerLibrary({ open, onOpenChange }: RemoteServerLibraryP
               ))}
             </TabsList>
 
-            <TabsContent value={selectedCategory} className="mt-4">
-              <ScrollArea className="h-[400px] pr-4">
+            <TabsContent value={selectedCategory} className="mt-4 overflow-hidden flex-1">
+              <ScrollArea className="h-full pr-4">
                 <div className="space-y-3">
                   {filteredServers.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">

@@ -12,6 +12,7 @@ import { MarketplaceServerDetail } from './marketplace-server-detail';
 import { ErrorState } from '@/components/error/error-state';
 import { EmptyState } from '@/components/error/empty-state';
 import type { MarketplaceMCPServer } from '@/lib/types';
+import { InstallationProgressList } from '@/components/mcp/installation-progress';
 
 
 // Optional responsive grid columns configuration
@@ -213,6 +214,9 @@ export function MarketplaceView({ gridColumns }: MarketplaceViewProps) {
         open={detailOpen}
         onOpenChange={handleDetailClose}
       />
+
+      {/* Active Installations */}
+      <InstallationProgressList />
     </div>
   );
 }

@@ -91,7 +91,7 @@ export function ServerTemplatesDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh]">
+      <DialogContent className="max-w-[min(100vw-2rem,1100px)] max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>Server Templates</DialogTitle>
           <DialogDescription>
@@ -99,9 +99,9 @@ export function ServerTemplatesDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-2 gap-4 h-[600px]">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[70vh] min-h-[480px]">
           {/* Template List */}
-          <div className="border-r pr-4">
+          <div className="md:border-r md:pr-4 overflow-hidden">
             <Tabs defaultValue="all" className="h-full flex flex-col">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="all">All</TabsTrigger>
@@ -109,12 +109,12 @@ export function ServerTemplatesDialog({
                 <TabsTrigger value="categories">Categories</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="all" className="flex-1 mt-4">
-                <ScrollArea className="h-[500px]">
+              <TabsContent value="all" className="flex-1 mt-4 overflow-hidden">
+                <ScrollArea className="h-full">
                   <div className="space-y-2">
-                    {serverTemplates.map((template) => (
+                    {serverTemplates.map((template, i) => (
                       <Card
-                        key={template.id}
+                        key={`${template.id}-${i}`}
                         className={`cursor-pointer transition-colors ${
                           selectedTemplate?.id === template.id
                             ? 'border-primary bg-primary/5'
@@ -141,12 +141,12 @@ export function ServerTemplatesDialog({
                 </ScrollArea>
               </TabsContent>
 
-              <TabsContent value="popular" className="flex-1 mt-4">
-                <ScrollArea className="h-[500px]">
+              <TabsContent value="popular" className="flex-1 mt-4 overflow-hidden">
+                <ScrollArea className="h-full">
                   <div className="space-y-2">
-                    {serverTemplates.slice(0, 5).map((template) => (
+                    {serverTemplates.slice(0, 5).map((template, i) => (
                       <Card
-                        key={template.id}
+                        key={`${template.id}-${i}`}
                         className={`cursor-pointer transition-colors ${
                           selectedTemplate?.id === template.id
                             ? 'border-primary bg-primary/5'
@@ -166,8 +166,8 @@ export function ServerTemplatesDialog({
                 </ScrollArea>
               </TabsContent>
 
-              <TabsContent value="categories" className="flex-1 mt-4">
-                <ScrollArea className="h-[500px]">
+              <TabsContent value="categories" className="flex-1 mt-4 overflow-hidden">
+                <ScrollArea className="h-full">
                   <div className="space-y-4">
                     {templateCategories.map((category) => {
                       const templates = serverTemplates.filter(
@@ -181,9 +181,9 @@ export function ServerTemplatesDialog({
                             {category.icon} {category.label}
                           </h3>
                           <div className="space-y-2">
-                            {templates.map((template) => (
+                            {templates.map((template, i) => (
                               <Card
-                                key={template.id}
+                                key={`${template.id}-${i}`}
                                 className={`cursor-pointer transition-colors ${
                                   selectedTemplate?.id === template.id
                                     ? 'border-primary bg-primary/5'
@@ -207,7 +207,7 @@ export function ServerTemplatesDialog({
           </div>
 
           {/* Configuration Panel */}
-          <div className="pl-4">
+          <div className="md:pl-4 overflow-auto">
             {selectedTemplate ? (
               <div className="space-y-4">
                 <div>

@@ -6,10 +6,9 @@ import type { FileAttachment } from './file-attachment';
 
 export type MessageRole = 'user' | 'assistant' | 'system' | 'tool';
 
-export type ClaudeModel = 
-  | 'claude-3-5-sonnet-20241022'
-  | 'claude-3-5-haiku-20241022'
-  | 'claude-3-opus-20240229';
+// Model identifier string (provider-specific model id)
+// Examples: 'claude-3-5-sonnet-20241022', 'gpt-4o', 'gpt-3.5-turbo', 'gemini-1.5-pro', 'llama3.1:70b'
+export type ModelId = string;
 
 /**
  * Chat message
@@ -51,8 +50,12 @@ export interface ChatSession {
   id: string;
   title: string;
   messages: ChatMessage[];
-  model: ClaudeModel;
+  model: ModelId;
   connectedServers: string[]; // Server IDs
+  // Optional active server selection for this session; null means auto (use connectedServers)
+  activeServerId?: string | null;
+  // Whether prompt optimization is enabled for this session
+  optimizePrompts?: boolean;
   createdAt: string;
   updatedAt: string;
 }
