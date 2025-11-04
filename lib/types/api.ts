@@ -197,3 +197,30 @@ export interface GetPopularServersRequest {
 
 export type GetPopularServersResponse = APIResponse<RegistryServerEntry[]>;
 
+/**
+ * Unified MCP API
+ */
+export type UnifiedMCPAction = 'status' | 'connect' | 'disconnect' | 'executeTool' | 'start' | 'stop' | 'restart';
+
+export interface UnifiedMCPRequest {
+  action: UnifiedMCPAction;
+  serverId?: string;
+  config?: MCPServerConfig;
+  toolName?: string;
+  input?: Record<string, unknown>;
+}
+
+export type UnifiedMCPStatus = {
+  activeClientIds: string[];
+  connections: Record<string, MCPConnectionState>;
+  processes: MCPServerProcess[] | Record<string, MCPServerProcess>;
+};
+
+export type UnifiedMCPResponse = APIResponse<
+  | UnifiedMCPStatus
+  | MCPConnectionState
+  | { serverId: string }
+  | { toolName: string; input: Record<string, unknown>; output: unknown; timestamp: string }
+  | MCPServerProcess
+>;
+

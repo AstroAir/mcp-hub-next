@@ -136,11 +136,9 @@ export function MarketplaceView({ gridColumns }: MarketplaceViewProps) {
       {error && !isLoading && (
         <ErrorState
           title="Failed to load marketplace"
-          message={error}
-          action={{
-            label: 'Try Again',
-            onClick: handleRefresh,
-          }}
+          description={typeof error === 'string' ? error : String(error)}
+          showRetryButton
+          onRetry={handleRefresh}
         />
       )}
 
@@ -166,7 +164,7 @@ export function MarketplaceView({ gridColumns }: MarketplaceViewProps) {
       {!isLoading && !error && filteredServers.length === 0 && (
         <EmptyState
           title="No servers found"
-          message="Try adjusting your search or filters to find what you're looking for."
+          description="Try adjusting your search or filters to find what you're looking for."
           action={{
             label: 'Reset Filters',
             onClick: () => useMarketplaceStore.getState().resetFilters(),

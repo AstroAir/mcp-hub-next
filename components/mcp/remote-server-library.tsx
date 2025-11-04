@@ -14,7 +14,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Globe, Lock, ExternalLink, Loader2 } from 'lucide-react';
 import { REMOTE_SERVERS, getOAuthConfigWithRedirect, type RemoteMCPServer } from '@/lib/data/remote-servers';
-import { startOAuthFlow, getOAuthToken } from '@/lib/services/oauth-service';
+import { startOAuthFlow, getOAuthToken, openOAuthPopup } from '@/lib/services/oauth-service';
 import { useServerStore } from '@/lib/stores';
 import type { MCPServerConfig } from '@/lib/types';
 import { nanoid } from 'nanoid';
@@ -122,10 +122,10 @@ export function RemoteServerLibrary({ open, onOpenChange }: RemoteServerLibraryP
           JSON.stringify(oauthConfig)
         );
 
-        // Start OAuth flow
-        await startOAuthFlow(server.id, server.name, oauthConfig);
-
-        toast.info('Please complete authentication in the popup window');
+  // Start OAuth flow
+  const { url } = await startOAuthFlow({ ...oauthConfig, serverId: server.id, serverName: server.name });
+  openOAuthPopup(url);
+  toast.info('Please complete authentication in the popup window');
       } else {
         // Direct connection (API key based)
         const serverId = nanoid();

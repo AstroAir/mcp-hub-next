@@ -30,6 +30,7 @@ export interface ServerStoreState {
   // Actions
   addServer: (server: MCPServerConfig) => void;
   updateServer: (id: string, updates: Partial<MCPServerConfig>) => void;
+  setServerEnabled?: (id: string, enabled: boolean) => void;
   removeServer: (id: string) => void;
   getServer: (id: string) => MCPServerConfig | undefined;
 
@@ -203,5 +204,40 @@ export interface MarketplaceStoreState {
   // Data fetching
   fetchServers: () => Promise<void>;
   refreshServers: () => Promise<void>;
+}
+
+/**
+ * Settings Store State
+ */
+import type { Preferences, ShortcutAction, ShortcutBinding, ThemeMode, ColorScheme, FontScale } from './settings';
+
+export interface SettingsStoreState extends Preferences {
+  // Mutations for appearance
+  setTheme: (theme: ThemeMode) => void;
+  setColorScheme: (scheme: ColorScheme) => void;
+  setFontScale: (scale: FontScale) => void;
+
+  // Locale
+  setLocale: (locale: string) => void;
+
+  // Notifications
+  setNotifications: (patch: Partial<Preferences['notifications']>) => void;
+
+  // Privacy & Security
+  setPrivacy: (patch: Partial<Preferences['privacy']>) => void;
+
+  // Advanced
+  setAdvanced: (patch: Partial<Preferences['advanced']>) => void;
+
+  // Shortcuts
+  setShortcut: (action: ShortcutAction, binding: ShortcutBinding) => { conflictWith?: ShortcutAction } | void;
+  resetShortcuts: () => void;
+
+  // Persistence
+  load: () => void;
+  save: () => void;
+
+  // Resets
+  resetSection: (section: keyof Preferences) => void;
 }
 

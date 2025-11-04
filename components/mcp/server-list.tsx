@@ -19,6 +19,7 @@ interface ServerListProps {
   onEdit: (server: MCPServerConfig) => void;
   onViewDetails: (serverId: string) => void;
   onReconnect?: (serverId: string) => void;
+  onToggleEnabled?: (serverId: string, enabled: boolean) => void;
 }
 
 export function ServerList({
@@ -31,6 +32,7 @@ export function ServerList({
   onEdit,
   onViewDetails,
   onReconnect,
+  onToggleEnabled,
 }: ServerListProps) {
   if (servers.length === 0) {
     return (
@@ -55,6 +57,7 @@ export function ServerList({
           onEdit={() => onEdit(server)}
           onViewDetails={() => onViewDetails(server.id)}
           onReconnect={onReconnect ? () => onReconnect(server.id) : undefined}
+          onToggleEnabled={onToggleEnabled ? (enabled) => onToggleEnabled(server.id, enabled) : undefined}
         />
       ))}
     </div>

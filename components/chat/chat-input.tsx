@@ -87,6 +87,9 @@ export function ChatInput({
               attachments={attachments}
               onAttachmentsChange={setAttachments}
               disabled={disabled}
+              showButton={false}
+              showPreview={true}
+              showCount={true}
             />
           </div>
         )}
@@ -98,6 +101,9 @@ export function ChatInput({
             onAttachmentsChange={setAttachments}
             disabled={disabled}
             className="flex items-end"
+            showButton={true}
+            showPreview={false}
+            showCount={false}
           />
 
           {/* Textarea */}

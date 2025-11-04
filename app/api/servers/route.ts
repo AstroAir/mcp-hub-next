@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
     const serverConfig: MCPServerConfig = {
       ...config,
       id: nanoid(),
+  enabled: (config as Partial<MCPServerConfig>).enabled ?? true,
       createdAt: now,
       updatedAt: now,
     } as MCPServerConfig;

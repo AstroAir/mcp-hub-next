@@ -266,6 +266,10 @@ export default function DashboardPage() {
     window.location.href = `/servers/${serverId}`;
   };
 
+  const handleToggleEnabled = (serverId: string, enabled: boolean) => {
+    updateServer(serverId, { enabled });
+  };
+
   return (
     <div className="container mx-auto py-4 md:py-8 px-3 md:px-4">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 md:mb-8">
@@ -348,6 +352,7 @@ export default function DashboardPage() {
         onEdit={handleEdit}
         onViewDetails={handleViewDetails}
         onReconnect={handleReconnect}
+        onToggleEnabled={handleToggleEnabled}
       />
 
       <ServerFormDialog

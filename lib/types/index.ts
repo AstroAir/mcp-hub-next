@@ -10,3 +10,22 @@ export * from './oauth';
 export * from './file-attachment';
 export * from './tauri';
 
+
+
+// Settings & shortcut related public types
+export type {
+	ThemeMode,
+	ColorScheme,
+	FontScale,
+	AppearanceSettings,
+	LocaleSettings,
+	NotificationSettings,
+	PrivacySecuritySettings,
+	AdvancedSettings,
+	ShortcutBinding,
+	ShortcutAction,
+	ShortcutDefinition,
+	ShortcutsMap,
+	Preferences,
+} from './settings';
+

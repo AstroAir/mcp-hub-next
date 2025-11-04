@@ -5,7 +5,7 @@
  * Handles file selection, validation, and preview for chat attachments
  */
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +34,7 @@ import {
   DEFAULT_FILE_UPLOAD_CONFIG,
 } from '@/lib/utils/file-upload';
 import { toast } from 'sonner';
+import { ImagePreviewDialog } from './image-preview-dialog';
 
 interface FileUploadProps {
   attachments: FileAttachment[];
@@ -41,6 +42,10 @@ interface FileUploadProps {
   config?: FileUploadConfig;
   disabled?: boolean;
   className?: string;
+  /** Control which subparts render. Defaults render everything */
+  showButton?: boolean;
+  showPreview?: boolean;
+  showCount?: boolean;
 }
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -61,8 +66,12 @@ export function FileUpload({
   config = DEFAULT_FILE_UPLOAD_CONFIG,
   disabled = false,
   className,
+  showButton = true,
+  showPreview = true,
+  showCount = true,
 }: FileUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [previewSrc, setPreviewSrc] = useState<string | null>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -121,7 +130,7 @@ export function FileUpload({
 
   return (
     <div className={cn('space-y-2', className)}>
-      {/* Upload button */}
+      {/* Hidden input for selecting files */}
       <input
         ref={fileInputRef}
         type="file"
@@ -130,31 +139,37 @@ export function FileUpload({
         onChange={handleFileSelect}
         className="hidden"
         disabled={disabled}
+        aria-label="Attach files"
       />
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={handleButtonClick}
-            disabled={disabled || attachments.length >= config.maxFiles}
-            className="size-9"
-          >
-            <Paperclip className="size-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          {attachments.length >= config.maxFiles
-            ? `Maximum ${config.maxFiles} files reached`
-            : 'Attach files'}
-        </TooltipContent>
-      </Tooltip>
+      {/* Upload button (optional) */}
+      {showButton && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={handleButtonClick}
+              disabled={disabled || attachments.length >= config.maxFiles}
+              className="size-9"
+            >
+              <Paperclip className="size-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {attachments.length >= config.maxFiles
+              ? `Maximum ${config.maxFiles} files reached`
+              : 'Attach files'}
+          </TooltipContent>
+        </Tooltip>
+      )}
 
       {/* Attachments preview */}
-      {attachments.length > 0 && (
-        <div className="flex flex-wrap gap-2">
+      {showPreview && attachments.length > 0 && (
+        <div
+          className="w-full grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-2 max-h-44 overflow-y-auto pr-1"
+        >
           {attachments.map((attachment) => {
             const Icon = getIconComponent(attachment.type);
             const isImage = isImageFile(attachment.type);
@@ -162,19 +177,21 @@ export function FileUpload({
             return (
               <Card
                 key={attachment.id}
-                className="relative p-2 flex items-center gap-2 max-w-xs group"
+                className="relative p-2 flex items-center gap-2 w-full min-w-0 group"
               >
                 {/* Preview or icon */}
                 {isImage && attachment.url ? (
-                  <div className="size-10 rounded overflow-hidden flex-shrink-0 bg-muted">
+                  <div className="size-10 rounded overflow-hidden shrink-0 bg-muted">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={attachment.url}
                       alt={attachment.name}
-                      className="size-full object-cover"
+                      className="size-full object-cover cursor-zoom-in"
+                      onClick={() => setPreviewSrc(attachment.url!)}
                     />
                   </div>
                 ) : (
-                  <div className="size-10 rounded bg-muted flex items-center justify-center flex-shrink-0">
+                  <div className="size-10 rounded bg-muted flex items-center justify-center shrink-0">
                     <Icon className="size-5 text-muted-foreground" />
                   </div>
                 )}
@@ -207,7 +224,7 @@ export function FileUpload({
       )}
 
       {/* File count badge */}
-      {attachments.length > 0 && (
+      {showCount && attachments.length > 0 && (
         <div className="flex items-center gap-2">
           <Badge variant="secondary" className="text-xs">
             {attachments.length} / {config.maxFiles} files
@@ -216,6 +233,16 @@ export function FileUpload({
             Max {formatFileSize(config.maxFileSize)} per file
           </span>
         </div>
+      )}
+
+      {/* Image preview dialog */}
+      {previewSrc && (
+        <ImagePreviewDialog
+          open={!!previewSrc}
+          src={previewSrc}
+          alt="attachment preview"
+          onOpenChange={(o) => !o && setPreviewSrc(null)}
+        />
       )}
     </div>
   );

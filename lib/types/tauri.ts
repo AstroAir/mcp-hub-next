@@ -115,5 +115,25 @@ export interface TauriCommands {
   get_encrypted_data: (key: string) => Promise<string | null>;
   delete_encrypted_data: (key: string) => Promise<void>;
   clear_all_credentials: () => Promise<void>;
+
+  // MCP lifecycle commands (stdio processes)
+  mcp_start_server: (args: { serverId: string; config?: Record<string, unknown> }) => Promise<unknown>;
+  mcp_stop_server: (args: { serverId: string; force?: boolean }) => Promise<{ serverId: string }>;
+  mcp_restart_server: (args: { serverId: string; config?: Record<string, unknown> }) => Promise<unknown>;
+  mcp_get_status: (args: { serverId: string }) => Promise<unknown>;
+  mcp_list_running: () => Promise<unknown>;
+
+  // MCP installer commands
+  validate_install: (args: { config: Record<string, unknown> }) => Promise<unknown>;
+  install_server: (args: { config: Record<string, unknown>; serverName: string; serverDescription?: string; autoStart?: boolean }) => Promise<unknown>;
+  get_install_progress: (args: { installId: string }) => Promise<unknown>;
+  cancel_install: (args: { installId: string }) => Promise<{ installId: string }>;
+  cleanup_install: (args: { installId: string }) => Promise<void>;
+
+  // MCP registry commands
+  registry_search: (args: { filters: Record<string, unknown> }) => Promise<unknown>;
+  registry_categories: () => Promise<string[]>;
+  registry_popular: (args?: { limit?: number; source?: 'npm' | 'github' }) => Promise<unknown>;
+  registry_refresh: () => Promise<void>;
 }
 

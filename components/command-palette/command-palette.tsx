@@ -35,7 +35,6 @@ import {
   List,
 } from 'lucide-react';
 import { useServerStore, useConnectionStore } from '@/lib/stores';
-import { useChatStore } from '@/lib/stores/chat-store';
 import type { LucideIcon } from 'lucide-react';
 
 export interface Command {

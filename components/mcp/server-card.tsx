@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { ServerStatusBadge } from './server-status-badge';
 import { ServerHealthIndicator } from './server-health-indicator';
 import { ConnectionTypeIcon } from './connection-type-icon';
+import { Switch } from '@/components/ui/switch';
 import type { MCPServerConfig, ConnectionStatus } from '@/lib/types';
 import type { ServerHealth } from '@/lib/services/health-monitor';
 import { Play, Square, Trash2, Settings } from 'lucide-react';
@@ -24,6 +25,7 @@ interface ServerCardProps {
   onEdit?: () => void;
   onViewDetails?: () => void;
   onReconnect?: () => void;
+  onToggleEnabled?: (enabled: boolean) => void;
 }
 
 export function ServerCard({
@@ -36,6 +38,7 @@ export function ServerCard({
   onEdit,
   onViewDetails,
   onReconnect,
+  onToggleEnabled,
 }: ServerCardProps) {
   const isConnected = status === 'connected';
   const isConnecting = status === 'connecting' || status === 'reconnecting';
@@ -48,7 +51,16 @@ export function ServerCard({
             <ConnectionTypeIcon type={server.transportType} className="h-5 w-5" />
             <CardTitle className="text-lg">{server.name}</CardTitle>
           </div>
-          <ServerStatusBadge status={status} />
+          <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Enabled</span>
+              <Switch
+                checked={server.enabled !== false}
+                onCheckedChange={(val) => onToggleEnabled?.(val)}
+              />
+            </div>
+            <ServerStatusBadge status={status} />
+          </div>
         </div>
         {server.description && (
           <CardDescription className="mt-2">{server.description}</CardDescription>
@@ -92,7 +104,7 @@ export function ServerCard({
                 size="sm"
                 variant="default"
                 onClick={onConnect}
-                disabled={isConnecting}
+                disabled={isConnecting || server.enabled === false}
               >
                 <Play className="h-4 w-4 mr-1" />
                 Connect

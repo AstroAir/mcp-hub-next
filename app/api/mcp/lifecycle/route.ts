@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json() as StopServerRequest;
-    const { serverId, force } = body;
+  const { serverId, force } = body;
 
     if (!serverId) {
       return NextResponse.json<StopServerResponse>(
@@ -94,8 +94,8 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Stop the server
-    await stopServer(serverId, force);
+  // Stop the server
+  await stopServer(serverId, { force });
 
     return NextResponse.json<StopServerResponse>({
       success: true,
@@ -163,7 +163,7 @@ export async function GET() {
 
     return NextResponse.json<ListRunningServersResponse>({
       success: true,
-      data: processes,
+      data: Object.values(processes),
       message: 'Running servers retrieved successfully',
     });
   } catch (error) {

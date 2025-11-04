@@ -29,6 +29,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CodeBlock } from './code-block';
+import { ImagePreviewDialog } from './image-preview-dialog';
 import {
   formatFileSize,
   isImageFile,
@@ -82,6 +83,7 @@ export function ChatMessage({ message, onRetry }: ChatMessageProps) {
   const isUser = message.role === 'user';
   const contentParts = parseMessageContent(message.content);
   const [copied, setCopied] = useState(false);
+  const [previewSrc, setPreviewSrc] = useState<string | null>(null);
 
   const handleCopy = async () => {
     try {
@@ -189,7 +191,7 @@ export function ChatMessage({ message, onRetry }: ChatMessageProps) {
                 {message.attachments.length} attachment{message.attachments.length > 1 ? 's' : ''}
               </Badge>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid w-full grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2">
               {message.attachments.map((attachment) => {
                 const isImage = isImageFile(attachment.type);
                 const iconName = getFileIcon(attachment.type);
@@ -206,17 +208,18 @@ export function ChatMessage({ message, onRetry }: ChatMessageProps) {
                 return (
                   <Card
                     key={attachment.id}
-                    className="p-3 bg-muted/30 border-muted hover:bg-muted/50 transition-colors"
+                    className="p-3 bg-muted/30 border-muted hover:bg-muted/50 transition-colors w-full min-w-0"
                   >
                     <div className="flex items-start gap-3">
                       {/* Preview or icon */}
                       {isImage && attachment.url ? (
                         <div className="size-16 rounded overflow-hidden flex-shrink-0 bg-muted">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={attachment.url}
                             alt={attachment.name}
-                            className="size-full object-cover cursor-pointer"
-                            onClick={() => window.open(attachment.url, '_blank')}
+                            className="size-full object-cover cursor-zoom-in"
+                            onClick={() => setPreviewSrc(attachment.url!)}
                           />
                         </div>
                       ) : (
@@ -256,6 +259,14 @@ export function ChatMessage({ message, onRetry }: ChatMessageProps) {
               })}
             </div>
           </div>
+        )}
+        {previewSrc && (
+          <ImagePreviewDialog
+            open={!!previewSrc}
+            src={previewSrc}
+            alt="attachment preview"
+            onOpenChange={(o) => !o && setPreviewSrc(null)}
+          />
         )}
         {/* Tool calls */}
         {message.toolCalls && message.toolCalls.length > 0 && (

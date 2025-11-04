@@ -2,6 +2,9 @@ mod updates;
 mod storage;
 mod file_dialogs;
 mod secure_storage;
+mod mcp_lifecycle;
+mod mcp_installer;
+mod mcp_registry;
 
 use updates::UpdateState;
 
@@ -78,6 +81,23 @@ pub fn run() {
       secure_storage::get_encrypted_data,
       secure_storage::delete_encrypted_data,
       secure_storage::clear_all_credentials,
+      // MCP lifecycle
+      mcp_lifecycle::mcp_start_server,
+      mcp_lifecycle::mcp_stop_server,
+      mcp_lifecycle::mcp_restart_server,
+      mcp_lifecycle::mcp_get_status,
+      mcp_lifecycle::mcp_list_running,
+      // MCP installer
+      mcp_installer::validate_install,
+      mcp_installer::install_server,
+      mcp_installer::get_install_progress,
+      mcp_installer::cancel_install,
+      mcp_installer::cleanup_install,
+      // MCP registry
+      mcp_registry::registry_search,
+      mcp_registry::registry_categories,
+      mcp_registry::registry_popular,
+      mcp_registry::registry_refresh,
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

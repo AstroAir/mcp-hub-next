@@ -135,16 +135,16 @@ export function DebugPanel() {
     }
   };
 
-  const formatTimestamp = (timestamp: string) => {
-    const date = new Date(timestamp);
+  const formatTimestamp = (timestamp: number | string) => {
+    const date = new Date(typeof timestamp === 'number' ? timestamp : Date.parse(timestamp));
     return date.toLocaleTimeString();
   };
 
-  const getUniqueServers = () => {
+  const getUniqueServers = useCallback(() => {
     const servers = new Set<string>();
     metrics.forEach((m) => servers.add(m.serverId));
     return Array.from(servers);
-  };
+  }, [metrics]);
 
   // Calculate statistics
   const stats = useMemo(() => {
@@ -170,7 +170,7 @@ export function DebugPanel() {
       successRate,
       activeServers: getUniqueServers().length,
     };
-  }, [logs, metrics]);
+  }, [logs, metrics, getUniqueServers]);
 
   return (
     <div className="space-y-6">
@@ -456,24 +456,27 @@ export function DebugPanel() {
                       {getUniqueServers().map((serverId) => {
                         const stats = getServerPerformanceStats(serverId);
                         const serverMetrics = metrics.find((m) => m.serverId === serverId);
+                        const totalOps = stats?.totalOperations ?? 0;
+                        const avgDuration = stats?.avgDuration ?? 0;
+                        const successRate = stats?.successRate ?? 0;
                         return (
                           <Card key={serverId} className="transition-all hover:shadow-md">
                             <CardHeader className="pb-3">
                               <CardTitle className="text-sm flex items-center justify-between">
                                 <span className="truncate">{serverMetrics?.serverName || 'Unknown'}</span>
                                 <Badge variant="outline" className="text-xs ml-2">
-                                  {stats.totalOperations}
+                                  {totalOps}
                                 </Badge>
                               </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-2.5">
                               <div className="flex items-center justify-between p-2 rounded bg-muted/50">
                                 <span className="text-xs text-muted-foreground">Avg Duration</span>
-                                <span className="text-sm font-semibold font-mono">{stats.avgDuration.toFixed(1)}ms</span>
+                                <span className="text-sm font-semibold font-mono">{avgDuration.toFixed(1)}ms</span>
                               </div>
                               <div className="flex items-center justify-between p-2 rounded bg-muted/50">
                                 <span className="text-xs text-muted-foreground">Success Rate</span>
-                                <span className="text-sm font-semibold">{stats.successRate.toFixed(1)}%</span>
+                                <span className="text-sm font-semibold">{successRate.toFixed(1)}%</span>
                               </div>
                             </CardContent>
                           </Card>

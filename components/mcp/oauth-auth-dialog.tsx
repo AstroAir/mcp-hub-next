@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Lock, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
-import { getOAuthToken, isTokenExpired, refreshAccessToken, startOAuthFlow } from '@/lib/services/oauth-service';
+import { getOAuthToken, isTokenExpired, refreshAccessToken, startOAuthFlow, openOAuthPopup } from '@/lib/services/oauth-service';
 import type { OAuthConfig, StoredOAuthToken } from '@/lib/types/oauth';
 import { toast } from 'sonner';
 
@@ -96,10 +96,10 @@ export function OAuthAuthDialog({
       // Save OAuth config to session storage for callback
       sessionStorage.setItem(`oauth-config-${serverId}`, JSON.stringify(oauthConfig));
 
-      // Start OAuth flow
-      await startOAuthFlow(serverId, serverName, oauthConfig);
-
-      toast.info('Please complete authentication in the popup window');
+  // Start OAuth flow
+  const { url } = await startOAuthFlow({ ...oauthConfig, serverId, serverName });
+  openOAuthPopup(url);
+  toast.info('Please complete authentication in the popup window');
     } catch (err) {
       console.error('OAuth authentication error:', err);
       setStatus('error');

@@ -311,7 +311,7 @@ export function ConfigUploader({ open, onOpenChange }: ConfigUploaderProps) {
                   <input
                     ref={directoryInputRef}
                     type="file"
-                    // @ts-ignore - webkitdirectory is not in TypeScript types but is widely supported
+                    // @ts-expect-error webkitdirectory is not in TypeScript DOM lib but supported by Chromium-based browsers
                     webkitdirectory=""
                     directory=""
                     multiple

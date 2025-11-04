@@ -3,7 +3,7 @@
  * Global hook for command palette state and keyboard shortcuts
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
 export function useCommandPalette() {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,18 +12,7 @@ export function useCommandPalette() {
   const close = useCallback(() => setIsOpen(false), []);
   const toggle = useCallback(() => setIsOpen((prev) => !prev), []);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Cmd+K (Mac) or Ctrl+K (Windows/Linux)
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        toggle();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [toggle]);
+  // Global keybindings are handled by the KeyboardShortcuts component
 
   return {
     isOpen,

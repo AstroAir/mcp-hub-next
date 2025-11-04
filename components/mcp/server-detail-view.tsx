@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ServerStatusBadge } from './server-status-badge';
 import { ConnectionTypeIcon } from './connection-type-icon';
+import { Switch } from '@/components/ui/switch';
 import type { MCPServerConfig, MCPConnectionState } from '@/lib/types';
 
 interface ServerDetailViewProps {
@@ -32,7 +33,13 @@ export function ServerDetailView({ server, connectionState }: ServerDetailViewPr
             )}
           </div>
         </div>
-        {connectionState && <ServerStatusBadge status={connectionState.status} />}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">Enabled</span>
+            <Switch checked={server.enabled !== false} disabled />
+          </div>
+          {connectionState && <ServerStatusBadge status={connectionState.status} />}
+        </div>
       </div>
 
       <Separator />

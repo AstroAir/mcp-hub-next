@@ -360,7 +360,7 @@ export async function restartServer(
   try {
     // Stop if running
     if (entry) {
-      await stopServer(serverId, false);
+      await stopServer(serverId, { force: false });
     }
 
     // Wait a bit before restarting
@@ -374,13 +374,13 @@ export async function restartServer(
     });
 
     return processState;
-  } catch (error) {
+  } catch (_error) {
     updateProcessState(serverId, {
       state: 'error',
-      lastError: error instanceof Error ? error.message : 'Failed to restart process',
+      lastError: _error instanceof Error ? _error.message : 'Failed to restart process',
     });
     
-    throw error;
+    throw _error;
   }
 }
 

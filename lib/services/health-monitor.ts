@@ -81,7 +81,10 @@ class HealthMonitor {
     // Perform initial health check
     this.performHealthCheck(serverConfig);
 
-    addDebugLog('info', 'system', `Started health monitoring for ${serverConfig.name}`, {
+    addDebugLog({
+      level: 'info',
+      category: 'system',
+      message: `Started health monitoring for ${serverConfig.name}`,
       serverId: id,
       serverName: serverConfig.name,
     });
@@ -106,7 +109,10 @@ class HealthMonitor {
     this.healthStatus.delete(serverId);
     this.connectionStartTimes.delete(serverId);
 
-    addDebugLog('info', 'system', `Stopped health monitoring for server ${serverId}`, {
+    addDebugLog({
+      level: 'info',
+      category: 'system',
+      message: `Stopped health monitoring for server ${serverId}`,
       serverId,
     });
   }
@@ -151,7 +157,10 @@ class HealthMonitor {
       this.healthStatus.set(id, health);
       this.notifyListeners(health);
 
-      addDebugLog('debug', 'connection', `Health check passed for ${name}`, {
+      addDebugLog({
+        level: 'debug',
+        category: 'connection',
+        message: `Health check passed for ${name}`,
         serverId: id,
         serverName: name,
         data: { responseTime, uptime },
@@ -186,7 +195,10 @@ class HealthMonitor {
       if (failureCount <= this.config.maxRetries) {
         this.scheduleReconnect(serverConfig, failureCount);
       } else {
-        addDebugLog('error', 'connection', `Max retries exceeded for ${name}`, {
+        addDebugLog({
+          level: 'error',
+          category: 'connection',
+          message: `Max retries exceeded for ${name}`,
           serverId: id,
           serverName: name,
         });
@@ -209,7 +221,10 @@ class HealthMonitor {
     // Calculate delay with exponential backoff
     const delay = this.config.retryDelay * Math.pow(2, attemptNumber - 1);
 
-    addDebugLog('info', 'connection', `Scheduling reconnect for ${name} in ${delay}ms`, {
+    addDebugLog({
+      level: 'info',
+      category: 'connection',
+      message: `Scheduling reconnect for ${name} in ${delay}ms`,
       serverId: id,
       serverName: name,
       data: { attemptNumber, delay },
@@ -226,7 +241,10 @@ class HealthMonitor {
         // Attempt to reconnect
         await getOrCreateClient(serverConfig);
 
-        addDebugLog('info', 'connection', `Reconnected to ${name}`, {
+        addDebugLog({
+          level: 'info',
+          category: 'connection',
+          message: `Reconnected to ${name}`,
           serverId: id,
           serverName: name,
         });
@@ -240,7 +258,10 @@ class HealthMonitor {
           this.notifyListeners(health);
         }
       } catch (error) {
-        addDebugLog('error', 'connection', `Reconnect failed for ${name}`, {
+        addDebugLog({
+          level: 'error',
+          category: 'connection',
+          message: `Reconnect failed for ${name}`,
           serverId: id,
           serverName: name,
           error: error instanceof Error ? error : new Error(String(error)),
@@ -326,12 +347,18 @@ class HealthMonitor {
         this.notifyListeners(health);
       }
 
-      addDebugLog('info', 'connection', `Manual reconnect successful for ${name}`, {
+      addDebugLog({
+        level: 'info',
+        category: 'connection',
+        message: `Manual reconnect successful for ${name}`,
         serverId: id,
         serverName: name,
       });
     } catch (error) {
-      addDebugLog('error', 'connection', `Manual reconnect failed for ${name}`, {
+      addDebugLog({
+        level: 'error',
+        category: 'connection',
+        message: `Manual reconnect failed for ${name}`,
         serverId: id,
         serverName: name,
         error: error instanceof Error ? error : new Error(String(error)),

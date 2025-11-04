@@ -10,7 +10,6 @@ import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
 import { useBreadcrumbs } from '@/components/layout/breadcrumb-provider';
 import { Home, ChevronRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 export function SiteHeader() {
   const { items } = useBreadcrumbs();

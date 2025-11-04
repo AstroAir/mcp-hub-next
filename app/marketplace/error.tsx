@@ -18,11 +18,10 @@ export default function MarketplaceError({
     <div className="container mx-auto p-6 max-w-7xl">
       <ErrorState
         title="Something went wrong in the marketplace"
-        message={error.message || 'An unexpected error occurred'}
-        action={{
-          label: 'Try Again',
-          onClick: reset,
-        }}
+        description={error.message || 'An unexpected error occurred'}
+        error={error}
+        showRetryButton
+        onRetry={reset}
       />
     </div>
   );

@@ -20,6 +20,8 @@ export interface BaseMCPServerConfig {
   name: string;
   description?: string;
   transportType: MCPTransportType;
+  /** Whether this server is enabled in the hub UI (disabled servers are ignored by bulk actions) */
+  enabled?: boolean;
   createdAt: string;
   updatedAt: string;
 }

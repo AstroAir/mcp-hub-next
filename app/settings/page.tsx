@@ -16,6 +16,14 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { BackupManagement } from '@/components/settings/backup-management';
+import { AppearanceSettings } from '@/components/settings/appearance-settings';
+import { LocaleSettings } from '@/components/settings/locale-settings';
+import { NotificationSettings } from '@/components/settings/notification-settings';
+import { PrivacySecuritySettings } from '@/components/settings/privacy-security-settings';
+import { AdvancedSettings } from '@/components/settings/advanced-settings';
+import { KeyboardShortcutsEditor } from '@/components/settings/keyboard-shortcuts-editor';
+import { Input } from '@/components/ui/input';
+import { useSettingsStore } from '@/lib/stores/settings-store';
 import { Database, Trash2, Download, Upload, Info, FileJson, Files, Keyboard, HelpCircle, Settings as SettingsIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -23,10 +31,17 @@ type ImportMode = 'single' | 'multiple';
 
 export default function SettingsPage() {
   const { setBreadcrumbs } = useBreadcrumbs();
+  const { privacy } = useSettingsStore();
   const [storageSize, setStorageSize] = useState<string>('0.00');
   const [importMode, setImportMode] = useState<ImportMode>('single');
   const [showClearDataDialog, setShowClearDataDialog] = useState(false);
+  const [search, setSearch] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const matches = (label: string) => {
+    if (!search.trim()) return true;
+    return label.toLowerCase().includes(search.trim().toLowerCase());
+  };
 
   // Set breadcrumbs on mount
   useEffect(() => {
@@ -63,6 +78,7 @@ export default function SettingsPage() {
       connectionHistory: localStorage.getItem('mcp-connection-history'),
       chatSessions: localStorage.getItem('mcp-chat-sessions'),
       currentSession: localStorage.getItem('mcp-current-session'),
+      preferences: localStorage.getItem('mcp-preferences'),
       exportedAt: new Date().toISOString(),
     };
 
@@ -97,7 +113,8 @@ export default function SettingsPage() {
         if (data.servers) localStorage.setItem('mcp-servers', data.servers);
         if (data.connectionHistory) localStorage.setItem('mcp-connection-history', data.connectionHistory);
         if (data.chatSessions) localStorage.setItem('mcp-chat-sessions', data.chatSessions);
-        if (data.currentSession) localStorage.setItem('mcp-current-session', data.currentSession);
+  if (data.currentSession) localStorage.setItem('mcp-current-session', data.currentSession);
+  if (data.preferences) localStorage.setItem('mcp-preferences', data.preferences);
 
         successCount++;
       } catch (error) {
@@ -138,9 +155,19 @@ export default function SettingsPage() {
           </p>
         </div>
 
+        {/* Search bar */}
+        <div className="flex items-center gap-3">
+          <Input
+            placeholder="Search settings…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="md:max-w-md"
+          />
+        </div>
+
         {/* Tabbed Interface */}
         <Tabs defaultValue="general" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:inline-grid lg:grid-cols-4 h-auto">
+          <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:inline-grid lg:grid-cols-6 h-auto">
             <TabsTrigger value="general" className="gap-2 py-2.5">
               <SettingsIcon className="h-4 w-4" />
               <span className="hidden sm:inline">General</span>
@@ -153,6 +180,14 @@ export default function SettingsPage() {
               <Keyboard className="h-4 w-4" />
               <span className="hidden sm:inline">Shortcuts</span>
             </TabsTrigger>
+            <TabsTrigger value="privacy" className="gap-2 py-2.5">
+              <Info className="h-4 w-4" />
+              <span className="hidden sm:inline">Privacy</span>
+            </TabsTrigger>
+            <TabsTrigger value="advanced" className="gap-2 py-2.5">
+              <Info className="h-4 w-4" />
+              <span className="hidden sm:inline">Advanced</span>
+            </TabsTrigger>
             <TabsTrigger value="about" className="gap-2 py-2.5">
               <HelpCircle className="h-4 w-4" />
               <span className="hidden sm:inline">About</span>
@@ -161,8 +196,18 @@ export default function SettingsPage() {
 
           {/* General Tab */}
           <TabsContent value="general" className="space-y-6">
+            {/* Appearance & Locale */}
+            <div className="grid gap-6 lg:grid-cols-2">
+              {matches('appearance theme color') && <AppearanceSettings />}
+              {matches('language locale') && <LocaleSettings />}
+            </div>
+
+            {/* Notifications */}
+            {matches('notification notifications sound badges alerts') && <NotificationSettings />}
+
             <div className="grid gap-6 lg:grid-cols-2">
               {/* Storage Information */}
+              {matches('storage information local storage') && (
               <Card className="transition-all hover:shadow-md">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -191,8 +236,10 @@ export default function SettingsPage() {
                   </div>
                 </CardContent>
               </Card>
+              )}
 
               {/* Quick Actions */}
+              {matches('quick actions export import clear') && (
               <Card className="transition-all hover:shadow-md">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -231,7 +278,9 @@ export default function SettingsPage() {
                   </Button>
 
                   <Button
-                    onClick={() => setShowClearDataDialog(true)}
+                    onClick={() =>
+                      privacy.requireConfirmOnClear ? setShowClearDataDialog(true) : handleClearData()
+                    }
                     variant="outline"
                     className="w-full justify-start h-auto py-3 text-destructive hover:bg-destructive/10 hover:text-destructive transition-all"
                   >
@@ -254,9 +303,11 @@ export default function SettingsPage() {
                   />
                 </CardContent>
               </Card>
+              )}
             </div>
 
             {/* Import Mode Selector */}
+            {matches('import mode single multiple') && (
             <Card className="transition-all hover:shadow-md">
               <CardHeader>
                 <CardTitle>Import Mode</CardTitle>
@@ -302,6 +353,7 @@ export default function SettingsPage() {
                 </RadioGroup>
               </CardContent>
             </Card>
+            )}
           </TabsContent>
 
           {/* Data & Backup Tab */}
@@ -311,37 +363,17 @@ export default function SettingsPage() {
 
           {/* Keyboard Shortcuts Tab */}
           <TabsContent value="shortcuts" className="space-y-6">
-            <Card className="transition-all hover:shadow-md">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Keyboard className="h-5 w-5 text-primary" />
-                  Keyboard Shortcuts
-                </CardTitle>
-                <CardDescription>
-                  Use these shortcuts to navigate faster and boost your productivity
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 transition-all hover:bg-muted">
-                    <span className="text-sm font-medium">New Server</span>
-                    <Badge variant="secondary" className="font-mono text-xs">Ctrl/Cmd + N</Badge>
-                  </div>
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 transition-all hover:bg-muted">
-                    <span className="text-sm font-medium">Go to Dashboard</span>
-                    <Badge variant="secondary" className="font-mono text-xs">G then D</Badge>
-                  </div>
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 transition-all hover:bg-muted">
-                    <span className="text-sm font-medium">Go to Chat</span>
-                    <Badge variant="secondary" className="font-mono text-xs">G then C</Badge>
-                  </div>
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 transition-all hover:bg-muted">
-                    <span className="text-sm font-medium">Go to Settings</span>
-                    <Badge variant="secondary" className="font-mono text-xs">G then S</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <KeyboardShortcutsEditor />
+          </TabsContent>
+
+          {/* Privacy Tab */}
+          <TabsContent value="privacy" className="space-y-6">
+            <PrivacySecuritySettings />
+          </TabsContent>
+
+          {/* Advanced Tab */}
+          <TabsContent value="advanced" className="space-y-6">
+            <AdvancedSettings />
           </TabsContent>
 
           {/* About Tab */}

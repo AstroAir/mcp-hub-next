@@ -37,6 +37,16 @@ export const useServerStore = create<ServerStoreState>((set, get) => ({
     get().saveServers();
   },
 
+  // Enable/disable a server
+  setServerEnabled: (id: string, enabled: boolean) => {
+    set((state) => ({
+      servers: state.servers.map((server) =>
+        server.id === id ? ({ ...server, enabled, updatedAt: new Date().toISOString() } as MCPServerConfig) : server
+      ),
+    }));
+    get().saveServers();
+  },
+
   removeServer: (id: string) => {
     set((state) => ({
       servers: state.servers.filter((server) => server.id !== id),
@@ -61,8 +71,8 @@ export const useServerStore = create<ServerStoreState>((set, get) => ({
 
   removeInstallation: (installId: string) => {
     set((state) => {
-       
-      const { [installId]: _removed, ...rest } = state.installations;
+      const { [installId]: __removed, ...rest } = state.installations;
+      void __removed; // mark as used for lint
       return { installations: rest };
     });
     get().saveInstallations();
@@ -84,8 +94,8 @@ export const useServerStore = create<ServerStoreState>((set, get) => ({
 
   removeInstalledServer: (serverId: string) => {
     set((state) => {
-       
-      const { [serverId]: _removed, ...rest } = state.installedServers;
+      const { [serverId]: __removed, ...rest } = state.installedServers;
+      void __removed; // mark as used for lint
       return { installedServers: rest };
     });
     get().saveInstallations();
