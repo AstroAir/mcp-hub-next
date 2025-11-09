@@ -5,7 +5,8 @@
  * Handles OAuth authentication flow for remote MCP servers
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -39,6 +40,7 @@ export function OAuthAuthDialog({
   oauthConfig,
   onSuccess,
 }: OAuthAuthDialogProps) {
+  const t = useTranslations('components.oauthAuth');
   const [status, setStatus] = useState<'idle' | 'authenticating' | 'success' | 'error'>('idle');
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<StoredOAuthToken | null>(null);
@@ -52,7 +54,8 @@ export function OAuthAuthDialog({
         setToken(existingToken);
         if (isTokenExpired(existingToken)) {
           setStatus('error');
-          setError('Token has expired. Please re-authenticate.');
+          const message = t('errors.tokenExpired');
+          setError(message);
         } else {
           setStatus('success');
         }
@@ -61,7 +64,7 @@ export function OAuthAuthDialog({
         setError(null);
       }
     }
-  }, [open, serverId]);
+  }, [open, serverId, t]);
 
   // Listen for OAuth success/error messages
   useEffect(() => {
@@ -74,19 +77,24 @@ export function OAuthAuthDialog({
           setToken(newToken);
           setStatus('success');
           setError(null);
-          toast.success(`Successfully authenticated with ${serverName}`);
+          toast.success(t('toasts.success', { name: serverName }));
           onSuccess?.(newToken);
         }
       } else if (event.data.type === 'oauth-error' && event.data.serverId === serverId) {
         setStatus('error');
-        setError(event.data.error || 'Authentication failed');
-        toast.error(`Authentication failed: ${event.data.error}`);
+        const reason = event.data.error;
+        setError(reason || t('errors.authFailed'));
+        toast.error(
+          reason
+            ? t('toasts.error', { reason })
+            : t('errors.authFailed')
+        );
       }
     };
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [serverId, serverName, onSuccess]);
+  }, [serverId, serverName, onSuccess, t]);
 
   const handleAuthenticate = async () => {
     try {
@@ -96,21 +104,22 @@ export function OAuthAuthDialog({
       // Save OAuth config to session storage for callback
       sessionStorage.setItem(`oauth-config-${serverId}`, JSON.stringify(oauthConfig));
 
-  // Start OAuth flow
-  const { url } = await startOAuthFlow({ ...oauthConfig, serverId, serverName });
-  openOAuthPopup(url);
-  toast.info('Please complete authentication in the popup window');
+      // Start OAuth flow
+      const { url } = await startOAuthFlow({ ...oauthConfig, serverId, serverName });
+      openOAuthPopup(url);
+      toast.info(t('toasts.popup'));
     } catch (err) {
       console.error('OAuth authentication error:', err);
       setStatus('error');
-      setError(err instanceof Error ? err.message : 'Failed to start authentication');
-      toast.error('Failed to start authentication');
+      const message = err instanceof Error ? err.message : t('errors.startFailed');
+      setError(message);
+      toast.error(t('toasts.startFailed'));
     }
   };
 
   const handleRefreshToken = async () => {
     if (!token?.refreshToken) {
-      toast.error('No refresh token available. Please re-authenticate.');
+      toast.error(t('errors.refreshMissing'));
       return;
     }
 
@@ -137,13 +146,13 @@ export function OAuthAuthDialog({
       setToken(updatedToken);
       setStatus('success');
       setError(null);
-      toast.success('Token refreshed successfully');
+      toast.success(t('toasts.refreshSuccess'));
       onSuccess?.(updatedToken);
     } catch (err) {
       console.error('Token refresh error:', err);
-      toast.error('Failed to refresh token. Please re-authenticate.');
+      toast.error(t('toasts.refreshFailed'));
       setStatus('error');
-      setError('Failed to refresh token');
+      setError(t('errors.refreshFailed'));
     } finally {
       setIsRefreshing(false);
     }
@@ -152,39 +161,56 @@ export function OAuthAuthDialog({
   const getStatusIcon = () => {
     switch (status) {
       case 'authenticating':
-        return <Loader2 className="h-5 w-5 animate-spin text-blue-500" />;
+        return <Loader2 aria-hidden className="h-5 w-5 animate-spin text-blue-500" />;
       case 'success':
-        return <CheckCircle2 className="h-5 w-5 text-green-500" />;
+        return <CheckCircle2 aria-hidden className="h-5 w-5 text-green-500" />;
       case 'error':
-        return <XCircle className="h-5 w-5 text-red-500" />;
+        return <XCircle aria-hidden className="h-5 w-5 text-red-500" />;
       default:
-        return <Lock className="h-5 w-5 text-muted-foreground" />;
+        return <Lock aria-hidden className="h-5 w-5 text-muted-foreground" />;
     }
   };
 
   const getStatusMessage = () => {
     switch (status) {
       case 'authenticating':
-        return 'Waiting for authentication...';
+        return t('status.authenticating');
       case 'success':
-        return 'Successfully authenticated';
+        return t('status.success');
       case 'error':
-        return error || 'Authentication failed';
+        return error || t('errors.authFailed');
       default:
-        return 'Ready to authenticate';
+        return t('status.idle');
     }
   };
+
+  const tokenExpiryLabel = useMemo(() => {
+    if (!token) return null;
+    if (isTokenExpired(token)) {
+      return <span className="text-red-500">{t('token.expired')}</span>;
+    }
+
+    return (
+      <>
+        {t('token.expires', {
+          value: token.expiresAt ? new Date(token.expiresAt).toLocaleString() : t('token.never'),
+        })}
+      </>
+    );
+  }, [t, token]);
+
+  const isTokenActive = status === 'success' && token && !isTokenExpired(token);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Lock className="h-5 w-5" />
-            OAuth Authentication
+            <Lock aria-hidden className="h-5 w-5" />
+            {t('dialog.title')}
           </DialogTitle>
           <DialogDescription>
-            Authenticate with {serverName} using OAuth 2.1 with PKCE
+            {t('dialog.description', { name: serverName })}
           </DialogDescription>
         </DialogHeader>
 
@@ -196,38 +222,29 @@ export function OAuthAuthDialog({
               <p className="text-sm font-medium">{getStatusMessage()}</p>
               {token && (
                 <p className="text-xs text-muted-foreground mt-1">
-                  {isTokenExpired(token) ? (
-                    <span className="text-red-500">Token expired</span>
-                  ) : (
-                    <>
-                      Expires:{' '}
-                      {token.expiresAt
-                        ? new Date(token.expiresAt).toLocaleString()
-                        : 'Never'}
-                    </>
-                  )}
+                  {tokenExpiryLabel}
                 </p>
               )}
             </div>
-            {status === 'success' && <Badge variant="default">Active</Badge>}
+            {isTokenActive && <Badge variant="default">{t('badges.active')}</Badge>}
           </div>
 
           {/* OAuth Config Info */}
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Client ID:</span>
+              <span className="text-muted-foreground">{t('info.clientId')}</span>
               <span className="font-mono text-xs">{oauthConfig.clientId.slice(0, 20)}...</span>
             </div>
             {oauthConfig.scope && (
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Scope:</span>
+                <span className="text-muted-foreground">{t('info.scope')}</span>
                 <span className="text-xs">{oauthConfig.scope}</span>
               </div>
             )}
             <div className="flex justify-between">
-              <span className="text-muted-foreground">PKCE:</span>
+              <span className="text-muted-foreground">{t('info.pkce')}</span>
               <Badge variant="outline" className="text-xs">
-                {oauthConfig.usePKCE ? 'Enabled (S256)' : 'Disabled'}
+                {oauthConfig.usePKCE ? t('info.pkceEnabled') : t('info.pkceDisabled')}
               </Badge>
             </div>
           </div>
@@ -241,11 +258,11 @@ export function OAuthAuthDialog({
           )}
 
           {/* Success Alert */}
-          {status === 'success' && !isTokenExpired(token!) && (
+          {isTokenActive && (
             <Alert>
-              <CheckCircle2 className="h-4 w-4" />
+              <CheckCircle2 aria-hidden className="h-4 w-4" />
               <AlertDescription>
-                You are successfully authenticated with {serverName}
+                {t('alerts.success', { name: serverName })}
               </AlertDescription>
             </Alert>
           )}
@@ -261,13 +278,13 @@ export function OAuthAuthDialog({
             >
               {isRefreshing ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Refreshing...
+                  <Loader2 aria-hidden className="h-4 w-4 mr-2 animate-spin" />
+                  {t('buttons.refreshing')}
                 </>
               ) : (
                 <>
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Refresh Token
+                  <RefreshCw aria-hidden className="h-4 w-4 mr-2" />
+                  {t('buttons.refresh')}
                 </>
               )}
             </Button>
@@ -280,13 +297,13 @@ export function OAuthAuthDialog({
           >
             {status === 'authenticating' ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Authenticating...
+                <Loader2 aria-hidden className="h-4 w-4 mr-2 animate-spin" />
+                {t('buttons.authenticating')}
               </>
             ) : status === 'success' ? (
-              'Re-authenticate'
+              t('buttons.reauthenticate')
             ) : (
-              'Authenticate'
+              t('buttons.authenticate')
             )}
           </Button>
         </DialogFooter>

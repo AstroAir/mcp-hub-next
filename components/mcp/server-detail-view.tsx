@@ -13,6 +13,7 @@ import { ServerStatusBadge } from './server-status-badge';
 import { ConnectionTypeIcon } from './connection-type-icon';
 import { Switch } from '@/components/ui/switch';
 import type { MCPServerConfig, MCPConnectionState } from '@/lib/types';
+import { useTranslations } from 'next-intl';
 
 interface ServerDetailViewProps {
   server: MCPServerConfig;
@@ -20,6 +21,11 @@ interface ServerDetailViewProps {
 }
 
 export function ServerDetailView({ server, connectionState }: ServerDetailViewProps) {
+  const t = useTranslations('servers.detail');
+  // Helper to allow dynamic/pluralized values without fighting strict typed message args
+  const tAny: (key: string, values?: Record<string, unknown>) => string = t as unknown as (key: string, values?: Record<string, unknown>) => string;
+  const common = useTranslations('common');
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -35,7 +41,7 @@ export function ServerDetailView({ server, connectionState }: ServerDetailViewPr
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">Enabled</span>
+            <span className="text-xs text-muted-foreground">{common('status.enabled')}</span>
             <Switch checked={server.enabled !== false} disabled />
           </div>
           {connectionState && <ServerStatusBadge status={connectionState.status} />}
@@ -47,12 +53,12 @@ export function ServerDetailView({ server, connectionState }: ServerDetailViewPr
       {/* Configuration */}
       <Card>
         <CardHeader>
-          <CardTitle>Configuration</CardTitle>
-          <CardDescription>Server connection details</CardDescription>
+          <CardTitle>{t('configuration.title')}</CardTitle>
+          <CardDescription>{t('configuration.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <div>
-            <span className="text-sm font-medium">Transport Type:</span>
+            <span className="text-sm font-medium">{t('configuration.transport')}</span>
             <Badge variant="outline" className="ml-2">
               {server.transportType}
             </Badge>
@@ -61,14 +67,14 @@ export function ServerDetailView({ server, connectionState }: ServerDetailViewPr
           {server.transportType === 'stdio' && (
             <>
               <div>
-                <span className="text-sm font-medium">Command:</span>
+                <span className="text-sm font-medium">{t('configuration.command')}</span>
                 <div className="font-mono text-sm bg-muted p-2 rounded mt-1">
                   {server.command} {server.args?.join(' ')}
                 </div>
               </div>
               {server.cwd && (
                 <div>
-                  <span className="text-sm font-medium">Working Directory:</span>
+                  <span className="text-sm font-medium">{t('configuration.cwd')}</span>
                   <div className="font-mono text-sm bg-muted p-2 rounded mt-1">
                     {server.cwd}
                   </div>
@@ -76,7 +82,7 @@ export function ServerDetailView({ server, connectionState }: ServerDetailViewPr
               )}
               {server.env && Object.keys(server.env).length > 0 && (
                 <div>
-                  <span className="text-sm font-medium">Environment Variables:</span>
+                  <span className="text-sm font-medium">{t('configuration.env')}</span>
                   <div className="font-mono text-sm bg-muted p-2 rounded mt-1 space-y-1">
                     {Object.entries(server.env).map(([key, value]) => (
                       <div key={key}>
@@ -91,7 +97,7 @@ export function ServerDetailView({ server, connectionState }: ServerDetailViewPr
 
           {(server.transportType === 'sse' || server.transportType === 'http') && (
             <div>
-              <span className="text-sm font-medium">URL:</span>
+              <span className="text-sm font-medium">{t('configuration.url')}</span>
               <div className="font-mono text-sm bg-muted p-2 rounded mt-1">
                 {server.url}
               </div>
@@ -104,8 +110,8 @@ export function ServerDetailView({ server, connectionState }: ServerDetailViewPr
       {connectionState && connectionState.tools.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Available Tools ({connectionState.tools.length})</CardTitle>
-            <CardDescription>Tools provided by this server</CardDescription>
+            <CardTitle>{tAny('tools.title', { count: connectionState.tools.length })}</CardTitle>
+            <CardDescription>{t('tools.description')}</CardDescription>
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-[300px]">
@@ -130,8 +136,8 @@ export function ServerDetailView({ server, connectionState }: ServerDetailViewPr
       {connectionState && connectionState.resources.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Available Resources ({connectionState.resources.length})</CardTitle>
-            <CardDescription>Resources provided by this server</CardDescription>
+            <CardTitle>{tAny('resources.title', { count: connectionState.resources.length })}</CardTitle>
+            <CardDescription>{t('resources.description')}</CardDescription>
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-[200px]">
@@ -159,8 +165,8 @@ export function ServerDetailView({ server, connectionState }: ServerDetailViewPr
       {connectionState && connectionState.prompts.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Available Prompts ({connectionState.prompts.length})</CardTitle>
-            <CardDescription>Prompts provided by this server</CardDescription>
+            <CardTitle>{tAny('prompts.title', { count: connectionState.prompts.length })}</CardTitle>
+            <CardDescription>{t('prompts.description')}</CardDescription>
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-[200px]">

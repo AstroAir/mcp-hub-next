@@ -6,6 +6,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -22,6 +23,8 @@ interface HTTPServerFormProps {
 }
 
 export function HTTPServerForm({ initialData, onSubmit, onCancel }: HTTPServerFormProps) {
+  const t = useTranslations('components.serverForms');
+  const actions = useTranslations('common.actions');
   const [name, setName] = useState(initialData?.name || '');
   const [description, setDescription] = useState(initialData?.description || '');
   const [url, setUrl] = useState(initialData?.url || '');
@@ -79,94 +82,90 @@ export function HTTPServerForm({ initialData, onSubmit, onCancel }: HTTPServerFo
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="name">Name *</Label>
+        <Label htmlFor="name">{t('common.nameLabel')}</Label>
         <Input
           id="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="My HTTP Server"
+          placeholder={t('http.namePlaceholder')}
           required
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
+        <Label htmlFor="description">{t('common.descriptionLabel')}</Label>
         <Input
           id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Optional description"
+          placeholder={t('common.descriptionPlaceholder')}
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="url">Server URL *</Label>
+        <Label htmlFor="url">{t('http.urlLabel')}</Label>
         <Input
           id="url"
           type="url"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          placeholder="https://api.example.com/mcp"
+          placeholder={t('http.urlPlaceholder')}
           required
         />
-        <p className="text-xs text-muted-foreground">
-          The HTTP endpoint URL for the MCP server
-        </p>
+        <p className="text-xs text-muted-foreground">{t('http.urlHelp')}</p>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="method">HTTP Method</Label>
+        <Label htmlFor="method">{t('http.methodLabel')}</Label>
         <Select value={method} onValueChange={(v) => setMethod(v as 'GET' | 'POST')}>
           <SelectTrigger id="method">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="POST">POST</SelectItem>
-            <SelectItem value="GET">GET</SelectItem>
+            <SelectItem value="POST">{t('http.methodOptions.post')}</SelectItem>
+            <SelectItem value="GET">{t('http.methodOptions.get')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="timeout">Request Timeout (ms)</Label>
+        <Label htmlFor="timeout">{t('http.timeoutLabel')}</Label>
         <Input
           id="timeout"
           type="number"
           value={timeout}
           onChange={(e) => setTimeout(e.target.value)}
-          placeholder="30000"
+          placeholder={t('http.timeoutPlaceholder')}
           min="1000"
           max="300000"
         />
-        <p className="text-xs text-muted-foreground">
-          Timeout in milliseconds (1000-300000)
-        </p>
+        <p className="text-xs text-muted-foreground">{t('http.timeoutHelp')}</p>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="authType">Authentication</Label>
+        <Label htmlFor="authType">{t('http.auth.label')}</Label>
         <Select value={authType} onValueChange={(v) => setAuthType(v as AuthType)}>
           <SelectTrigger id="authType">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">None</SelectItem>
-            <SelectItem value="bearer">Bearer Token</SelectItem>
-            <SelectItem value="apikey">API Key</SelectItem>
-            <SelectItem value="basic">Basic Auth</SelectItem>
+            <SelectItem value="none">{t('http.auth.options.none')}</SelectItem>
+            <SelectItem value="bearer">{t('http.auth.options.bearer')}</SelectItem>
+            <SelectItem value="apikey">{t('http.auth.options.apikey')}</SelectItem>
+            <SelectItem value="basic">{t('http.auth.options.basic')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {authType === 'bearer' && (
         <div className="space-y-2">
-          <Label htmlFor="authToken">Bearer Token *</Label>
+          <Label htmlFor="authToken">{t('http.auth.bearer.label')}</Label>
           <Input
             id="authToken"
             type="password"
             value={authToken}
             onChange={(e) => setAuthToken(e.target.value)}
-            placeholder="your-bearer-token"
+            placeholder={t('http.auth.bearer.placeholder')}
             required
           />
         </div>
@@ -175,22 +174,22 @@ export function HTTPServerForm({ initialData, onSubmit, onCancel }: HTTPServerFo
       {authType === 'apikey' && (
         <>
           <div className="space-y-2">
-            <Label htmlFor="apiKeyHeader">API Key Header Name</Label>
+            <Label htmlFor="apiKeyHeader">{t('http.auth.apiKey.headerLabel')}</Label>
             <Input
               id="apiKeyHeader"
               value={apiKeyHeader}
               onChange={(e) => setApiKeyHeader(e.target.value)}
-              placeholder="X-API-Key"
+              placeholder={t('http.auth.apiKey.headerPlaceholder')}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="apiKeyValue">API Key Value *</Label>
+            <Label htmlFor="apiKeyValue">{t('http.auth.apiKey.valueLabel')}</Label>
             <Input
               id="apiKeyValue"
               type="password"
               value={apiKeyValue}
               onChange={(e) => setApiKeyValue(e.target.value)}
-              placeholder="your-api-key"
+              placeholder={t('http.auth.apiKey.valuePlaceholder')}
               required
             />
           </div>
@@ -200,23 +199,23 @@ export function HTTPServerForm({ initialData, onSubmit, onCancel }: HTTPServerFo
       {authType === 'basic' && (
         <>
           <div className="space-y-2">
-            <Label htmlFor="authUsername">Username *</Label>
+            <Label htmlFor="authUsername">{t('http.auth.basic.usernameLabel')}</Label>
             <Input
               id="authUsername"
               value={authUsername}
               onChange={(e) => setAuthUsername(e.target.value)}
-              placeholder="username"
+              placeholder={t('http.auth.basic.usernamePlaceholder')}
               required
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="authPassword">Password *</Label>
+            <Label htmlFor="authPassword">{t('http.auth.basic.passwordLabel')}</Label>
             <Input
               id="authPassword"
               type="password"
               value={authPassword}
               onChange={(e) => setAuthPassword(e.target.value)}
-              placeholder="password"
+              placeholder={t('http.auth.basic.passwordPlaceholder')}
               required
             />
           </div>
@@ -224,24 +223,22 @@ export function HTTPServerForm({ initialData, onSubmit, onCancel }: HTTPServerFo
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="headers">Additional Headers (Optional)</Label>
+        <Label htmlFor="headers">{t('http.headers.label')}</Label>
         <Textarea
           id="headers"
           value={headers}
           onChange={(e) => setHeaders(e.target.value)}
-          placeholder="Content-Type: application/json&#10;X-Custom-Header: value"
+          placeholder={t('http.headers.placeholder')}
           rows={4}
         />
-        <p className="text-xs text-muted-foreground">
-          One header per line in format: Header-Name: value
-        </p>
+        <p className="text-xs text-muted-foreground">{t('http.headers.help')}</p>
       </div>
 
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
+          {actions('cancel')}
         </Button>
-        <Button type="submit">Save Server</Button>
+        <Button type="submit">{t('common.submit')}</Button>
       </div>
     </form>
   );

@@ -129,9 +129,7 @@ pub fn registry_categories() -> Result<Vec<String>, String> {
 
 #[tauri::command]
 pub fn registry_popular(limit: Option<u32>, source: Option<String>) -> Result<Vec<RegistryServerEntry>, String> {
-    let (_, total, _) = registry_search(RegistrySearchFilters{ query: None, source, tags: None, verified: None, sort_by: Some("downloads".into()), limit, offset: Some(0) })?;
-    // We ignore 'total' here and just return results from search
-    let (servers, _, _) = registry_search(RegistrySearchFilters{ query: None, source: None, tags: None, verified: None, sort_by: Some("downloads".into()), limit, offset: Some(0) })?;
+    let (servers, _, _) = registry_search(RegistrySearchFilters{ query: None, source, tags: None, verified: None, sort_by: Some("downloads".into()), limit, offset: Some(0) })?;
     Ok(servers)
 }
 

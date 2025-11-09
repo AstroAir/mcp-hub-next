@@ -7,6 +7,7 @@
  */
 
 import { useState, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -55,12 +56,40 @@ type ImportMode = 'single' | 'multiple' | 'directory';
 
 export function ConfigUploader({ open, onOpenChange }: ConfigUploaderProps) {
   const { servers, addServer } = useServerStore();
+  const t = useTranslations('components.configUploader');
+  const actions = useTranslations('common.actions');
   const [files, setFiles] = useState<File[]>([]);
   const [importMode, setImportMode] = useState<ImportMode>('single');
   const [parseResult, setParseResult] = useState<ParseResult | AggregatedParseResult | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const directoryInputRef = useRef<HTMLInputElement>(null);
+
+  const getFileSelectionLabel = () => {
+    if (files.length > 0) {
+      if (importMode === 'single') {
+        return t('import.selection.singleSelected', { name: files[0]?.name ?? '' });
+      }
+      return t('import.selection.multipleSelected', { count: String(files.length) });
+    }
+
+    return importMode === 'multiple'
+      ? t('import.selection.multiplePlaceholder')
+      : t('import.selection.singlePlaceholder');
+  };
+
+  const getDirectorySelectionLabel = () => {
+    if (files.length > 0) {
+      return t('import.directory.selected', { count: String(files.length) });
+    }
+    return t('import.directory.placeholder');
+  };
+
+  const getProcessingLabel = () => {
+    return files.length > 1
+      ? t('status.processingMultiple', { count: String(files.length) })
+      : t('status.processingSingle');
+  };
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = event.target.files;
@@ -81,7 +110,7 @@ export function ConfigUploader({ open, onOpenChange }: ConfigUploaderProps) {
         // Validate first
         const validation = validateConfigFile(content);
         if (!validation.valid) {
-          toast.error(`Invalid configuration: ${validation.error}`);
+          toast.error(t('toast.invalidConfig', { reason: validation.error ?? '' }));
           setFiles([]);
           return;
         }
@@ -95,9 +124,14 @@ export function ConfigUploader({ open, onOpenChange }: ConfigUploaderProps) {
           const formatLabel = result.detectedFormat
             ? ` (${result.detectedFormat.toUpperCase()})`
             : '';
-          toast.success(`Found ${result.servers.length} server(s) in configuration${formatLabel}`);
+          toast.success(
+            t('toast.parseSuccessSingle', {
+              count: String(result.servers.length),
+              format: formatLabel,
+            })
+          );
         } else {
-          toast.error('Failed to parse configuration file');
+          toast.error(t('toast.parseFailureSingle'));
         }
       } else {
         // Multiple files mode
@@ -106,15 +140,21 @@ export function ConfigUploader({ open, onOpenChange }: ConfigUploaderProps) {
 
         if (result.success) {
           toast.success(
-            `Processed ${result.totalFiles} file(s): Found ${result.servers.length} server(s) from ${result.successfulFiles} successful file(s)`
+            t('toast.parseSuccessMultiple', {
+              total: String(result.totalFiles),
+              count: String(result.servers.length),
+              success: String(result.successfulFiles),
+            })
           );
         } else {
-          toast.error(`Failed to parse all ${result.totalFiles} file(s)`);
+          toast.error(
+            t('toast.parseFailureMultiple', { total: String(result.totalFiles) })
+          );
         }
       }
     } catch (error) {
       console.error('File processing error:', error);
-      toast.error('Failed to process file(s)');
+      toast.error(t('toast.processFailed'));
       setFiles([]);
     } finally {
       setIsProcessing(false);
@@ -129,7 +169,7 @@ export function ConfigUploader({ open, onOpenChange }: ConfigUploaderProps) {
     const fileArray = filterJsonFiles(Array.from(selectedFiles));
 
     if (fileArray.length === 0) {
-      toast.error('No JSON configuration files found in the selected directory');
+      toast.error(t('toast.directoryNoJson'));
       return;
     }
 
@@ -145,14 +185,18 @@ export function ConfigUploader({ open, onOpenChange }: ConfigUploaderProps) {
 
       if (result.success) {
         toast.success(
-          `Scanned directory: Found ${result.servers.length} server(s) from ${result.successfulFiles} of ${result.totalFiles} JSON file(s)`
+          t('toast.parseSuccessMultiple', {
+            total: String(result.totalFiles),
+            count: String(result.servers.length),
+            success: String(result.successfulFiles),
+          })
         );
       } else {
-        toast.error(`Failed to parse JSON files in directory`);
+        toast.error(t('toast.directoryFailed'));
       }
     } catch (error) {
       console.error('Directory processing error:', error);
-      toast.error('Failed to process directory');
+      toast.error(t('toast.directoryFailed'));
       setFiles([]);
     } finally {
       setIsProcessing(false);
@@ -170,13 +214,23 @@ export function ConfigUploader({ open, onOpenChange }: ConfigUploaderProps) {
       const newServers = mergedServers.slice(servers.length);
       newServers.forEach((server) => addServer(server));
 
-      const fileInfo = files.length > 1 ? ` from ${files.length} file(s)` : '';
-      toast.success(`Imported ${newServers.length} server(s)${fileInfo}`);
+      if (files.length > 1) {
+        toast.success(
+          t('toast.importSuccessMultiple', {
+            count: String(newServers.length),
+            files: String(files.length),
+          })
+        );
+      } else {
+        toast.success(
+          t('toast.importSuccessSingle', { count: String(newServers.length) })
+        );
+      }
       onOpenChange(false);
       resetState();
     } catch (error) {
       console.error('Import error:', error);
-      toast.error('Failed to import servers');
+      toast.error(t('toast.importFailure'));
     }
   };
 
@@ -193,10 +247,10 @@ export function ConfigUploader({ open, onOpenChange }: ConfigUploaderProps) {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      toast.success('Configuration exported successfully');
+      toast.success(t('toast.exportSuccess'));
     } catch (error) {
       console.error('Export error:', error);
-      toast.error('Failed to export configuration');
+      toast.error(t('toast.exportFailure'));
     }
   };
 
@@ -212,7 +266,7 @@ export function ConfigUploader({ open, onOpenChange }: ConfigUploaderProps) {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    toast.success('Example configuration downloaded');
+    toast.success(t('toast.downloadSuccess'));
   };
 
   const resetState = () => {
@@ -245,163 +299,163 @@ export function ConfigUploader({ open, onOpenChange }: ConfigUploaderProps) {
         <DialogHeader className="px-6 pt-6 pb-0 shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <FileJson className="h-5 w-5" />
-            Configuration Import/Export
+            {t('dialog.title')}
           </DialogTitle>
-          <DialogDescription>
-            Import servers from various IDE configurations (Claude Desktop, VS Code, Cursor, Cline) or export your current servers
-          </DialogDescription>
+          <DialogDescription>{t('dialog.description')}</DialogDescription>
         </DialogHeader>
 
         <ScrollArea className="flex-1 px-6">
           <div className="space-y-4 py-4">
-          {/* Upload Section */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium">Import Configuration</h3>
-              <Button variant="ghost" size="sm" onClick={handleDownloadExample}>
-                <Download className="h-4 w-4 mr-2" />
-                Example
-              </Button>
-            </div>
+            {/* Upload Section */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium">{t('import.title')}</h3>
+                <Button variant="ghost" size="sm" onClick={handleDownloadExample}>
+                  <Download className="h-4 w-4 mr-2" />
+                  {t('import.example')}
+                </Button>
+              </div>
 
-            {/* Import Mode Selector */}
-            <div className="flex gap-2">
-              <Button
-                variant={importMode === 'single' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => {
-                  setImportMode('single');
-                  resetState();
-                }}
-                className="flex-1"
-              >
-                <FileJson className="h-4 w-4 mr-2" />
-                Single File
-              </Button>
-              <Button
-                variant={importMode === 'multiple' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => {
-                  setImportMode('multiple');
-                  resetState();
-                }}
-                className="flex-1"
-              >
-                <Files className="h-4 w-4 mr-2" />
-                Multiple Files
-              </Button>
-              <Button
-                variant={importMode === 'directory' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => {
-                  setImportMode('directory');
-                  resetState();
-                }}
-                className="flex-1"
-              >
-                <Folder className="h-4 w-4 mr-2" />
-                Directory
-              </Button>
-            </div>
+              {/* Import Mode Selector */}
+              <div className="flex gap-2">
+                <Button
+                  variant={importMode === 'single' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => {
+                    setImportMode('single');
+                    resetState();
+                  }}
+                  className="flex-1"
+                >
+                  <FileJson className="h-4 w-4 mr-2" />
+                  {t('import.mode.single')}
+                </Button>
+                <Button
+                  variant={importMode === 'multiple' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => {
+                    setImportMode('multiple');
+                    resetState();
+                  }}
+                  className="flex-1"
+                >
+                  <Files className="h-4 w-4 mr-2" />
+                  {t('import.mode.multiple')}
+                </Button>
+                <Button
+                  variant={importMode === 'directory' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => {
+                    setImportMode('directory');
+                    resetState();
+                  }}
+                  className="flex-1"
+                >
+                  <Folder className="h-4 w-4 mr-2" />
+                  {t('import.mode.directory')}
+                </Button>
+              </div>
 
-            {/* File/Directory Upload */}
-            <div className="border-2 border-dashed rounded-lg p-6 text-center">
-              {importMode === 'directory' ? (
-                <>
-                  <input
-                    ref={directoryInputRef}
-                    type="file"
-                    // @ts-expect-error webkitdirectory is not in TypeScript DOM lib but supported by Chromium-based browsers
-                    webkitdirectory=""
-                    directory=""
-                    multiple
-                    onChange={handleDirectorySelect}
-                    className="hidden"
-                    id="config-directory-input"
-                  />
-                  <label
-                    htmlFor="config-directory-input"
-                    className="cursor-pointer flex flex-col items-center gap-2"
-                  >
-                    <Folder className="h-8 w-8 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">
-                        {files.length > 0
-                          ? `${files.length} JSON file(s) selected`
-                          : 'Click to select a directory'}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        All JSON configuration files will be scanned
-                      </p>
-                    </div>
-                  </label>
-                </>
-              ) : (
-                <>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".json"
-                    multiple={importMode === 'multiple'}
-                    onChange={handleFileSelect}
-                    className="hidden"
-                    id="config-file-input"
-                  />
-                  <label
-                    htmlFor="config-file-input"
-                    className="cursor-pointer flex flex-col items-center gap-2"
-                  >
-                    <Upload className="h-8 w-8 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">
-                        {files.length > 0
-                          ? files.length === 1
-                            ? files[0].name
-                            : `${files.length} file(s) selected`
-                          : importMode === 'multiple'
-                          ? 'Click to upload multiple configuration files'
-                          : 'Click to upload configuration file'}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        JSON file from Claude Desktop, VS Code, Cursor, or Cline
-                      </p>
-                    </div>
-                  </label>
-                </>
+              {/* File/Directory Upload */}
+              <div className="border-2 border-dashed rounded-lg p-6 text-center">
+                {importMode === 'directory' ? (
+                  <>
+                    <input
+                      ref={directoryInputRef}
+                      type="file"
+                      // @ts-expect-error webkitdirectory is not in TypeScript DOM lib but supported by Chromium-based browsers
+                      webkitdirectory=""
+                      directory=""
+                      multiple
+                      onChange={handleDirectorySelect}
+                      className="hidden"
+                      id="config-directory-input"
+                    />
+                    <label
+                      htmlFor="config-directory-input"
+                      className="cursor-pointer flex flex-col items-center gap-2"
+                    >
+                      <Folder className="h-8 w-8 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">
+                          {getDirectorySelectionLabel()}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {t('import.directory.help')}
+                        </p>
+                      </div>
+                    </label>
+                  </>
+                ) : (
+                  <>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".json"
+                      multiple={importMode === 'multiple'}
+                      onChange={handleFileSelect}
+                      className="hidden"
+                      id="config-file-input"
+                    />
+                    <label
+                      htmlFor="config-file-input"
+                      className="cursor-pointer flex flex-col items-center gap-2"
+                    >
+                      <Upload className="h-8 w-8 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">
+                          {getFileSelectionLabel()}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {t('import.fileHelp')}
+                        </p>
+                      </div>
+                    </label>
+                  </>
+                )}
+              </div>
+
+              {isProcessing && (
+                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {getProcessingLabel()}
+                </div>
               )}
             </div>
-
-            {isProcessing && (
-              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Processing {files.length > 1 ? `${files.length} files` : 'file'}...
-              </div>
-            )}
-          </div>
 
           {/* Parse Results */}
           {parseResult && (
             <>
               <Separator />
               <div className="space-y-3">
-                <h3 className="text-sm font-medium">Parse Results</h3>
+                <h3 className="text-sm font-medium">{t('results.title')}</h3>
 
                 {/* Success/Error Summary */}
                 {parseResult.success ? (
                   <Alert>
                     <CheckCircle2 className="h-4 w-4" />
                     <AlertDescription className="flex items-center gap-2 flex-wrap">
-                      Successfully parsed {parseResult.servers.length} server(s)
+                      {t(
+                        isAggregatedResult(parseResult)
+                          ? 'results.successAggregated'
+                          : 'results.success',
+                        { count: String(parseResult.servers.length) }
+                      )}
                       {isAggregatedResult(parseResult) ? (
                         <>
                           <Badge variant="secondary" className="ml-2">
-                            {parseResult.successfulFiles} of {parseResult.totalFiles} files
+                            {t('results.filesBadge', {
+                              success: String(parseResult.successfulFiles),
+                              total: String(parseResult.totalFiles),
+                            })}
                           </Badge>
                         </>
                       ) : (
                         parseResult.detectedFormat && (
                           <Badge variant="secondary" className="ml-2">
-                            {parseResult.detectedFormat.toUpperCase()}
+                            {t('results.formatBadge', {
+                              format: parseResult.detectedFormat.toUpperCase(),
+                            })}
                           </Badge>
                         )
                       )}
@@ -412,8 +466,10 @@ export function ConfigUploader({ open, onOpenChange }: ConfigUploaderProps) {
                     <XCircle className="h-4 w-4" />
                     <AlertDescription>
                       {isAggregatedResult(parseResult)
-                        ? `Failed to parse all ${parseResult.totalFiles} file(s)`
-                        : 'Failed to parse configuration'}
+                        ? t('results.failureAggregated', {
+                            total: String(parseResult.totalFiles),
+                          })
+                        : t('results.failure')}
                     </AlertDescription>
                   </Alert>
                 )}
@@ -421,7 +477,9 @@ export function ConfigUploader({ open, onOpenChange }: ConfigUploaderProps) {
                 {/* Errors */}
                 {parseResult.errors.length > 0 && (
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-destructive">Errors:</p>
+                    <p className="text-sm font-medium text-destructive">
+                      {t('results.errorsTitle')}
+                    </p>
                     <ScrollArea className="max-h-32 rounded border p-3">
                       <ul className="space-y-1 text-sm">
                         {isAggregatedResult(parseResult) ? (
@@ -450,7 +508,9 @@ export function ConfigUploader({ open, onOpenChange }: ConfigUploaderProps) {
                 {/* Warnings */}
                 {parseResult.warnings.length > 0 && (
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-yellow-600">Warnings:</p>
+                    <p className="text-sm font-medium text-yellow-600">
+                      {t('results.warningsTitle')}
+                    </p>
                     <ScrollArea className="max-h-32 rounded border p-3">
                       <ul className="space-y-1 text-sm">
                         {isAggregatedResult(parseResult) ? (
@@ -479,7 +539,7 @@ export function ConfigUploader({ open, onOpenChange }: ConfigUploaderProps) {
                 {/* Servers List */}
                 {parseResult.servers.length > 0 && (
                   <div className="space-y-2">
-                    <p className="text-sm font-medium">Servers to Import:</p>
+                    <p className="text-sm font-medium">{t('results.serversTitle')}</p>
                     <div className="max-h-48 rounded border overflow-auto">
                       <div className="p-3 space-y-2">
                         {parseResult.servers.map((serverItem, i) => {
@@ -521,13 +581,13 @@ export function ConfigUploader({ open, onOpenChange }: ConfigUploaderProps) {
             <>
               <Separator />
               <div className="space-y-3">
-                <h3 className="text-sm font-medium">Export Configuration</h3>
+                <h3 className="text-sm font-medium">{t('export.title')}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Export your current {servers.length} server(s) to Claude Desktop format
+                  {t('export.description', { count: String(servers.length) })}
                 </p>
                 <Button variant="outline" onClick={handleExport} className="w-full">
                   <Download className="h-4 w-4 mr-2" />
-                  Export Current Servers
+                  {t('export.cta')}
                 </Button>
               </div>
             </>
@@ -537,13 +597,13 @@ export function ConfigUploader({ open, onOpenChange }: ConfigUploaderProps) {
 
         <DialogFooter className="px-6 pb-6 pt-4 shrink-0 border-t">
           <Button variant="outline" onClick={handleClose}>
-            Cancel
+            {actions('cancel')}
           </Button>
           <Button
             onClick={handleImport}
             disabled={!parseResult || !parseResult.success || parseResult.servers.length === 0}
           >
-            Import {parseResult?.servers.length || 0} Server(s)
+            {t('footer.import', { count: String(parseResult?.servers.length ?? 0) })}
           </Button>
         </DialogFooter>
       </DialogContent>

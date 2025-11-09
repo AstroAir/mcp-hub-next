@@ -35,8 +35,8 @@ export const useLifecycleStore = create<LifecycleStoreState>((set, get) => ({
 
   removeProcess: (serverId: string) => {
     set((state) => {
-       
-      const { [serverId]: _removed, ...rest } = state.processes;
+      const rest = { ...state.processes };
+      delete rest[serverId];
       return { processes: rest };
     });
     get().saveProcesses();

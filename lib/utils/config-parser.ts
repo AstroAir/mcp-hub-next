@@ -338,7 +338,7 @@ export function mergeServers(
     }
 
     // Remove sourceFile property if present (it's only for display purposes)
-    const { sourceFile, ...serverConfig } = server as ServerWithSource;
+    const { sourceFile: _sourceFile, ...serverConfig } = server as ServerWithSource;
 
     merged.push({
       ...serverConfig,

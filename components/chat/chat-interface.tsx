@@ -6,9 +6,9 @@
  */
 
 import { useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,6 +48,9 @@ export function ChatInterface({
   streamedContent,
   onStopStreaming,
 }: ChatInterfaceProps) {
+  const t = useTranslations('chat.interface');
+  const commonActions = useTranslations('common.actions');
+  const messageT = useTranslations('chat.message');
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -68,28 +71,29 @@ export function ChatInterface({
         <div className="border-b px-4 py-2 flex items-center justify-between bg-muted/30">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <MessageSquare className="size-4" />
-            <span>{messages.length} message{messages.length !== 1 ? 's' : ''}</span>
+            <span>{t('messageCount', { count: messages.length })}</span>
           </div>
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="ghost" size="sm" className="h-8">
                 <Trash2 className="size-4 mr-2" />
-                Clear Chat
+                {t('actions.clearChat')}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Clear chat history?</AlertDialogTitle>
+                <AlertDialogTitle>{t('clearDialog.title')}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will permanently delete all messages in this conversation.
-                  This action cannot be undone.
+                  {t('clearDialog.description')}
+                  <br />
+                  {t('clearDialog.warning')}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel>{commonActions('cancel')}</AlertDialogCancel>
                 <AlertDialogAction onClick={onClearMessages}>
-                  Clear Messages
+                  {t('clearDialog.confirm')}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -99,7 +103,7 @@ export function ChatInterface({
 
       {/* Messages area */}
       <ScrollArea className="flex-1" ref={scrollRef}>
-        {messages.length === 0 ? (
+          {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center space-y-4 p-8 max-w-md">
               <div className="flex justify-center">
@@ -108,35 +112,33 @@ export function ChatInterface({
                 </div>
               </div>
               <div className="space-y-2">
-                <h3 className="text-lg font-semibold">Start a conversation</h3>
-                <p className="text-sm text-muted-foreground">
-                  Send a message to begin chatting with Claude. You can ask questions,
-                  request help, or have a conversation about anything.
-                </p>
+                  <h3 className="text-lg font-semibold">{t('emptyState.title')}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {t('emptyState.description')}
+                  </p>
               </div>
               <div className="grid gap-2 text-xs text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <div className="size-1.5 rounded-full bg-primary" />
-                  <span>Use tools from connected MCP servers</span>
+                    <span>{t('emptyState.tips.0')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="size-1.5 rounded-full bg-primary" />
-                  <span>Get real-time streaming responses</span>
+                    <span>{t('emptyState.tips.1')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="size-1.5 rounded-full bg-primary" />
-                  <span>Copy messages and code snippets</span>
+                    <span>{t('emptyState.tips.2')}</span>
                 </div>
               </div>
             </div>
           </div>
         ) : (
           <div className="divide-y">
-            {messages.map((message, index) => (
+            {messages.map((message) => (
               <div
                 key={message.id}
                 className="animate-in fade-in-0 slide-in-from-bottom-4 duration-300"
-                style={{ animationDelay: `${Math.min(index * 50, 300)}ms` }}
               >
                 <ChatMessage message={message} />
               </div>
@@ -150,8 +152,8 @@ export function ChatInterface({
                 </div>
                 <div className="flex-1 space-y-2">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm">Assistant</span>
-                    <span className="text-xs text-muted-foreground">Streaming...</span>
+                    <span className="font-semibold text-sm">{messageT('assistant')}</span>
+                    <span className="text-xs text-muted-foreground">{t('status.streaming')}</span>
                   </div>
                   <div className="text-sm leading-relaxed whitespace-pre-wrap">
                     {streamedContent}
@@ -165,7 +167,7 @@ export function ChatInterface({
                       className="mt-2"
                     >
                       <StopCircle className="size-4 mr-2" />
-                      Stop Generation
+                      {t('actions.stopGeneration')}
                     </Button>
                   )}
                 </div>
@@ -179,8 +181,8 @@ export function ChatInterface({
                   <Loader2 className="size-4 animate-spin" />
                 </div>
                 <div className="flex-1">
-                  <div className="text-sm font-medium">Assistant</div>
-                  <div className="text-sm text-muted-foreground">Thinking...</div>
+                  <div className="text-sm font-medium">{messageT('assistant')}</div>
+                  <div className="text-sm text-muted-foreground">{t('status.thinking')}</div>
                 </div>
               </div>
             )}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LayoutGrid, List, RefreshCw } from 'lucide-react';
@@ -26,7 +27,6 @@ export interface MarketplaceViewProps {
 }
 
 // Tailwind safelist for dynamic grid column classes (so JIT includes them)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const __TAILWIND_GRID_COL_SAFE__ =
   'grid-cols-1 grid-cols-2 grid-cols-3 grid-cols-4 grid-cols-5 grid-cols-6 ' +
   'sm:grid-cols-1 sm:grid-cols-2 sm:grid-cols-3 sm:grid-cols-4 sm:grid-cols-5 sm:grid-cols-6 ' +
@@ -55,6 +55,7 @@ function getGridClass(cfg?: GridColumns) {
 }
 
 export function MarketplaceView({ gridColumns }: MarketplaceViewProps) {
+  const t = useTranslations('marketplace.view');
   const {
     filteredServers,
     selectedServer,
@@ -94,10 +95,8 @@ export function MarketplaceView({ gridColumns }: MarketplaceViewProps) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">MCP Marketplace</h1>
-          <p className="text-muted-foreground mt-1.5">
-            Discover and explore Model Context Protocol servers
-          </p>
+          <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
+          <p className="text-muted-foreground mt-1.5">{t('subtitle')}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -107,7 +106,7 @@ export function MarketplaceView({ gridColumns }: MarketplaceViewProps) {
             disabled={isLoading}
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
+            {t('actions.refresh')}
           </Button>
           <div className="flex items-center border rounded-lg overflow-hidden">
             <Button
@@ -136,8 +135,8 @@ export function MarketplaceView({ gridColumns }: MarketplaceViewProps) {
       {/* Error State */}
       {error && !isLoading && (
         <ErrorState
-          title="Failed to load marketplace"
-          description={typeof error === 'string' ? error : String(error)}
+          title={t('states.errorTitle')}
+          description={typeof error === 'string' ? error : t('states.errorDescription')}
           showRetryButton
           onRetry={handleRefresh}
         />
@@ -164,10 +163,10 @@ export function MarketplaceView({ gridColumns }: MarketplaceViewProps) {
       {/* Empty State */}
       {!isLoading && !error && filteredServers.length === 0 && (
         <EmptyState
-          title="No servers found"
-          description="Try adjusting your search or filters to find what you're looking for."
+          title={t('states.emptyTitle')}
+          description={t('states.emptyDescription')}
           action={{
-            label: 'Reset Filters',
+            label: t('actions.resetFilters'),
             onClick: () => useMarketplaceStore.getState().resetFilters(),
           }}
         />
@@ -177,7 +176,7 @@ export function MarketplaceView({ gridColumns }: MarketplaceViewProps) {
       {!isLoading && !error && filteredServers.length > 0 && (
         <div className="flex items-center justify-between border-b pb-3">
           <p className="text-sm text-muted-foreground font-medium">
-            Showing {filteredServers.length} server{filteredServers.length !== 1 ? 's' : ''}
+            {t('stats.resultCount', { count: filteredServers.length })}
           </p>
         </div>
       )}

@@ -35,6 +35,7 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Archive, Clock, Download, RotateCcw, Trash2, Upload, HardDrive, FileJson, Files } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslations, useFormatter } from 'next-intl';
 
 type ImportMode = 'single' | 'multiple';
 import {
@@ -50,7 +51,28 @@ import {
   type BackupMetadata,
 } from '@/lib/services/backup-service';
 
+const defaultRestoreOptions = {
+  servers: true,
+  chatSessions: true,
+  chatMessages: true,
+  connectionHistory: true,
+  settings: true,
+};
+
+type RestoreOptionKey = keyof typeof defaultRestoreOptions;
+
+const restoreOptionKeys: RestoreOptionKey[] = [
+  'servers',
+  'chatSessions',
+  'chatMessages',
+  'connectionHistory',
+  'settings',
+];
+
 export function BackupManagement() {
+  const t = useTranslations('settings.backup');
+  const toastT = useTranslations('settings.backup.toasts');
+  const formatter = useFormatter();
   const [settings, setSettings] = useState<BackupSettings>({
     enabled: false,
     frequency: 'weekly',
@@ -61,15 +83,12 @@ export function BackupManagement() {
   const [showRestoreDialog, setShowRestoreDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [backupToDelete, setBackupToDelete] = useState<string | null>(null);
-  const [restoreOptions, setRestoreOptions] = useState({
-    servers: true,
-    chatSessions: true,
-    chatMessages: true,
-    connectionHistory: true,
-    settings: true,
-  });
+  const [restoreOptions, setRestoreOptions] = useState(() => ({ ...defaultRestoreOptions }));
   const [importMode, setImportMode] = useState<ImportMode>('single');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const frequencyOptions: BackupSettings['frequency'][] = ['daily', 'weekly', 'monthly', 'manual'];
+  const retentionOptions = [7, 14, 30, 60, 90];
+  const tAny: (key: string, values?: Record<string, unknown>) => string = t as unknown as (key: string, values?: Record<string, unknown>) => string;
 
   const loadSettings = useCallback(() => {
     const stored = getBackupSettings();
@@ -95,16 +114,16 @@ export function BackupManagement() {
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
     saveBackupSettings(newSettings);
-    toast.success('Backup settings updated');
+    toast.success(toastT('settingsUpdated'));
   };
 
   const handleCreateBackup = () => {
     try {
       createBackup();
       loadBackupHistory();
-      toast.success('Backup created successfully');
+      toast.success(toastT('createSuccess'));
     } catch (error) {
-      toast.error('Failed to create backup');
+      toast.error(toastT('createError'));
       console.error(error);
     }
   };
@@ -112,9 +131,9 @@ export function BackupManagement() {
   const handleExportBackup = (backupId: string) => {
     try {
       exportBackup(backupId);
-      toast.success('Backup exported');
+      toast.success(toastT('exportSuccess'));
     } catch (error) {
-      toast.error('Failed to export backup');
+      toast.error(toastT('exportError'));
       console.error(error);
     }
   };
@@ -144,11 +163,11 @@ export function BackupManagement() {
     loadBackupHistory();
 
     if (successCount > 0 && failCount === 0) {
-      toast.success(`Successfully imported ${successCount} backup(s)`);
+      toast.success(toastT('importSuccess', { count: successCount }));
     } else if (successCount > 0 && failCount > 0) {
-      toast.success(`Imported ${successCount} backup(s), ${failCount} failed`);
+      toast.success(toastT('importPartial', { success: String(successCount), failed: String(failCount) }));
     } else {
-      toast.error('Failed to import backup(s)');
+      toast.error(toastT('importError'));
     }
   };
 
@@ -164,14 +183,14 @@ export function BackupManagement() {
     try {
       const success = restoreBackup(selectedBackup.id, restoreOptions);
       if (success) {
-        toast.success('Backup restored successfully. Please refresh the page.');
+        toast.success(toastT('restoreSuccess'));
         setShowRestoreDialog(false);
         setSelectedBackup(null);
       } else {
-        toast.error('Failed to restore backup');
+        toast.error(toastT('restoreError'));
       }
     } catch (error) {
-      toast.error('Failed to restore backup');
+      toast.error(toastT('restoreError'));
       console.error(error);
     }
   };
@@ -182,22 +201,34 @@ export function BackupManagement() {
     try {
       deleteBackup(backupToDelete);
       loadBackupHistory();
-      toast.success('Backup deleted');
+      toast.success(toastT('deleteSuccess'));
       setShowDeleteDialog(false);
       setBackupToDelete(null);
     } catch (error) {
-      toast.error('Failed to delete backup');
+      toast.error(toastT('deleteError'));
       console.error(error);
     }
   };
 
-  const formatDate = (timestamp: string) => {
-    return new Date(timestamp).toLocaleString();
-  };
+  const formatDate = useCallback(
+    (timestamp: string) =>
+      formatter.dateTime(new Date(timestamp), {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      }),
+    [formatter]
+  );
 
-  const formatSize = (bytes: number) => {
-    return `${(bytes / 1024).toFixed(2)} KB`;
-  };
+  const formatSize = useCallback(
+    (bytes: number) =>
+      t('format.size', {
+        value: formatter.number(bytes / 1024, {
+          maximumFractionDigits: 2,
+          minimumFractionDigits: 2,
+        }),
+      }),
+    [formatter, t]
+  );
 
   return (
     <div className="space-y-6">
@@ -206,19 +237,15 @@ export function BackupManagement() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Archive className="h-5 w-5 text-primary" />
-            Automatic Backups
+            {t('sections.automatic.title')}
           </CardTitle>
-          <CardDescription>
-            Configure automatic backup schedule and retention policy
-          </CardDescription>
+          <CardDescription>{t('sections.automatic.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
             <div className="space-y-0.5">
-              <Label className="text-base">Enable Automatic Backups</Label>
-              <p className="text-sm text-muted-foreground">
-                Automatically create backups based on schedule
-              </p>
+              <Label className="text-base">{t('sections.automatic.enable.label')}</Label>
+              <p className="text-sm text-muted-foreground">{t('sections.automatic.enable.description')}</p>
             </div>
             <Switch
               checked={settings.enabled}
@@ -230,7 +257,7 @@ export function BackupManagement() {
 
           <div className="grid gap-5 md:grid-cols-2">
             <div className="space-y-3">
-              <Label htmlFor="frequency" className="text-base">Backup Frequency</Label>
+              <Label htmlFor="frequency" className="text-base">{t('sections.automatic.frequency.label')}</Label>
               <Select
                 value={settings.frequency}
                 onValueChange={(value) => handleSettingsChange('frequency', value)}
@@ -240,16 +267,17 @@ export function BackupManagement() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="daily">Daily</SelectItem>
-                  <SelectItem value="weekly">Weekly</SelectItem>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                  <SelectItem value="manual">Manual Only</SelectItem>
+                  {frequencyOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {t(`sections.automatic.frequency.options.${option}`)}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-3">
-              <Label htmlFor="retention" className="text-base">Retention Period</Label>
+              <Label htmlFor="retention" className="text-base">{t('sections.automatic.retention.label')}</Label>
               <Select
                 value={settings.retentionDays.toString()}
                 onValueChange={(value) => handleSettingsChange('retentionDays', parseInt(value))}
@@ -258,16 +286,14 @@ export function BackupManagement() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="7">7 days</SelectItem>
-                  <SelectItem value="14">14 days</SelectItem>
-                  <SelectItem value="30">30 days</SelectItem>
-                  <SelectItem value="60">60 days</SelectItem>
-                  <SelectItem value="90">90 days</SelectItem>
+                  {retentionOptions.map((option) => (
+                    <SelectItem key={option} value={option.toString()}>
+                      {tAny(`sections.automatic.retention.options.${option}`)}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">
-                Backups older than this will be automatically deleted
-              </p>
+              <p className="text-xs text-muted-foreground">{t('sections.automatic.retention.description')}</p>
             </div>
           </div>
 
@@ -277,7 +303,7 @@ export function BackupManagement() {
               <div className="flex items-center gap-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900">
                 <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                 <span className="text-sm text-blue-900 dark:text-blue-100">
-                  Last backup: {formatDate(settings.lastBackupTime)}
+                  {t('sections.automatic.lastBackup', { time: formatDate(settings.lastBackupTime) })}
                 </span>
               </div>
             </>
@@ -290,11 +316,9 @@ export function BackupManagement() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Archive className="h-5 w-5 text-primary" />
-            Manual Backup
+            {t('sections.manual.title')}
           </CardTitle>
-          <CardDescription>
-            Create, import, or export backups manually
-          </CardDescription>
+          <CardDescription>{t('sections.manual.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           <Button
@@ -303,14 +327,14 @@ export function BackupManagement() {
             size="lg"
           >
             <Archive className="h-5 w-5 mr-2" />
-            Create Backup Now
+            {t('sections.manual.create')}
           </Button>
 
           <Separator />
 
           {/* Import Mode Selector */}
           <div className="space-y-4">
-            <Label className="text-base">Import Backup(s)</Label>
+            <Label className="text-base">{t('sections.manual.import.label')}</Label>
             <RadioGroup
               value={importMode}
               onValueChange={(value: ImportMode) => {
@@ -327,8 +351,8 @@ export function BackupManagement() {
                 >
                   <FileJson className="mb-3 h-6 w-6" />
                   <div className="space-y-1 text-center">
-                    <p className="text-sm font-medium leading-none">Single File</p>
-                    <p className="text-xs text-muted-foreground">Import one backup file</p>
+                    <p className="text-sm font-medium leading-none">{t('sections.manual.import.modes.single.title')}</p>
+                    <p className="text-xs text-muted-foreground">{t('sections.manual.import.modes.single.description')}</p>
                   </div>
                 </Label>
               </div>
@@ -340,8 +364,8 @@ export function BackupManagement() {
                 >
                   <Files className="mb-3 h-6 w-6" />
                   <div className="space-y-1 text-center">
-                    <p className="text-sm font-medium leading-none">Multiple Files</p>
-                    <p className="text-xs text-muted-foreground">Import multiple backups</p>
+                    <p className="text-sm font-medium leading-none">{t('sections.manual.import.modes.multiple.title')}</p>
+                    <p className="text-xs text-muted-foreground">{t('sections.manual.import.modes.multiple.description')}</p>
                   </div>
                 </Label>
               </div>
@@ -355,7 +379,7 @@ export function BackupManagement() {
               multiple={importMode === 'multiple'}
               onChange={handleImportBackup}
               className="hidden"
-              aria-label="Import backup file"
+              aria-label={t('sections.manual.import.ariaLabel')}
             />
 
             <Button
@@ -364,7 +388,9 @@ export function BackupManagement() {
               onClick={() => fileInputRef.current?.click()}
             >
               <Upload className="h-4 w-4 mr-2" />
-              {importMode === 'multiple' ? 'Select Backup Files' : 'Select Backup File'}
+              {importMode === 'multiple'
+                ? t('sections.manual.import.button.multiple')
+                : t('sections.manual.import.button.single')}
             </Button>
           </div>
         </CardContent>
@@ -376,13 +402,11 @@ export function BackupManagement() {
           <CardTitle className="flex items-center justify-between">
             <span className="flex items-center gap-2">
               <HardDrive className="h-5 w-5 text-primary" />
-              Backup History
+              {t('sections.history.title')}
             </span>
-            <Badge variant="secondary" className="text-sm">{backupHistory.length} backups</Badge>
+            <Badge variant="secondary" className="text-sm">{t('sections.history.badge', { count: backupHistory.length })}</Badge>
           </CardTitle>
-          <CardDescription>
-            View and manage your backup history
-          </CardDescription>
+          <CardDescription>{t('sections.history.description')}</CardDescription>
         </CardHeader>
         <CardContent>
           {backupHistory.length === 0 ? (
@@ -390,8 +414,8 @@ export function BackupManagement() {
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
                 <HardDrive className="h-8 w-8 opacity-50" />
               </div>
-              <p className="text-lg font-medium">No backups yet</p>
-              <p className="text-sm mt-1">Create your first backup to get started</p>
+              <p className="text-lg font-medium">{t('sections.history.empty.title')}</p>
+              <p className="text-sm mt-1">{t('sections.history.empty.description')}</p>
             </div>
           ) : (
             <ScrollArea className="h-[400px] pr-4">
@@ -411,10 +435,10 @@ export function BackupManagement() {
                           {formatSize(backup.size)}
                         </Badge>
                         <span className="flex items-center gap-1">
-                          <span className="font-medium">{backup.itemCounts.servers}</span> servers
+                          <span className="font-medium">{backup.itemCounts.servers}</span> {t('cards.servers', { count: backup.itemCounts.servers })}
                         </span>
                         <span className="flex items-center gap-1">
-                          <span className="font-medium">{backup.itemCounts.chatSessions}</span> sessions
+                          <span className="font-medium">{backup.itemCounts.chatSessions}</span> {t('cards.sessions', { count: backup.itemCounts.chatSessions })}
                         </span>
                       </div>
                     </div>
@@ -427,15 +451,17 @@ export function BackupManagement() {
                           setShowRestoreDialog(true);
                         }}
                         className="transition-all hover:bg-primary hover:text-primary-foreground"
+                        aria-label={t('actions.restore')}
                       >
                         <RotateCcw className="h-4 w-4 sm:mr-2" />
-                        <span className="hidden sm:inline">Restore</span>
+                        <span className="hidden sm:inline">{t('actions.restore')}</span>
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleExportBackup(backup.id)}
                         className="transition-all hover:bg-accent"
+                        aria-label={t('actions.export')}
                       >
                         <Download className="h-4 w-4" />
                       </Button>
@@ -447,6 +473,7 @@ export function BackupManagement() {
                           setShowDeleteDialog(true);
                         }}
                         className="transition-all hover:bg-destructive hover:text-destructive-foreground"
+                        aria-label={t('actions.delete')}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -465,21 +492,19 @@ export function BackupManagement() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <RotateCcw className="h-5 w-5 text-primary" />
-              Restore Backup
+              {t('dialogs.restore.title')}
             </DialogTitle>
-            <DialogDescription>
-              Select which data to restore from this backup. This will overwrite your current data.
-            </DialogDescription>
+            <DialogDescription>{t('dialogs.restore.description')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            {Object.entries(restoreOptions).map(([key, value]) => (
+            {restoreOptionKeys.map((key) => (
               <div key={key} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 transition-all hover:bg-muted">
-                <Label htmlFor={key} className="capitalize cursor-pointer">
-                  {key.replace(/([A-Z])/g, ' $1').trim()}
+                <Label htmlFor={key} className="cursor-pointer">
+                  {t(`dialogs.restore.options.${key}`)}
                 </Label>
                 <Switch
                   id={key}
-                  checked={value}
+                  checked={restoreOptions[key]}
                   onCheckedChange={(checked) =>
                     setRestoreOptions({ ...restoreOptions, [key]: checked })
                   }
@@ -489,11 +514,11 @@ export function BackupManagement() {
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => setShowRestoreDialog(false)}>
-              Cancel
+              {t('dialogs.restore.cancel')}
             </Button>
             <Button onClick={handleRestoreBackup} className="gap-2">
               <RotateCcw className="h-4 w-4" />
-              Restore Backup
+              {t('dialogs.restore.confirm')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -503,18 +528,16 @@ export function BackupManagement() {
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Backup?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this backup? This action cannot be undone.
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t('dialogs.delete.title')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('dialogs.delete.description')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setBackupToDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setBackupToDelete(null)}>{t('dialogs.delete.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteBackup}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete Backup
+              {t('dialogs.delete.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

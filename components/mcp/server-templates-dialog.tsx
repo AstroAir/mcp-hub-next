@@ -6,6 +6,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -37,6 +38,35 @@ export function ServerTemplatesDialog({
 }: ServerTemplatesDialogProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<ServerTemplate | null>(null);
   const [configValues, setConfigValues] = useState<Record<string, string>>({});
+  const t = useTranslations('components.serverTemplates');
+
+  const getFieldLabel = (field: string) => {
+    if (field.startsWith('env.')) {
+      return t('fields.env', { key: field.substring(4) });
+    }
+    switch (field) {
+      case 'args':
+        return t('fields.args');
+      case 'url':
+        return t('fields.url');
+      default:
+        return field;
+    }
+  };
+
+  const getFieldPlaceholder = (field: string) => {
+    if (field.startsWith('env.')) {
+      return t('placeholders.env');
+    }
+    switch (field) {
+      case 'args':
+        return t('placeholders.args');
+      case 'url':
+        return t('placeholders.url');
+      default:
+        return t('placeholders.default');
+    }
+  };
 
   const handleTemplateClick = (template: ServerTemplate) => {
     setSelectedTemplate(template);
@@ -93,10 +123,8 @@ export function ServerTemplatesDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[min(100vw-2rem,1100px)] max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle>Server Templates</DialogTitle>
-          <DialogDescription>
-            Choose from pre-configured templates for common MCP servers
-          </DialogDescription>
+          <DialogTitle>{t('dialog.title')}</DialogTitle>
+          <DialogDescription>{t('dialog.description')}</DialogDescription>
         </DialogHeader>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[70vh] min-h-[480px]">
@@ -104,9 +132,9 @@ export function ServerTemplatesDialog({
           <div className="md:border-r md:pr-4 overflow-hidden">
             <Tabs defaultValue="all" className="h-full flex flex-col">
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="popular">Popular</TabsTrigger>
-                <TabsTrigger value="categories">Categories</TabsTrigger>
+                <TabsTrigger value="all">{t('tabs.all')}</TabsTrigger>
+                <TabsTrigger value="popular">{t('tabs.popular')}</TabsTrigger>
+                <TabsTrigger value="categories">{t('tabs.categories')}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="all" className="flex-1 mt-4 overflow-hidden">
@@ -221,34 +249,22 @@ export function ServerTemplatesDialog({
                   selectedTemplate.requiresConfiguration.length > 0 && (
                     <div className="space-y-4">
                       <div>
-                        <h4 className="text-sm font-medium mb-2">Configuration Required</h4>
+                        <h4 className="text-sm font-medium mb-2">{t('configuration.title')}</h4>
                         <p className="text-xs text-muted-foreground">
-                          Please provide the following information:
+                          {t('configuration.description')}
                         </p>
                       </div>
 
                       {selectedTemplate.requiresConfiguration.map((field) => (
                         <div key={field} className="space-y-2">
-                          <Label htmlFor={field}>
-                            {field.startsWith('env.')
-                              ? field.substring(4)
-                              : field === 'args'
-                              ? 'Arguments'
-                              : field}
-                          </Label>
+                          <Label htmlFor={field}>{getFieldLabel(field)}</Label>
                           <Input
                             id={field}
                             value={configValues[field] || ''}
                             onChange={(e) =>
                               setConfigValues({ ...configValues, [field]: e.target.value })
                             }
-                            placeholder={
-                              field === 'args'
-                                ? 'Space-separated arguments'
-                                : field.startsWith('env.')
-                                ? 'Enter value'
-                                : 'Enter URL'
-                            }
+                            placeholder={getFieldPlaceholder(field)}
                           />
                         </div>
                       ))}
@@ -257,13 +273,14 @@ export function ServerTemplatesDialog({
 
                 <div className="pt-4">
                   <Button onClick={handleUseTemplate} disabled={!canUseTemplate()} className="w-full">
-                    Use This Template
+                    {t('actions.useTemplate')}
                   </Button>
                 </div>
               </div>
             ) : (
-              <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
-                Select a template to get started
+              <div className="flex flex-col items-center justify-center h-full text-center text-sm text-muted-foreground space-y-1">
+                <span className="text-base font-medium text-foreground">{t('empty.title')}</span>
+                <span>{t('empty.description')}</span>
               </div>
             )}
           </div>

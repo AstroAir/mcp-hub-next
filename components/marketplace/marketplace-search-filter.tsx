@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +24,7 @@ import { Search, Filter, X, Star, Key, SlidersHorizontal } from 'lucide-react';
 import { useMarketplaceStore } from '@/lib/stores';
 
 export function MarketplaceSearchFilter() {
+  const t = useTranslations('marketplace.filters');
   const {
     filters,
     categories,
@@ -91,7 +93,7 @@ export function MarketplaceSearchFilter() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by name, author, or description..."
+            placeholder={t('searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-9 pr-9"
@@ -114,13 +116,13 @@ export function MarketplaceSearchFilter() {
           onValueChange={handleSortChange}
         >
           <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Sort by..." />
+            <SelectValue placeholder={t('sort.placeholder')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="stars">Most Stars</SelectItem>
-            <SelectItem value="downloads">Most Downloads</SelectItem>
-            <SelectItem value="updated">Recently Updated</SelectItem>
-            <SelectItem value="name">Name (A-Z)</SelectItem>
+            <SelectItem value="stars">{t('sort.options.stars')}</SelectItem>
+            <SelectItem value="downloads">{t('sort.options.downloads')}</SelectItem>
+            <SelectItem value="updated">{t('sort.options.updated')}</SelectItem>
+            <SelectItem value="name">{t('sort.options.name')}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -134,10 +136,10 @@ export function MarketplaceSearchFilter() {
         >
           <SelectTrigger className="w-[180px]">
             <Filter className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Category" />
+            <SelectValue placeholder={t('category.placeholder')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
+            <SelectItem value="all">{t('category.all')}</SelectItem>
             {categories.map((category) => (
               <SelectItem key={category} value={category}>
                 {category}
@@ -152,7 +154,7 @@ export function MarketplaceSearchFilter() {
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
                 <SlidersHorizontal className="h-4 w-4 mr-2" />
-                Tags
+                {t('tags.button')}
                 {selectedTags.length > 0 && (
                   <Badge variant="secondary" className="ml-2 h-5 px-1.5">
                     {selectedTags.length}
@@ -161,7 +163,7 @@ export function MarketplaceSearchFilter() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 max-h-[300px] overflow-y-auto">
-              <DropdownMenuLabel>Filter by Tags</DropdownMenuLabel>
+              <DropdownMenuLabel>{t('tags.dropdownLabel')}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {allTags.slice(0, 20).map((tag) => (
                 <DropdownMenuCheckboxItem
@@ -183,7 +185,7 @@ export function MarketplaceSearchFilter() {
           onClick={handleRecommendedToggle}
         >
           <Star className="h-4 w-4 mr-2" />
-          Recommended
+          {t('quickFilters.recommended')}
         </Button>
 
         <Button
@@ -192,7 +194,7 @@ export function MarketplaceSearchFilter() {
           onClick={handleApiKeyToggle}
         >
           <Key className="h-4 w-4 mr-2" />
-          No API Key
+          {t('quickFilters.noApiKey')}
         </Button>
 
         {/* Reset Filters */}
@@ -203,7 +205,7 @@ export function MarketplaceSearchFilter() {
             onClick={handleReset}
           >
             <X className="h-4 w-4 mr-2" />
-            Reset
+            {t('reset')}
           </Button>
         )}
       </div>

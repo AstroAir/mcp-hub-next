@@ -26,16 +26,16 @@ describe('error-dedupe', () => {
 
   it('getTroubleshootingTips returns category-specific hints', () => {
     expect(getTroubleshootingTips('network error')).toEqual(
-      expect.arrayContaining(['Check your internet connection and retry.'])
+      expect.arrayContaining(['networkCheckConnection'])
     );
     expect(getTroubleshootingTips('npm')).toEqual(
-      expect.arrayContaining(['Ensure Node.js and npm are installed and available in PATH.'])
+      expect.arrayContaining(['npmEnsureNode'])
     );
     expect(getTroubleshootingTips('github 404')).toEqual(
-      expect.arrayContaining(['Verify the GitHub repository exists and is public or you have access.'])
+      expect.arrayContaining(['githubVerifyRepo'])
     );
     expect(getTroubleshootingTips('EACCES')).toEqual(
-      expect.arrayContaining(['Try running the app with sufficient permissions.'])
+      expect.arrayContaining(['permissionsElevate'])
     );
   });
 });

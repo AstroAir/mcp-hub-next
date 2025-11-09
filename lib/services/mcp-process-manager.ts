@@ -415,7 +415,7 @@ export function forceCleanupSync(): void {
   activeProcesses.forEach((entry) => {
     try {
       entry.process.kill('SIGKILL');
-    } catch (error) {
+    } catch {
       // Ignore errors during force cleanup
     }
   });

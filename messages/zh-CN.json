@@ -1,0 +1,1198 @@
+{
+  "common": {
+    "language": {
+      "english": "英文",
+      "chinese": "简体中文",
+      "switcherLabel": "语言",
+      "followSystem": "跟随系统"
+    },
+    "navigation": {
+      "home": "首页",
+      "dashboard": "总览",
+      "chat": "对话",
+      "settings": "设置",
+      "servers": "服务器",
+      "marketplace": "应用商店",
+      "developer": "开发者",
+      "updates": "更新"
+    },
+    "actions": {
+      "cancel": "取消",
+      "save": "保存",
+      "close": "关闭",
+      "retry": "重试",
+      "learnMore": "了解更多",
+      "clear": "清除"
+    },
+    "status": {
+      "connected": "已连接",
+      "connecting": "连接中",
+      "disconnected": "未连接",
+      "error": "错误",
+      "enabled": "已启用",
+      "disabled": "已禁用",
+      "reconnecting": "重新连接中"
+    },
+    "errors": {
+      "unknown": "出现了一些问题，请稍后再试。",
+      "forbidden": "您没有权限执行此操作。",
+      "notFound": "未找到您要访问的内容。",
+      "sectionFallback": "此区域发生错误",
+      "sectionFallbackMessage": "出现未知错误。"
+    },
+    "a11y": {
+      "more": "更多选项"
+    }
+  },
+  "metadata": {
+    "title": "模型上下文协议中心",
+    "description": "在一个界面中管理 MCP 服务器、配置与对话。",
+    "keywords": "模型上下文协议, MCP, 服务器, 对话, 开发者工具"
+  },
+  "errorPage": {
+    "title": "出现问题！",
+    "description": "处理您的请求时遇到意外错误。",
+    "labels": {
+      "error": "错误：",
+      "errorId": "错误 ID："
+    },
+    "fallbackMessage": "发生未知错误",
+    "instructions": {
+      "intro": "错误已记录。您可以尝试：",
+      "refresh": "刷新页面或重试",
+      "dashboard": "返回控制台",
+      "report": "若仍存在请提交反馈"
+    },
+    "actions": {
+      "retry": "重新尝试",
+      "dashboard": "前往控制台",
+      "report": "报告问题"
+    }
+  },
+  "globalErrorPage": {
+    "title": "严重错误",
+    "description": "发生严重错误，应用无法正常加载。",
+    "labels": {
+      "error": "错误：",
+      "errorId": "错误 ID："
+    },
+    "fallbackMessage": "发生未知的严重错误",
+    "instructions": {
+      "intro": "这是影响整个应用的严重错误。请尝试：",
+      "refresh": "刷新页面",
+      "clearCache": "清除浏览器缓存",
+      "contact": "如问题持续请联系支持"
+    },
+    "actions": {
+      "reload": "重新加载应用"
+    }
+  },
+  "loadingState": {
+    "title": "加载中",
+    "description": "正在加载内容，请稍候..."
+  },
+  "notFoundPage": {
+    "title": "页面未找到",
+    "description": "您访问的页面不存在或已被移动。",
+    "suggestions": {
+      "intro": "您可以尝试以下操作：",
+      "dashboard": "返回控制台",
+      "url": "检查网址是否拼写正确",
+      "navigation": "使用导航菜单找到所需内容"
+    },
+    "actions": {
+      "dashboard": "前往控制台",
+      "chat": "前往对话",
+      "back": "返回上一页"
+    }
+  },
+  "testErrorPage": {
+    "errors": {
+      "boundaryExample": "这是一个用于演示错误边界的测试错误"
+    },
+    "breadcrumbs": {
+      "label": "测试错误"
+    },
+    "hero": {
+      "title": "错误处理测试页",
+      "description": "用于测试错误边界与错误处理。点击下方按钮触发错误。"
+    },
+    "sections": {
+      "boundary": {
+        "title": "测试错误边界",
+        "description": "触发错误边界并显示错误页面。",
+        "action": "触发错误"
+      },
+      "notFound": {
+        "title": "测试 404 页面",
+        "description": "跳转到不存在的页面体验 404。",
+        "action": "前往不存在的页面"
+      },
+      "loading": {
+        "title": "测试加载状态",
+        "description": "跳转到有加载状态的页面查看加载界面。",
+        "action": "前往对话（含加载）"
+      }
+    },
+    "warning": {
+      "title": "警告",
+      "description": "此页面仅用于开发阶段测试，生产环境应移除。"
+    }
+  },
+  "marketplace": {
+    "error": {
+      "title": "市场错误",
+      "description": "加载市场时发生错误。请重试。"
+    }
+  },
+  "oauthCallback": {
+    "status": {
+      "processing": "正在处理授权...",
+      "exchanging": "正在交换授权码以获取令牌...",
+      "success": "授权成功！您可以关闭此窗口。"
+    },
+    "errors": {
+      "unknownError": "发生未知的授权错误",
+      "missingCodeOrState": "缺少授权码或状态参数",
+      "stateExpired": "OAuth 状态不存在或已过期",
+      "configMissing": "未找到 OAuth 配置信息",
+      "genericFailure": "授权失败"
+    },
+    "headings": {
+      "processing": "正在处理授权",
+      "success": "成功！",
+      "error": "授权失败"
+    },
+    "actions": {
+      "closeWindow": "关闭窗口"
+    }
+  },
+  "chat": {
+    "error": {
+      "title": "对话错误",
+      "description": "加载对话界面时出错。"
+    },
+    "session": {
+      "defaultTitle": "新对话"
+    },
+    "toasts": {
+      "sessionExported": "对话会话已成功导出",
+      "chatCleared": "对话已清除",
+      "modelSwitched": "已切换到 {model}",
+      "streamingEnabled": "流式传输已启用",
+      "streamingDisabled": "流式传输已禁用",
+      "newSession": "已创建新对话会话",
+      "sessionCount": "{count, plural, one {# 个会话} other {# 个会话}}",
+      "responseFailure": "获取响应失败",
+      "sendFailure": "发送消息失败",
+      "toolUse": "正在使用工具：{tool}",
+      "toolExecution": "{count, plural, one {已执行 # 个工具} other {已执行 # 个工具}}"
+    },
+    "labels": {
+      "streaming": "流式传输",
+      "standard": "标准",
+      "connected": "已连接：",
+      "noServers": "无服务器"
+    },
+    "messages": {
+      "optimizationNotice": "您的提示已优化以获得更好的结果。"
+    },
+    "sidebar": {
+      "newChat": "新对话",
+      "empty": "暂无对话会话",
+      "confirmDelete": "删除此对话会话？此操作无法撤销。",
+      "messageCount": "{count, plural, one {# 条消息} other {# 条消息}}"
+    },
+    "input": {
+      "placeholder": "输入您的消息...",
+      "errors": {
+        "optimizeFailure": "优化提示失败"
+      },
+      "toast": {
+        "optimized": "提示已优化",
+        "optimizeError": "优化提示失败"
+      },
+      "shortcuts": {
+        "send": "发送",
+        "newline": "换行"
+      },
+      "aria": {
+        "optimize": "优化提示",
+        "send": "发送消息"
+      },
+      "tooltip": {
+        "optimize": "使用 AI 优化提示",
+        "send": "发送消息",
+        "waiting": "等待响应..."
+      }
+    },
+    "message": {
+      "user": "您",
+      "assistant": "助手",
+      "system": "系统",
+      "copy": "复制消息",
+      "copied": "已复制！",
+      "download": "下载",
+      "preview": "预览"
+    },
+    "interface": {
+      "messageCount": "{count, plural, one {# 条消息} other {# 条消息}}",
+      "empty": {
+        "title": "开始对话",
+        "description": "发送消息以开始使用您连接的 MCP 服务器与 Claude 聊天。"
+      },
+      "emptyState": {
+        "title": "暂无消息",
+        "description": "在下方发送消息以开始对话。",
+        "tips": {
+          "0": "连接 MCP 服务器以增强您的聊天体验",
+          "1": "使用 Shift+Enter 输入多行消息",
+          "2": "启用提示优化以获得更好的结果"
+        }
+      },
+      "actions": {
+        "clear": "清除对话",
+        "clearChat": "清除对话",
+        "confirmClear": "清除所有消息？",
+        "stopGeneration": "停止生成"
+      },
+      "clearDialog": {
+        "title": "清除对话",
+        "description": "您确定要清除所有消息吗？",
+        "warning": "此操作无法撤销。",
+        "confirm": "清除所有消息"
+      },
+      "status": {
+        "thinking": "思考中..."
+      }
+    },
+    "selector": {
+      "placeholder": "选择服务器",
+      "autoOption": "自动（所有已连接）"
+    },
+    "prompt": {
+      "label": "优化提示"
+    }
+  },
+  "developerPage": {
+    "hero": {
+      "title": "开发者工具",
+      "description": "调试 MCP 协议消息、监控性能并排查问题"
+    },
+    "error": {
+      "title": "开发者工具错误",
+      "description": "加载开发者工具时出错。"
+    },
+    "loading": {
+      "title": "正在加载开发者工具",
+      "description": "请稍候，我们正在加载开发者工具..."
+    }
+  },
+  "settings": {
+    "page": {
+      "title": "设置",
+      "description": "配置偏好、集成与高级选项。",
+      "errors": {
+        "title": "设置 错误",
+        "description": "加载设置时发生错误。"
+      },
+      "loading": {
+        "title": "正在加载设置",
+        "description": "正在加载您的偏好，请稍候..."
+      }
+    },
+    "locale": {
+      "title": "语言与地区",
+      "description": "选择您偏好的语言和地区设置。",
+      "fields": {
+        "locale": {
+          "label": "语言",
+          "options": {
+            "en": "英语",
+            "zh-CN": "简体中文",
+            "ja": "日语",
+            "es": "西班牙语"
+          }
+        }
+      },
+      "actions": {
+        "reset": "恢复默认"
+      }
+    },
+    "notifications": {
+      "title": "通知",
+      "description": "管理通知偏好和提醒。",
+      "toggles": {
+        "enabled": {
+          "label": "启用通知",
+          "description": "接收重要事件的通知"
+        },
+        "playSound": {
+          "label": "播放声音",
+          "description": "通知出现时播放声音"
+        },
+        "showBadges": {
+          "label": "显示徽章",
+          "description": "在应用图标上显示通知徽章"
+        }
+      },
+      "actions": {
+        "reset": "恢复默认"
+      }
+    },
+    "privacy": {
+      "title": "隐私与安全",
+      "description": "控制您的隐私和安全设置。",
+      "toggles": {
+        "telemetry": {
+          "label": "发送使用数据",
+          "description": "通过发送匿名使用统计信息帮助改进应用"
+        },
+        "crashReports": {
+          "label": "发送崩溃报告",
+          "description": "自动发送崩溃报告以帮助修复错误"
+        },
+        "requireConfirmOnClear": {
+          "label": "清除数据前确认",
+          "description": "在清除聊天历史或数据前要求确认"
+        }
+      },
+      "actions": {
+        "reset": "恢复默认"
+      }
+    },
+    "appearance": {
+      "title": "外观",
+      "description": "自定义应用程序的外观和感觉。",
+      "fields": {
+        "theme": {
+          "label": "主题",
+          "options": {
+            "system": "跟随系统",
+            "light": "浅色",
+            "dark": "深色"
+          }
+        },
+        "colorScheme": {
+          "label": "配色方案",
+          "options": {
+            "zinc": "锌灰",
+            "slate": "石板灰",
+            "gray": "灰色",
+            "neutral": "中性灰",
+            "stone": "石灰",
+            "blue": "蓝色",
+            "violet": "紫罗兰",
+            "emerald": "翡翠绿",
+            "rose": "玫瑰红"
+          }
+        },
+        "fontScale": {
+          "label": "字体大小",
+          "options": {
+            "sm": "小",
+            "md": "中",
+            "lg": "大"
+          }
+        }
+      },
+      "actions": {
+        "reset": "恢复默认",
+        "tooltip": "将外观设置恢复为默认值"
+      }
+    },
+    "advanced": {
+      "title": "高级",
+      "description": "面向高级用户的高级设置。",
+      "experimental": {
+        "label": "实验性功能",
+        "description": "启用实验性功能（可能不稳定）"
+      },
+      "devMode": {
+        "label": "开发者模式",
+        "description": "启用开发者工具和调试功能"
+      },
+      "actions": {
+        "reset": "恢复默认"
+      }
+    },
+    "backup": {
+      "format": {
+        "size": "{value} KB"
+      },
+      "sections": {
+        "automatic": {
+          "title": "自动备份",
+          "description": "配置自动备份设置以保护您的数据。",
+          "enable": {
+            "label": "启用自动备份",
+            "description": "根据以下计划自动创建备份"
+          },
+          "frequency": {
+            "label": "备份频率",
+            "options": {
+              "daily": "每天",
+              "weekly": "每周",
+              "monthly": "每月",
+              "manual": "仅手动"
+            }
+          },
+          "retention": {
+            "label": "保留备份",
+            "description": "较旧的备份将自动删除",
+            "options": {
+              "7": "7 天",
+              "14": "14 天",
+              "30": "30 天",
+              "60": "60 天",
+              "90": "90 天"
+            }
+          },
+          "lastBackup": "上次备份：{time}"
+        },
+        "manual": {
+          "title": "手动备份",
+          "description": "手动创建和导入备份。",
+          "create": "立即创建备份",
+          "import": {
+            "label": "导入备份",
+            "ariaLabel": "选择要导入的备份文件",
+            "modes": {
+              "single": {
+                "title": "单个文件",
+                "description": "导入一个备份文件"
+              },
+              "multiple": {
+                "title": "多个文件",
+                "description": "一次导入多个备份文件"
+              }
+            },
+            "button": {
+              "single": "导入备份",
+              "multiple": "导入备份"
+            }
+          }
+        },
+        "history": {
+          "title": "备份历史",
+          "description": "查看和管理您的备份历史。",
+          "badge": "{count, plural, one {# 个备份} other {# 个备份}}",
+          "empty": {
+            "title": "还没有备份",
+            "description": "创建您的第一个备份以开始"
+          }
+        }
+      },
+      "cards": {
+        "servers": "{count, plural, one {服务器} other {服务器}}",
+        "sessions": "{count, plural, one {会话} other {会话}}"
+      },
+      "actions": {
+        "restore": "恢复",
+        "export": "导出",
+        "delete": "删除"
+      },
+      "dialogs": {
+        "restore": {
+          "title": "恢复备份",
+          "description": "选择要从此备份恢复的数据。",
+          "options": {
+            "servers": "服务器配置",
+            "chatSessions": "聊天会话",
+            "chatMessages": "聊天消息",
+            "connectionHistory": "连接历史",
+            "settings": "设置"
+          },
+          "cancel": "取消",
+          "confirm": "恢复"
+        },
+        "delete": {
+          "title": "删除备份",
+          "description": "您确定要删除此备份吗？此操作无法撤消。",
+          "cancel": "取消",
+          "confirm": "删除"
+        }
+      },
+      "toasts": {
+        "settingsUpdated": "备份设置已更新",
+        "createSuccess": "备份创建成功",
+        "createError": "创建备份失败",
+        "exportSuccess": "备份导出成功",
+        "exportError": "导出备份失败",
+        "importSuccess": "{count, plural, one {备份导入成功} other {# 个备份导入成功}}",
+        "importPartial": "{success} 个导入成功，{failed} 个失败",
+        "importError": "导入备份失败",
+        "restoreSuccess": "备份恢复成功",
+        "restoreError": "恢复备份失败",
+        "deleteSuccess": "备份删除成功",
+        "deleteError": "删除备份失败"
+      }
+    }
+  },
+  "dashboard": {
+    "breadcrumbs": {
+      "dashboard": "总览"
+    },
+    "hero": {
+      "title": "模型上下文协议中心",
+      "subtitle": "在同一控制台中连接、监控并管理所有 MCP 服务器。",
+      "connected": "当前已连接 {count, plural, one {{count} 台服务器。} other {{count} 台服务器。}}"
+    },
+    "actions": {
+      "goToChat": "打开对话",
+      "remoteServers": "远程库",
+      "templates": "模板",
+      "importExport": "导入 / 导出",
+      "addServer": "新增服务器"
+    },
+    "filters": {
+      "searchPlaceholder": "按名称或描述搜索服务器...",
+      "statusLabel": "状态",
+      "transportLabel": "传输",
+      "resultCount": "{count, plural, one {共 # 条结果} other {共 # 条结果}}",
+      "statusAll": "全部状态",
+      "transportAll": "全部传输方式",
+      "searchBadge": "搜索",
+      "statusBadge": "状态",
+      "transportBadge": "传输",
+      "transportOptions": {
+        "stdio": "标准输入输出",
+        "sse": "SSE",
+        "http": "HTTP"
+      }
+    },
+    "confirmations": {
+      "delete": "确定要删除该服务器配置吗？此操作无法撤销。"
+    },
+    "toast": {
+      "connectSuccess": "服务器连接成功。",
+      "connectFailed": "连接服务器失败。",
+      "connectError": "连接时发生未知错误。",
+      "disconnectSuccess": "服务器已断开连接。",
+      "disconnectFailed": "断开连接失败。",
+      "disconnectError": "断开连接时发生未知错误。",
+      "reconnectPending": "正在重新连接服务器...",
+      "reconnectSuccess": "服务器重新连接成功。",
+      "reconnectError": "重新连接服务器失败。",
+      "deleteSuccess": "已删除服务器配置。",
+      "templateAdded": "模板已添加到配置。",
+      "updateSuccess": "服务器配置已更新。",
+      "createSuccess": "已成功创建服务器。",
+      "createFailed": "无法创建服务器配置。",
+      "saveError": "保存服务器配置时发生错误。"
+    }
+  },
+  "serverList": {
+    "empty": {
+      "title": "尚未配置任何服务器",
+      "subtitle": "点击“新增服务器”按钮即可开始配置。"
+    }
+  },
+  "serverCard": {
+    "actions": {
+      "connect": "连接",
+      "disconnect": "断开"
+    }
+  },
+  "servers": {
+    "breadcrumbs": {
+      "root": "服务器"
+    },
+    "hero": {
+      "title": "服务器管理",
+      "subtitle": "跨传输通道的统一状态视图",
+      "stats": "已连接 {connected} 台 • 运行中 {running} 个进程"
+    },
+    "actions": {
+      "refresh": "刷新",
+      "enableAll": "全部启用",
+      "disableAll": "全部禁用",
+      "bulkConnect": "连接已启用",
+      "bulkDisconnect": "断开全部"
+    },
+    "toasts": {
+      "loadFailed": "加载 MCP 状态失败",
+      "connect": "连接成功",
+      "connectFailed": "连接失败",
+      "disconnect": "已断开连接",
+      "disconnectFailed": "断开失败",
+      "bulkConnect": "已连接 {success}/{total}",
+      "bulkDisconnect": "已断开 {success}/{total}",
+      "enableAll": "全部服务器已启用",
+      "disableAll": "全部服务器已禁用"
+    },
+    "error": {
+      "title": "服务器错误",
+      "description": "加载服务器页面时出错。"
+    },
+    "loading": {
+      "title": "正在加载服务器",
+      "description": "请稍候，我们正在加载您的 MCP 服务器..."
+    },
+    "processes": {
+      "title": "运行中的进程",
+      "empty": "没有正在运行的 stdio 进程",
+      "meta": "PID {pid} • {state} • 重启 {restarts} 次",
+      "uptime": "{seconds} 秒"
+    },
+    "detail": {
+      "notFound": {
+        "title": "未找到服务器",
+        "description": "您要访问的服务器不存在。",
+        "cta": "返回控制台"
+      },
+      "configuration": {
+        "title": "配置信息",
+        "description": "服务器连接详情",
+        "transport": "传输方式：",
+        "command": "启动命令：",
+        "cwd": "工作目录：",
+        "env": "环境变量：",
+        "url": "URL："
+      },
+      "tools": {
+        "title": "可用工具（{count}）",
+        "description": "服务器提供的工具列表"
+      },
+      "resources": {
+        "title": "可用资源（{count}）",
+        "description": "服务器提供的资源列表"
+      },
+      "prompts": {
+        "title": "可用提示（{count}）",
+        "description": "服务器提供的提示列表"
+      }
+    }
+  },
+  "components": {
+    "configUploader": {
+      "dialog": {
+        "title": "配置导入 / 导出",
+        "description": "从 Claude Desktop、VS Code、Cursor 或 Cline 导入服务器，或导出当前配置。"
+      },
+      "import": {
+        "title": "导入配置",
+        "example": "示例",
+        "mode": {
+          "single": "单个文件",
+          "multiple": "多个文件",
+          "directory": "目录"
+        },
+        "fileHelp": "来自 Claude Desktop、VS Code、Cursor 或 Cline 导出的 JSON",
+        "selection": {
+          "singlePlaceholder": "点击上传配置文件",
+          "multiplePlaceholder": "点击上传多个配置文件",
+          "singleSelected": "{name}",
+          "multipleSelected": "已选择 {count} 个文件"
+        },
+        "directory": {
+          "placeholder": "点击选择目录",
+          "selected": "已选择 {count} 个 JSON 文件",
+          "help": "将扫描目录中的所有 JSON 配置文件"
+        }
+      },
+      "status": {
+        "processingSingle": "正在处理文件...",
+        "processingMultiple": "正在处理 {count} 个文件..."
+      },
+      "results": {
+        "title": "解析结果",
+        "success": "成功解析 {count} 个服务器",
+        "successAggregated": "成功解析 {count} 个服务器",
+        "filesBadge": "{success} / {total} 个文件",
+        "formatBadge": "{format}",
+        "failure": "解析配置失败",
+        "failureAggregated": "解析 {total} 个文件失败",
+        "errorsTitle": "错误",
+        "warningsTitle": "警告",
+        "serversTitle": "待导入服务器"
+      },
+      "toast": {
+        "invalidConfig": "配置无效：{reason}",
+        "processFailed": "处理文件失败",
+        "directoryNoJson": "所选目录中没有 JSON 配置文件",
+        "directoryFailed": "处理目录失败",
+        "parseSuccessSingle": "在配置中找到 {count} 台服务器{format}",
+        "parseFailureSingle": "解析配置文件失败",
+        "parseSuccessMultiple": "已处理 {total} 个文件：从 {success} 个文件中找到 {count} 台服务器",
+        "parseFailureMultiple": "解析 {total} 个文件失败",
+        "importSuccessSingle": "已导入 {count} 台新服务器",
+        "importSuccessMultiple": "已从 {files} 个文件导入 {count} 台新服务器",
+        "importFailure": "导入服务器失败",
+        "exportSuccess": "配置导出成功",
+        "exportFailure": "配置导出失败",
+        "downloadSuccess": "示例配置已下载"
+      },
+      "export": {
+        "title": "导出配置",
+        "description": "将当前 {count} 台服务器导出为 Claude Desktop 格式",
+        "cta": "导出当前服务器"
+      },
+      "footer": {
+        "import": "导入 {count} 台服务器"
+      }
+    },
+    "installServer": {
+      "dialog": {
+        "title": "安装 MCP 服务器",
+        "description": "从 npm、GitHub 或本地路径安装 MCP 服务器。"
+      },
+      "tabs": {
+        "npm": "npm",
+        "github": "GitHub",
+        "local": "本地"
+      },
+      "fields": {
+        "npm": {
+          "packageLabel": "软件包名称 *",
+          "packagePlaceholder": "@modelcontextprotocol/server-filesystem",
+          "versionLabel": "版本（可选）",
+          "versionPlaceholder": "latest",
+          "registryLabel": "Registry 地址（可选）",
+          "registryPlaceholder": "https://registry.npmjs.org"
+        },
+        "github": {
+          "repoLabel": "仓库 *",
+          "repoPlaceholder": "owner/repository",
+          "branchLabel": "分支（可选）",
+          "branchPlaceholder": "main",
+          "tagLabel": "标签（可选）",
+          "tagPlaceholder": "v1.0.0",
+          "subPathLabel": "子路径（可选）",
+          "subPathPlaceholder": "packages/server"
+        },
+        "local": {
+          "pathLabel": "路径 *",
+          "pathPlaceholder": "/path/to/server"
+        },
+        "common": {
+          "nameLabel": "服务器名称 *",
+          "namePlaceholder": "我的 MCP 服务器",
+          "descriptionLabel": "描述（可选）",
+          "descriptionPlaceholder": "服务器描述"
+        }
+      },
+      "alerts": {
+        "troubleshooting": "故障排查",
+        "warningsTitle": "警告"
+      },
+      "actions": {
+        "validate": "验证",
+        "install": "安装",
+        "retry": "重试安装"
+      },
+      "errors": {
+        "packageNameRequired": "必须填写软件包名称",
+        "repositoryRequired": "必须填写仓库信息",
+        "pathRequired": "必须填写路径",
+        "serverNameRequired": "必须填写服务器名称",
+        "validationFailed": "验证失败",
+        "installationFailed": "安装失败"
+      }
+    },
+    "installationProgress": {
+      "title": "安装进度",
+      "progress": {
+        "step": "步骤 {current}/{total}：{name}",
+        "processing": "正在处理..."
+      },
+      "errorLabel": "错误：",
+      "logs": {
+        "show": "显示日志",
+        "hide": "隐藏日志"
+      },
+      "timestamps": {
+        "started": "开始时间：{value}",
+        "completed": "完成时间：{value}",
+        "separator": "•"
+      },
+      "actions": {
+        "retrying": "正在重试..."
+      },
+      "status": {
+        "pending": "等待中",
+        "downloading": "下载中",
+        "installing": "安装中",
+        "configuring": "配置中",
+        "completed": "已完成",
+        "failed": "失败",
+        "cancelled": "已取消"
+      },
+      "list": {
+        "title": "进行中的安装"
+      }
+    },
+    "serverHealth": {
+      "status": {
+        "healthy": "健康",
+        "degraded": "性能下降",
+        "offline": "离线"
+      },
+      "tooltip": {
+        "uptime": "运行时长：{value}",
+        "response": "响应：{value}",
+        "error": "错误：{message}",
+        "failures": "失败次数：{count}"
+      },
+      "labels": {
+        "uptime": "运行时长",
+        "responseTime": "响应时间",
+        "lastCheck": "最近检查",
+        "failures": "失败次数",
+        "lastError": "最近错误"
+      },
+      "actions": {
+        "reconnect": "重新连接"
+      },
+      "format": {
+        "uptime": {
+          "days": "{days} 天 {hours} 小时",
+          "hours": "{hours} 小时 {minutes} 分",
+          "minutes": "{minutes} 分 {seconds} 秒",
+          "seconds": "{seconds} 秒"
+        },
+        "response": {
+          "milliseconds": "{value} 毫秒",
+          "seconds": "{value} 秒"
+        }
+      }
+    },
+    "registryBrowser": {
+      "search": {
+        "placeholder": "搜索 MCP 服务器...",
+        "button": "搜索",
+        "loading": "正在搜索..."
+      },
+      "filters": {
+        "all": "全部",
+        "npm": "npm",
+        "github": "GitHub"
+      },
+      "empty": "未找到服务器，请尝试更换搜索词。",
+      "badges": {
+        "verified": "已验证"
+      },
+      "metrics": {
+        "version": "v{version}"
+      },
+      "actions": {
+        "openHomepage": "打开服务器主页"
+      }
+    },
+    "oauthAuth": {
+      "dialog": {
+        "title": "OAuth 身份验证",
+        "description": "使用 OAuth 2.1 + PKCE 与 {name} 完成身份验证"
+      },
+      "status": {
+        "authenticating": "等待身份验证...",
+        "success": "身份验证成功",
+        "idle": "准备开始身份验证"
+      },
+      "errors": {
+        "authFailed": "身份验证失败",
+        "tokenExpired": "令牌已过期，请重新验证。",
+        "startFailed": "无法启动身份验证流程",
+        "refreshMissing": "没有可用的刷新令牌，请重新验证。",
+        "refreshFailed": "刷新令牌失败"
+      },
+      "toasts": {
+        "success": "已成功与 {name} 完成身份验证",
+        "error": "身份验证失败：{reason}",
+        "popup": "请在弹出窗口中完成身份验证",
+        "startFailed": "无法启动身份验证流程",
+        "refreshSuccess": "令牌刷新成功",
+        "refreshFailed": "刷新令牌失败，请重新验证。"
+      },
+      "token": {
+        "expires": "到期时间：{value}",
+        "never": "永久有效",
+        "expired": "令牌已过期"
+      },
+      "badges": {
+        "active": "已激活"
+      },
+      "info": {
+        "clientId": "Client ID：",
+        "scope": "Scope：",
+        "pkce": "PKCE：",
+        "pkceEnabled": "已启用（S256）",
+        "pkceDisabled": "未启用"
+      },
+      "alerts": {
+        "success": "您已成功与 {name} 完成身份验证"
+      },
+      "buttons": {
+        "authenticate": "开始验证",
+        "reauthenticate": "重新验证",
+        "authenticating": "正在验证...",
+        "refresh": "刷新令牌",
+        "refreshing": "正在刷新..."
+      }
+    },
+    "remoteLibrary": {
+      "dialog": {
+        "title": "远程 MCP 服务器库",
+        "description": "浏览并连接预配置的远程 MCP 服务器"
+      },
+      "search": {
+        "placeholder": "搜索服务器..."
+      },
+      "categories": {
+        "all": "全部",
+        "ai": "AI",
+        "productivity": "效率",
+        "developerTools": "开发工具",
+        "knowledge": "知识库",
+        "creative": "创意",
+        "data": "数据",
+        "utilities": "实用工具"
+      },
+      "badges": {
+        "oauth": "OAuth",
+        "apiKey": "API Key",
+        "authenticated": "已认证"
+      },
+      "actions": {
+        "connecting": "正在连接...",
+        "connect": "连接",
+        "addServer": "添加服务器",
+        "viewDocs": "查看文档",
+        "docsLabel": "文档"
+      },
+      "toasts": {
+        "oauthSuccess": "已通过 OAuth 添加 {name}",
+        "added": "已将 {name} 添加到服务器列表",
+        "configureKeys": "请在服务器设置中配置 API 密钥",
+        "connectFailed": "连接失败"
+      },
+      "errors": {
+        "oauthConfigMissing": "未找到 OAuth 配置",
+        "connectFailed": "连接失败"
+      },
+      "empty": "未找到符合条件的服务器",
+      "footer": {
+        "count": "显示 {visible}/{total} 台服务器"
+      }
+    },
+    "serverTemplates": {
+      "dialog": {
+        "title": "服务器模板",
+        "description": "从常用 MCP 服务器的预设模板中快速创建配置。"
+      },
+      "tabs": {
+        "all": "全部",
+        "popular": "热门",
+        "categories": "分类"
+      },
+      "configuration": {
+        "title": "需要补充配置",
+        "description": "请输入所需的配置值以继续。"
+      },
+      "fields": {
+        "env": "环境变量 {key}",
+        "args": "命令参数",
+        "url": "URL"
+      },
+      "placeholders": {
+        "env": "请输入值",
+        "args": "使用空格分隔的参数",
+        "url": "请输入 URL",
+        "default": "请输入值"
+      },
+      "actions": {
+        "useTemplate": "使用此模板"
+      },
+      "empty": {
+        "title": "请选择左侧的模板",
+        "description": "在左侧浏览模板以查看配置详情。"
+      }
+    },
+    "serverDocs": {
+      "dialog": {
+        "title": "MCP 服务器文档",
+        "description": "浏览常用 MCP 服务器的文档"
+      },
+      "search": {
+        "placeholder": "搜索服务器..."
+      },
+      "states": {
+        "loading": "正在加载...",
+        "empty": "未找到服务器",
+        "placeholder": "请选择服务器以查看文档"
+      },
+      "links": {
+        "github": "GitHub",
+        "npm": "npm"
+      },
+      "sections": {
+        "authentication": {
+          "title": "身份验证",
+          "required": "需要验证",
+          "optional": "无需验证",
+          "methods": "验证方式：",
+          "envVars": "环境变量："
+        },
+        "configuration": {
+          "title": "配置",
+          "tabs": {
+            "stdio": "Stdio",
+            "sse": "SSE",
+            "http": "HTTP"
+          }
+        },
+        "features": {
+          "title": "功能"
+        },
+        "requirements": {
+          "title": "使用要求"
+        },
+        "notes": {
+          "title": "备注"
+        }
+      },
+      "actions": {
+        "copyConfig": "复制配置"
+      },
+      "toasts": {
+        "loadFailed": "加载文档失败",
+        "copy": "已复制到剪贴板"
+      }
+    },
+    "troubleshooting": {
+      "networkCheckConnection": "请检查网络连接并重试。",
+      "networkProxy": "如果使用代理或 VPN，请确认允许访问 GitHub / npm。",
+      "npmEnsureNode": "请确认已安装 Node.js 和 npm 并已添加到 PATH。",
+      "npmVerifyPackage": "请核对软件包名称和版本在 npm 上是否存在。",
+      "githubVerifyRepo": "请确认 GitHub 仓库存在且为公开，或您拥有访问权限。",
+      "githubRateLimit": "若遇到限流，请稍后再试或登录 GitHub 以提升额度。",
+      "permissionsElevate": "尝试以更高权限运行应用程序。",
+      "generalRetry": "请重新尝试安装。",
+      "generalCheckLogs": "查看日志了解详情，若问题持续请反馈给维护者。"
+    },
+    "errorAlert": {
+      "title": "错误"
+    },
+    "serverForms": {
+      "common": {
+        "nameLabel": "服务器名称 *",
+        "namePlaceholder": "我的 MCP 服务器",
+        "descriptionLabel": "描述",
+        "descriptionPlaceholder": "可选描述",
+        "submit": "保存服务器"
+      },
+      "dialog": {
+        "createTitle": "新增 MCP 服务器",
+        "editTitle": "编辑 MCP 服务器",
+        "description": "配置 MCP 服务器连接。选择传输类型并填写必要信息。",
+        "tabs": {
+          "stdio": "Stdio",
+          "sse": "SSE",
+          "http": "HTTP"
+        }
+      },
+      "stdio": {
+        "commandLabel": "启动命令 *",
+        "commandPlaceholder": "npx",
+        "commandHelp": "要执行的命令（示例：npx、node、python）",
+        "argsLabel": "命令参数",
+        "argsPlaceholder": "-y @modelcontextprotocol/server-filesystem /path/to/dir",
+        "argsHelp": "使用空格分隔的命令参数",
+        "envLabel": "环境变量",
+        "envPlaceholder": "KEY=value\nANOTHER_KEY=another_value",
+        "envHelp": "每行一个，格式为 KEY=value",
+        "cwdLabel": "工作目录",
+        "cwdPlaceholder": "/path/to/working/directory"
+      },
+      "sse": {
+        "namePlaceholder": "我的 SSE 服务器",
+        "urlLabel": "服务器 URL *",
+        "urlPlaceholder": "http://localhost:3001/sse",
+        "urlHelp": "MCP 服务器的 SSE 端点地址",
+        "headersLabel": "自定义请求头（可选）",
+        "headersPlaceholder": "Authorization: Bearer token\nX-Custom-Header: value",
+        "headersHelp": "每行一个请求头，格式：Header-Name: value"
+      },
+      "http": {
+        "namePlaceholder": "我的 HTTP 服务器",
+        "urlLabel": "服务器 URL *",
+        "urlPlaceholder": "https://api.example.com/mcp",
+        "urlHelp": "MCP 服务器的 HTTP 端点地址",
+        "methodLabel": "HTTP 方法",
+        "methodOptions": {
+          "post": "POST",
+          "get": "GET"
+        },
+        "timeoutLabel": "请求超时时间（毫秒）",
+        "timeoutPlaceholder": "30000",
+        "timeoutHelp": "超时时间范围 1000-300000（毫秒）",
+        "auth": {
+          "label": "认证方式",
+          "options": {
+            "none": "无",
+            "bearer": "Bearer Token",
+            "apikey": "API Key",
+            "basic": "基本认证"
+          },
+          "bearer": {
+            "label": "Bearer Token *",
+            "placeholder": "your-bearer-token"
+          },
+          "apiKey": {
+            "headerLabel": "API Key 请求头名称",
+            "headerPlaceholder": "X-API-Key",
+            "valueLabel": "API Key 值 *",
+            "valuePlaceholder": "your-api-key"
+          },
+          "basic": {
+            "usernameLabel": "用户名 *",
+            "usernamePlaceholder": "username",
+            "passwordLabel": "密码 *",
+            "passwordPlaceholder": "password"
+          }
+        },
+        "headers": {
+          "label": "额外请求头（可选）",
+          "placeholder": "Content-Type: application/json\nX-Custom-Header: value",
+          "help": "每行一个请求头，格式：Header-Name: value"
+        }
+      }
+    },
+    "lifecycle": {
+      "statusTitle": "服务器状态",
+      "tooltip": {
+        "start": "启动服务器",
+        "stop": "停止服务器",
+        "restart": "重启服务器"
+      },
+      "actions": {
+        "start": "启动",
+        "stop": "停止",
+        "restart": "重启"
+      },
+      "errors": {
+        "start": "启动服务器失败",
+        "stop": "停止服务器失败",
+        "restart": "重启服务器失败"
+      },
+      "metrics": {
+        "pid": "进程 ID：{value}",
+        "uptime": "运行时长：{value}",
+        "restarts": "重启次数：{count}",
+        "lastError": "错误信息：{message}",
+        "memoryLabel": "内存",
+        "cpuLabel": "CPU",
+        "uptimeLabel": "运行时长",
+        "na": "暂无"
+      },
+      "status": {
+        "stopped": "已停止",
+        "starting": "启动中",
+        "running": "运行中",
+        "stopping": "停止中",
+        "restarting": "重启中",
+        "error": "错误"
+      }
+    }
+  }
+}

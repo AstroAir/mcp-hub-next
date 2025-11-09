@@ -6,6 +6,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -47,6 +48,7 @@ export function ChatSessionSidebar({
   onRenameSession,
   onExportSession,
 }: ChatSessionSidebarProps) {
+  const t = useTranslations('chat.sidebar');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
 
@@ -68,7 +70,7 @@ export function ChatSessionSidebar({
   };
 
   const handleDelete = (sessionId: string) => {
-    if (confirm('Are you sure you want to delete this chat session?')) {
+    if (confirm(t('confirmDelete'))) {
       onDeleteSession(sessionId);
     }
   };
@@ -78,7 +80,7 @@ export function ChatSessionSidebar({
       <div className="p-4 border-b">
         <Button onClick={onCreateSession} className="w-full" size="sm">
           <Plus className="h-4 w-4 mr-2" />
-          New Chat
+          {t('newChat')}
         </Button>
       </div>
 
@@ -86,7 +88,7 @@ export function ChatSessionSidebar({
         <div className="p-2 space-y-1">
           {sessions.length === 0 ? (
             <div className="text-center text-sm text-muted-foreground py-8">
-              No chat sessions yet
+              {t('empty')}
             </div>
           ) : (
             sessions.map((session) => (
@@ -136,7 +138,7 @@ export function ChatSessionSidebar({
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{session.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          {session.messageCount} message{session.messageCount !== 1 ? 's' : ''}
+                          {t('messageCount', { count: session.messageCount })}
                         </p>
                       </div>
                     </div>

@@ -8,6 +8,7 @@
 import { ServerCard } from './server-card';
 import type { MCPServerConfig, ConnectionStatus } from '@/lib/types';
 import type { ServerHealth } from '@/lib/services/health-monitor';
+import { useTranslations } from 'next-intl';
 
 interface ServerListProps {
   servers: MCPServerConfig[];
@@ -34,11 +35,13 @@ export function ServerList({
   onReconnect,
   onToggleEnabled,
 }: ServerListProps) {
+  const t = useTranslations('serverList');
+
   if (servers.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground">
-        <p className="text-lg">No servers configured yet</p>
-        <p className="text-sm mt-2">Click &quot;Add Server&quot; to get started</p>
+        <p className="text-lg">{t('empty.title')}</p>
+        <p className="text-sm mt-2">{t('empty.subtitle')}</p>
       </div>
     );
   }

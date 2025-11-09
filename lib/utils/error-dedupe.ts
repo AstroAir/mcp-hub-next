@@ -28,31 +28,42 @@ export function buildErrorKey(prefix: string, id?: string, message?: string) {
   return [prefix, id, msg].filter(Boolean).join(":");
 }
 
+export type TroubleshootingTipKey =
+  | 'networkCheckConnection'
+  | 'networkProxy'
+  | 'npmEnsureNode'
+  | 'npmVerifyPackage'
+  | 'githubVerifyRepo'
+  | 'githubRateLimit'
+  | 'permissionsElevate'
+  | 'generalRetry'
+  | 'generalCheckLogs';
+
 /**
- * Translate common low-level error messages into user-friendly tips.
+ * Translate common low-level error messages into user-friendly tip keys.
  */
-export function getTroubleshootingTips(message?: string): string[] {
+export function getTroubleshootingTips(message?: string): TroubleshootingTipKey[] {
   const msg = (message || '').toLowerCase();
-  const tips: string[] = [];
+  const tips: TroubleshootingTipKey[] = [];
 
   if (/(network|fetch|timeout|ecconnrefused|etimedout)/.test(msg)) {
-    tips.push('Check your internet connection and retry.');
-    tips.push('If using a proxy/VPN, ensure it allows GitHub/NPM traffic.');
+    tips.push('networkCheckConnection');
+    tips.push('networkProxy');
   }
   if (/(npm|package\.json|node|npx|enoent)/.test(msg)) {
-    tips.push('Ensure Node.js and npm are installed and available in PATH.');
-    tips.push('Verify the package name/version exists on npm.');
+    tips.push('npmEnsureNode');
+    tips.push('npmVerifyPackage');
   }
   if (/(github|repo|not found|404|rate limit|403|unauthorized|permission)/.test(msg)) {
-    tips.push('Verify the GitHub repository exists and is public or you have access.');
-    tips.push('If rate limited, try again later or authenticate to GitHub.');
+    tips.push('githubVerifyRepo');
+    tips.push('githubRateLimit');
   }
   if (/(eacces|permission denied|admin)/.test(msg)) {
-    tips.push('Try running the app with sufficient permissions.');
+    tips.push('permissionsElevate');
   }
   if (tips.length === 0) {
-    tips.push('Retry the installation.');
-    tips.push('Check logs for details and share with maintainers if the issue persists.');
+    tips.push('generalRetry');
+    tips.push('generalCheckLogs');
   }
   return tips;
 }

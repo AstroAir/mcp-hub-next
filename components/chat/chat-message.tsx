@@ -6,6 +6,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import type { ChatMessage as ChatMessageType } from '@/lib/types';
 import {
@@ -81,6 +82,7 @@ interface ChatMessageProps {
 }
 
 export function ChatMessage({ message }: ChatMessageProps) {
+  const t = useTranslations('chat.message');
   const isUser = message.role === 'user';
   const contentParts = parseMessageContent(message.content);
   const [copied, setCopied] = useState(false);
@@ -137,7 +139,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold">
-              {isUser ? 'You' : 'Assistant'}
+              {isUser ? t('user') : t('assistant')}
             </span>
             <span className="text-xs text-muted-foreground">
               {formatTimestamp(message.timestamp)}
@@ -162,7 +164,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                {copied ? 'Copied!' : 'Copy message'}
+                {copied ? t('copied') : t('copy')}
               </TooltipContent>
             </Tooltip>
           </div>
@@ -190,7 +192,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="text-xs">
-                {message.attachments.length} attachment{message.attachments.length > 1 ? 's' : ''}
+                {t('attachmentsCount', { count: message.attachments.length })}
               </Badge>
             </div>
             <div className="grid w-full grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2">
@@ -230,7 +232,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
                           type="button"
                           className="size-16 rounded bg-muted flex items-center justify-center flex-shrink-0 hover:bg-muted/80 transition"
                           onClick={() => isPdf && attachment.url ? setPdfPreviewSrc(attachment.url) : undefined}
-                          aria-label={isPdf ? 'Preview PDF' : 'Attachment icon'}
+                          aria-label={isPdf ? t('previewPdf') : t('attachmentIcon')}
                         >
                           <IconComponent className="size-8 text-muted-foreground" />
                         </button>
@@ -255,11 +257,11 @@ export function ChatMessage({ message }: ChatMessageProps) {
                                   onClick={() => setPdfPreviewSrc(attachment.url!)}
                                 >
                                   <FileText className="size-3 mr-1" />
-                                  Preview
+                                  {t('previewButton')}
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>
-                                Preview {attachment.name}
+                                {t('previewTooltip', { name: attachment.name })}
                               </TooltipContent>
                             </Tooltip>
                           )}
@@ -272,11 +274,11 @@ export function ChatMessage({ message }: ChatMessageProps) {
                               onClick={() => downloadAttachment(attachment)}
                             >
                               <Download className="size-3 mr-1" />
-                              Download
+                              {t('download')}
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            Download {attachment.name}
+                            {t('downloadTooltip', { name: attachment.name })}
                           </TooltipContent>
                           </Tooltip>
                         </div>
@@ -292,7 +294,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
           <ImagePreviewDialog
             open={!!previewSrc}
             src={previewSrc}
-            alt="attachment preview"
+            alt={t('imagePreviewAlt')}
             onOpenChange={(o) => !o && setPreviewSrc(null)}
           />
         )}
@@ -300,7 +302,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
           <PdfPreviewDialog
             open={!!pdfPreviewSrc}
             src={pdfPreviewSrc}
-            title="PDF attachment preview"
+            title={t('pdfPreviewTitle')}
             onOpenChange={(o) => !o && setPdfPreviewSrc(null)}
           />
         )}
@@ -316,20 +318,20 @@ export function ChatMessage({ message }: ChatMessageProps) {
                     <AlertCircle className={cn('size-4 mt-0.5 shrink-0', status === 'requested' ? 'text-blue-500' : status === 'success' ? 'text-green-600' : 'text-destructive')} />
                     <div className="flex-1 min-w-0 space-y-2">
                       <div className="flex items-center justify-between gap-2">
-                        <div className="text-xs font-medium">Tool call • {toolCall.name}</div>
+                        <div className="text-xs font-medium">{t('toolCall.title', { name: toolCall.name })}</div>
                         <Badge variant={status === 'success' ? 'default' : status === 'error' ? 'destructive' : 'secondary'} className="text-[10px]">
-                          {status === 'requested' ? 'Requested' : status === 'success' ? 'Completed' : 'Error'}
+                          {status === 'requested' ? t('toolCall.status.requested') : status === 'success' ? t('toolCall.status.success') : t('toolCall.status.error')}
                         </Badge>
                       </div>
                       <div>
-                        <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">Parameters</div>
+                        <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">{t('toolCall.parameters')}</div>
                         <CodeBlock language="json" code={JSON.stringify(toolCall.input, null, 2)} />
                       </div>
                       {matchingResult && (
                         <div>
-                          <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">Response</div>
+                          <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">{t('toolCall.response')}</div>
                           {matchingResult.isError ? (
-                            <div className="text-xs text-destructive">{matchingResult.error || 'Unknown error'}</div>
+                            <div className="text-xs text-destructive">{matchingResult.error || t('toolCall.unknownError')}</div>
                           ) : (
                             <CodeBlock language="json" code={JSON.stringify(matchingResult.result, null, 2)} />
                           )}
@@ -367,13 +369,13 @@ export function ChatMessage({ message }: ChatMessageProps) {
                       )}
                     />
                     <div className="flex-1 min-w-0">
-                      <div className="text-xs font-medium">
-                        Result: {result.toolName}
-                      </div>
-                      {result.isError ? (
-                        <div className="text-xs text-destructive mt-1">
-                          Error: {result.error}
+                        <div className="text-xs font-medium">
+                          {t('toolResult.title', { name: result.toolName })}
                         </div>
+                      {result.isError ? (
+                          <div className="text-xs text-destructive mt-1">
+                            {t('toolResult.error', { message: result.error ?? '' })}
+                          </div>
                       ) : (
                         <CodeBlock language="json" code={JSON.stringify(result.result, null, 2)} />
                       )}

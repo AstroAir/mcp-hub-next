@@ -7,6 +7,8 @@ import { AlertTriangle, RefreshCw } from "lucide-react";
 interface ErrorBoundaryProps {
   children: React.ReactNode;
   fallbackTitle?: string;
+  fallbackMessage?: string;
+  retryLabel?: string;
 }
 
 interface ErrorBoundaryState {
@@ -35,6 +37,12 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
   render() {
     if (this.state.hasError) {
+      const {
+        fallbackTitle = "Something went wrong in this section",
+        fallbackMessage = "An unexpected error occurred.",
+        retryLabel = "Try again",
+      } = this.props;
+
       return (
         <div className="p-4 md:p-6">
           <div className="rounded-lg border p-4 md:p-6 bg-muted/40">
@@ -44,13 +52,13 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-base md:text-lg mb-1">
-                  {this.props.fallbackTitle || "Something went wrong in this section"}
+                  {fallbackTitle}
                 </h3>
                 <p className="text-sm text-muted-foreground mb-3">
-                  {this.state.error?.message || "An unexpected error occurred."}
+                  {this.state.error?.message || fallbackMessage}
                 </p>
                 <Button onClick={this.handleReset} size="sm">
-                  <RefreshCw className="h-4 w-4 mr-2" /> Try again
+                  <RefreshCw className="h-4 w-4 mr-2" /> {retryLabel}
                 </Button>
               </div>
             </div>

@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Search, X, Filter } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export type ServerFilterStatus = 'all' | 'connected' | 'disconnected' | 'error';
 export type ServerFilterTransport = 'all' | 'stdio' | 'sse' | 'http';
@@ -40,6 +41,9 @@ export function ServerSearchFilter({
   resultCount,
 }: ServerSearchFilterProps) {
   const hasActiveFilters = statusFilter !== 'all' || transportFilter !== 'all' || searchQuery !== '';
+  const t = useTranslations('dashboard.filters');
+  const actions = useTranslations('common.actions');
+  const status = useTranslations('common.status');
 
   const clearFilters = () => {
     onSearchChange('');
@@ -56,7 +60,7 @@ export function ServerSearchFilter({
           <Input
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search servers..."
+            placeholder={t('searchPlaceholder')}
             className="pl-9 pr-9"
           />
           {searchQuery && (
@@ -74,26 +78,26 @@ export function ServerSearchFilter({
         {/* Status Filter */}
         <Select value={statusFilter} onValueChange={(v) => onStatusFilterChange(v as ServerFilterStatus)}>
           <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="Status" />
+            <SelectValue placeholder={t('statusLabel')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="connected">Connected</SelectItem>
-            <SelectItem value="disconnected">Disconnected</SelectItem>
-            <SelectItem value="error">Error</SelectItem>
+            <SelectItem value="all">{t('statusAll')}</SelectItem>
+            <SelectItem value="connected">{status('connected')}</SelectItem>
+            <SelectItem value="disconnected">{status('disconnected')}</SelectItem>
+            <SelectItem value="error">{status('error')}</SelectItem>
           </SelectContent>
         </Select>
 
         {/* Transport Filter */}
         <Select value={transportFilter} onValueChange={(v) => onTransportFilterChange(v as ServerFilterTransport)}>
           <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="Transport" />
+            <SelectValue placeholder={t('transportLabel')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="stdio">Stdio</SelectItem>
-            <SelectItem value="sse">SSE</SelectItem>
-            <SelectItem value="http">HTTP</SelectItem>
+            <SelectItem value="all">{t('transportAll')}</SelectItem>
+            <SelectItem value="stdio">{t('transportOptions.stdio')}</SelectItem>
+            <SelectItem value="sse">{t('transportOptions.sse')}</SelectItem>
+            <SelectItem value="http">{t('transportOptions.http')}</SelectItem>
           </SelectContent>
         </Select>
 
@@ -101,7 +105,7 @@ export function ServerSearchFilter({
         {hasActiveFilters && (
           <Button variant="outline" size="sm" onClick={clearFilters}>
             <X className="h-4 w-4 mr-2" />
-            Clear
+            {actions('clear')}
           </Button>
         )}
       </div>
@@ -111,7 +115,7 @@ export function ServerSearchFilter({
         <div className="flex items-center gap-2 text-sm">
           {resultCount !== undefined && (
             <span className="text-muted-foreground">
-              {resultCount} server{resultCount !== 1 ? 's' : ''} found
+              {t('resultCount', { count: resultCount })}
             </span>
           )}
           
@@ -122,17 +126,25 @@ export function ServerSearchFilter({
                 <Filter className="h-3 w-3 text-muted-foreground" />
                 {searchQuery && (
                   <Badge variant="secondary" className="text-xs">
-                    Search: {searchQuery}
+                    {t('searchBadge')}: {searchQuery}
                   </Badge>
                 )}
                 {statusFilter !== 'all' && (
                   <Badge variant="secondary" className="text-xs">
-                    Status: {statusFilter}
+                    {t('statusBadge')}: {statusFilter === 'connected'
+                      ? status('connected')
+                      : statusFilter === 'disconnected'
+                        ? status('disconnected')
+                        : status('error')}
                   </Badge>
                 )}
                 {transportFilter !== 'all' && (
                   <Badge variant="secondary" className="text-xs">
-                    Transport: {transportFilter}
+                    {t('transportBadge')}: {transportFilter === 'stdio'
+                      ? t('transportOptions.stdio')
+                      : transportFilter === 'sse'
+                        ? t('transportOptions.sse')
+                        : t('transportOptions.http')}
                   </Badge>
                 )}
               </div>

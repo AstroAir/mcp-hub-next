@@ -27,8 +27,8 @@ export const useConnectionStore = create<ConnectionStoreState>((set, get) => ({
 
   removeConnection: (serverId: string) => {
     set((state) => {
-       
-      const { [serverId]: _removed, ...rest } = state.connections;
+      const rest = { ...state.connections };
+      delete rest[serverId];
       return { connections: rest };
     });
   },

@@ -5,7 +5,8 @@
  * Browse and connect to 70+ remote MCP servers
  */
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -27,6 +28,8 @@ interface RemoteServerLibraryProps {
 
 export function RemoteServerLibrary({ open, onOpenChange }: RemoteServerLibraryProps) {
   const { addServer } = useServerStore();
+  const t = useTranslations('components.remoteLibrary');
+  const oauthMessages = useTranslations('components.oauthAuth');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [connectingServerId, setConnectingServerId] = useState<string | null>(null);
@@ -62,20 +65,21 @@ export function RemoteServerLibrary({ open, onOpenChange }: RemoteServerLibraryP
           };
 
           addServer(config);
-          toast.success(`Added ${serverName} with OAuth authentication`);
+          toast.success(t('toasts.oauthSuccess', { name: serverName }));
           onOpenChange(false);
         }
 
         setConnectingServerId(null);
       } else if (event.data.type === 'oauth-error') {
-        toast.error(`Authentication failed: ${event.data.error}`);
+        const reason = event.data.error;
+        toast.error(reason ? oauthMessages('toasts.error', { reason }) : oauthMessages('errors.authFailed'));
         setConnectingServerId(null);
       }
     };
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [addServer, onOpenChange]);
+  }, [addServer, oauthMessages, onOpenChange, t]);
 
   // Filter servers
   const filteredServers = useMemo(() => {
@@ -105,6 +109,39 @@ export function RemoteServerLibrary({ open, onOpenChange }: RemoteServerLibraryP
     return ['all', ...Array.from(cats)];
   }, []);
 
+  const formatCategoryFallback = useCallback((category: string) => {
+    const normalized = category.replace(/[-_]/g, ' ');
+    return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+  }, []);
+
+  const getCategoryLabel = useCallback(
+    (category: string) => {
+      if (category === 'all') {
+        return t('categories.all');
+      }
+
+      switch (category) {
+        case 'ai':
+          return t('categories.ai');
+        case 'productivity':
+          return t('categories.productivity');
+        case 'developer-tools':
+          return t('categories.developerTools');
+        case 'knowledge':
+          return t('categories.knowledge');
+        case 'creative':
+          return t('categories.creative');
+        case 'data':
+          return t('categories.data');
+        case 'utilities':
+          return t('categories.utilities');
+        default:
+          return formatCategoryFallback(category);
+      }
+    },
+    [formatCategoryFallback, t]
+  );
+
   const handleConnect = async (server: RemoteMCPServer) => {
     try {
       setConnectingServerId(server.id);
@@ -113,7 +150,7 @@ export function RemoteServerLibrary({ open, onOpenChange }: RemoteServerLibraryP
         // OAuth flow
         const oauthConfig = getOAuthConfigWithRedirect(server);
         if (!oauthConfig) {
-          throw new Error('OAuth configuration not found');
+          throw new Error(t('errors.oauthConfigMissing'));
         }
 
         // Save OAuth config to session storage for callback
@@ -122,10 +159,10 @@ export function RemoteServerLibrary({ open, onOpenChange }: RemoteServerLibraryP
           JSON.stringify(oauthConfig)
         );
 
-  // Start OAuth flow
-  const { url } = await startOAuthFlow({ ...oauthConfig, serverId: server.id, serverName: server.name });
-  openOAuthPopup(url);
-  toast.info('Please complete authentication in the popup window');
+        // Start OAuth flow
+        const { url } = await startOAuthFlow({ ...oauthConfig, serverId: server.id, serverName: server.name });
+        openOAuthPopup(url);
+        toast.info(oauthMessages('toasts.popup'));
       } else {
         // Direct connection (API key based)
         const serverId = nanoid();
@@ -143,38 +180,34 @@ export function RemoteServerLibrary({ open, onOpenChange }: RemoteServerLibraryP
         };
 
         addServer(config);
-        toast.success(`Added ${server.name} to your servers`);
-        toast.info('Please configure API keys in server settings');
+        toast.success(t('toasts.added', { name: server.name }));
+        toast.info(t('toasts.configureKeys'));
         setConnectingServerId(null);
         onOpenChange(false);
       }
     } catch (error) {
       console.error('Failed to connect to server:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to connect');
+      toast.error(error instanceof Error ? error.message : t('errors.connectFailed'));
       setConnectingServerId(null);
     }
-  };
-
-  const getCategoryLabel = (category: string) => {
-    return category.charAt(0).toUpperCase() + category.slice(1).replace('-', ' ');
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[min(100vw-2rem,1100px)] max-h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle>Remote MCP Server Library</DialogTitle>
+          <DialogTitle>{t('dialog.title')}</DialogTitle>
           <DialogDescription>
-            Browse and connect to 70+ pre-configured remote MCP servers
+            {t('dialog.description')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 overflow-hidden flex-1 flex flex-col">
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search aria-hidden className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search servers..."
+              placeholder={t('search.placeholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -196,7 +229,7 @@ export function RemoteServerLibrary({ open, onOpenChange }: RemoteServerLibraryP
                 <div className="space-y-3">
                   {filteredServers.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
-                      No servers found matching your criteria
+                      {t('empty')}
                     </div>
                   ) : (
                     filteredServers.map((server) => {
@@ -214,17 +247,17 @@ export function RemoteServerLibrary({ open, onOpenChange }: RemoteServerLibraryP
                                 <h3 className="font-semibold">{server.name}</h3>
                                 {server.requiresOAuth ? (
                                   <Badge variant="secondary" className="gap-1">
-                                    <Lock className="h-3 w-3" />
-                                    OAuth
+                                    <Lock aria-hidden className="h-3 w-3" />
+                                    {t('badges.oauth')}
                                   </Badge>
                                 ) : (
                                   <Badge variant="outline" className="gap-1">
-                                    <Globe className="h-3 w-3" />
-                                    API Key
+                                    <Globe aria-hidden className="h-3 w-3" />
+                                    {t('badges.apiKey')}
                                   </Badge>
                                 )}
                                 {hasToken && (
-                                  <Badge variant="default">Authenticated</Badge>
+                                  <Badge variant="default">{t('badges.authenticated')}</Badge>
                                 )}
                               </div>
 
@@ -251,13 +284,13 @@ export function RemoteServerLibrary({ open, onOpenChange }: RemoteServerLibraryP
                               >
                                 {isConnecting ? (
                                   <>
-                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    Connecting...
+                                    <Loader2 aria-hidden className="h-4 w-4 mr-2 animate-spin" />
+                                    {t('actions.connecting')}
                                   </>
                                 ) : hasToken ? (
-                                  'Add Server'
+                                  t('actions.addServer')
                                 ) : (
-                                  'Connect'
+                                  t('actions.connect')
                                 )}
                               </Button>
 
@@ -266,9 +299,10 @@ export function RemoteServerLibrary({ open, onOpenChange }: RemoteServerLibraryP
                                   size="sm"
                                   variant="outline"
                                   onClick={() => window.open(server.documentation, '_blank')}
+                                  aria-label={t('actions.viewDocs')}
                                 >
-                                  <ExternalLink className="h-4 w-4 mr-2" />
-                                  Docs
+                                  <ExternalLink aria-hidden className="h-4 w-4 mr-2" />
+                                  {t('actions.docsLabel')}
                                 </Button>
                               )}
                             </div>
@@ -283,7 +317,10 @@ export function RemoteServerLibrary({ open, onOpenChange }: RemoteServerLibraryP
           </Tabs>
 
           <div className="text-sm text-muted-foreground text-center">
-            Showing {filteredServers.length} of {REMOTE_SERVERS.length} servers
+            {t('footer.count', {
+              visible: String(filteredServers.length),
+              total: String(REMOTE_SERVERS.length),
+            })}
           </div>
         </div>
       </DialogContent>

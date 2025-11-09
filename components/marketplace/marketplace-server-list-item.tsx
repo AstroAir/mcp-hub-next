@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Star, Download, Key, ExternalLink, Info, DownloadCloud } from 'lucide-react';
 import type { MarketplaceMCPServer } from '@/lib/types';
 import { useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { installationAPI } from '@/lib/services/api-client';
 import { useServerStore } from '@/lib/stores';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -36,6 +37,8 @@ export function MarketplaceServerListItem({ server, onViewDetails }: Marketplace
     window.open(server.githubUrl, '_blank', 'noopener,noreferrer');
   };
 
+  const cardT = useTranslations('marketplace.card');
+  const toasts = useTranslations('marketplace.toasts');
   const { setInstallationProgress } = useServerStore();
   const [installing, setInstalling] = useState(false);
   const [progressOpen, setProgressOpen] = useState(false);
@@ -47,7 +50,8 @@ export function MarketplaceServerListItem({ server, onViewDetails }: Marketplace
     try {
       const repo = parseGithubRepo(server.githubUrl);
       if (!repo) {
-        toast.error('Unable to parse GitHub repository for this server');
+        const message = toasts('parseRepository');
+        toast.error(message);
         setInstalling(false);
         return;
       }
@@ -63,22 +67,24 @@ export function MarketplaceServerListItem({ server, onViewDetails }: Marketplace
         useServerStore.getState().registerInstallationRequest?.(res.data.installId, { config: { source: 'github', repository: repo }, serverName: server.name, serverDescription: server.description });
         setInstallId(res.data.installId);
         setProgressOpen(true);
-        toast.success(`Installing ${server.name}...`);
+        toast.success(toasts('installing', { name: server.name }));
       } else {
-        const msg = res.error || 'Failed to start installation';
+        const fallback = toasts('installStartFailed');
+        const msg = res.error || fallback;
         if (shouldNotify(buildErrorKey('install-start', server.mcpId, msg))) {
           toast.error(msg);
         }
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to start installation';
+      const fallback = toasts('installStartFailed');
+      const msg = err instanceof Error ? err.message : fallback;
       if (shouldNotify(buildErrorKey('install-start', server.mcpId, msg))) {
         toast.error(msg);
       }
     } finally {
       setInstalling(false);
     }
-  }, [server, setInstallationProgress]);
+  }, [server, setInstallationProgress, toasts]);
 
   return (
     <div
@@ -102,7 +108,7 @@ export function MarketplaceServerListItem({ server, onViewDetails }: Marketplace
           {server.isRecommended && (
             <Badge variant="default" className="flex-shrink-0 gap-1">
               <Star className="h-3 w-3 fill-current" />
-              <span className="hidden sm:inline">Recommended</span>
+              <span className="hidden sm:inline">{cardT('badges.recommended')}</span>
             </Badge>
           )}
           {server.category && (
@@ -113,7 +119,7 @@ export function MarketplaceServerListItem({ server, onViewDetails }: Marketplace
         </div>
 
         <p className="text-sm text-muted-foreground line-clamp-1">
-          <span className="font-medium">by {server.author}</span>
+          <span className="font-medium">{cardT('author', { author: server.author })}</span>
           <span className="mx-2">•</span>
           {server.description}
         </p>
@@ -140,14 +146,17 @@ export function MarketplaceServerListItem({ server, onViewDetails }: Marketplace
         <div className="flex items-center gap-1.5 text-muted-foreground">
           <Star className="h-4 w-4" />
           <span className="font-medium">{server.githubStars.toLocaleString()}</span>
+          <span className="text-xs text-muted-foreground">{cardT('stats.stars')}</span>
         </div>
         <div className="flex items-center gap-1.5 text-muted-foreground">
           <Download className="h-4 w-4" />
           <span className="font-medium">{server.downloadCount.toLocaleString()}</span>
+          <span className="text-xs text-muted-foreground">{cardT('stats.downloads')}</span>
         </div>
         {server.requiresApiKey && (
           <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-500">
             <Key className="h-4 w-4" />
+            <span className="text-xs font-medium">{cardT('stats.requiresApiKey')}</span>
           </div>
         )}
       </div>
@@ -161,7 +170,7 @@ export function MarketplaceServerListItem({ server, onViewDetails }: Marketplace
           disabled={installing}
         >
           <DownloadCloud className="h-4 w-4 md:mr-1.5" />
-          <span className="hidden md:inline">{installing ? 'Installing...' : 'Install'}</span>
+          <span className="hidden md:inline">{installing ? cardT('buttons.installing') : cardT('buttons.install')}</span>
         </Button>
         <Button
           variant="outline"
@@ -169,7 +178,7 @@ export function MarketplaceServerListItem({ server, onViewDetails }: Marketplace
           onClick={handleGitHubClick}
         >
           <ExternalLink className="h-4 w-4 md:mr-1.5" />
-          <span className="hidden md:inline">GitHub</span>
+          <span className="hidden md:inline">{cardT('buttons.github')}</span>
         </Button>
         <Button
           variant="default"
@@ -180,7 +189,7 @@ export function MarketplaceServerListItem({ server, onViewDetails }: Marketplace
           }}
         >
           <Info className="h-4 w-4 md:mr-1.5" />
-          <span className="hidden md:inline">Details</span>
+          <span className="hidden md:inline">{cardT('buttons.details')}</span>
         </Button>
       </div>
 
@@ -188,13 +197,13 @@ export function MarketplaceServerListItem({ server, onViewDetails }: Marketplace
       <Dialog open={progressOpen} onOpenChange={setProgressOpen}>
         <DialogContent className="max-w-xl">
           <DialogHeader>
-            <DialogTitle>Installing {server.name}</DialogTitle>
+            <DialogTitle>{cardT('dialog.installing', { name: server.name })}</DialogTitle>
           </DialogHeader>
           {installId && (
             <div className="mt-2">
               <InstallationProgressCard
                 installId={installId}
-                onComplete={() => toast.success(`${server.name} installed`)}
+                onComplete={() => toast.success(toasts('installed', { name: server.name }))}
                 onError={(msg) => {
                   if (shouldNotify(buildErrorKey('install-fail', installId || server.mcpId, msg))) {
                     toast.error(msg);
@@ -213,7 +222,8 @@ export function MarketplaceServerListItem({ server, onViewDetails }: Marketplace
                     useServerStore.getState().registerInstallationRequest?.(res.data.installId, { config: { source: 'github', repository: repo }, serverName: server.name, serverDescription: server.description });
                     setInstallId(res.data.installId);
                   } else {
-                    const msg = res.error || 'Failed to start installation';
+                    const fallback = toasts('installStartFailed');
+                    const msg = res.error || fallback;
                     if (shouldNotify(buildErrorKey('install-retry', installId || server.mcpId, msg))) {
                       toast.error(msg);
                     }

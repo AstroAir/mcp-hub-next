@@ -5,7 +5,8 @@
  * Displays comprehensive documentation for MCP servers
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -43,6 +44,7 @@ export function ServerDocsViewer({ open, onOpenChange, serverId }: ServerDocsVie
   const [selectedDoc, setSelectedDoc] = useState<MCPServerDoc | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const t = useTranslations('components.serverDocs');
 
   // Load documentation
   useEffect(() => {
@@ -67,28 +69,30 @@ export function ServerDocsViewer({ open, onOpenChange, serverId }: ServerDocsVie
         }
       } catch (error) {
         console.error('Failed to load documentation:', error);
-        toast.error('Failed to load documentation');
+        toast.error(t('toasts.loadFailed'));
       } finally {
         setIsLoading(false);
       }
     };
 
     loadDocs();
-  }, [open, serverId]);
+  }, [open, serverId, t]);
 
   // Filter docs based on search
-  const filteredDocs = searchQuery
-    ? docs.filter(
-        (doc) =>
-          doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          doc.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          doc.category.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : docs;
+  const filteredDocs = useMemo(() => {
+    if (!searchQuery) return docs;
+    const query = searchQuery.toLowerCase();
+    return docs.filter(
+      (doc) =>
+        doc.name.toLowerCase().includes(query) ||
+        doc.description.toLowerCase().includes(query) ||
+        doc.category.toLowerCase().includes(query)
+    );
+  }, [docs, searchQuery]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast.success('Copied to clipboard');
+    toast.success(t('toasts.copy'));
   };
 
   return (
@@ -96,11 +100,11 @@ export function ServerDocsViewer({ open, onOpenChange, serverId }: ServerDocsVie
       <DialogContent className="max-w-5xl max-h-[85vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5" />
-            MCP Server Documentation
+            <BookOpen aria-hidden className="h-5 w-5" />
+            {t('dialog.title')}
           </DialogTitle>
           <DialogDescription>
-            Browse documentation for popular MCP servers
+            {t('dialog.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -108,9 +112,9 @@ export function ServerDocsViewer({ open, onOpenChange, serverId }: ServerDocsVie
           {/* Sidebar - Server List */}
           <div className="w-64 flex flex-col gap-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search aria-hidden className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search servers..."
+                placeholder={t('search.placeholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9"
@@ -120,9 +124,9 @@ export function ServerDocsViewer({ open, onOpenChange, serverId }: ServerDocsVie
             <ScrollArea className="flex-1">
               <div className="space-y-1">
                 {isLoading ? (
-                  <p className="text-sm text-muted-foreground p-2">Loading...</p>
+                  <p className="text-sm text-muted-foreground p-2">{t('states.loading')}</p>
                 ) : filteredDocs.length === 0 ? (
-                  <p className="text-sm text-muted-foreground p-2">No servers found</p>
+                  <p className="text-sm text-muted-foreground p-2">{t('states.empty')}</p>
                 ) : (
                   filteredDocs.map((doc) => (
                     <button
@@ -164,9 +168,10 @@ export function ServerDocsViewer({ open, onOpenChange, serverId }: ServerDocsVie
                           variant="outline"
                           size="sm"
                           onClick={() => window.open(selectedDoc.githubUrl, '_blank')}
+                          aria-label={t('links.github')}
                         >
-                          <ExternalLink className="h-3 w-3 mr-1" />
-                          GitHub
+                          <ExternalLink aria-hidden className="h-3 w-3 mr-1" />
+                          {t('links.github')}
                         </Button>
                       )}
                       {selectedDoc.npmPackage && (
@@ -176,9 +181,10 @@ export function ServerDocsViewer({ open, onOpenChange, serverId }: ServerDocsVie
                           onClick={() =>
                             window.open(`https://www.npmjs.com/package/${selectedDoc.npmPackage}`, '_blank')
                           }
+                          aria-label={t('links.npm')}
                         >
-                          <ExternalLink className="h-3 w-3 mr-1" />
-                          npm
+                          <ExternalLink aria-hidden className="h-3 w-3 mr-1" />
+                          {t('links.npm')}
                         </Button>
                       )}
                     </div>
@@ -190,29 +196,31 @@ export function ServerDocsViewer({ open, onOpenChange, serverId }: ServerDocsVie
                   {selectedDoc.authentication && (
                     <div>
                       <h3 className="font-semibold flex items-center gap-2 mb-2">
-                        <Key className="h-4 w-4" />
-                        Authentication
+                        <Key aria-hidden className="h-4 w-4" />
+                        {t('sections.authentication.title')}
                       </h3>
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
                           {selectedDoc.authentication.required ? (
-                            <AlertCircle className="h-4 w-4 text-yellow-500" />
+                            <AlertCircle aria-hidden className="h-4 w-4 text-yellow-500" />
                           ) : (
-                            <CheckCircle2 className="h-4 w-4 text-green-500" />
+                            <CheckCircle2 aria-hidden className="h-4 w-4 text-green-500" />
                           )}
                           <span className="text-sm">
-                            {selectedDoc.authentication.required ? 'Required' : 'Not required'}
+                            {selectedDoc.authentication.required
+                              ? t('sections.authentication.required')
+                              : t('sections.authentication.optional')}
                           </span>
                         </div>
                         {selectedDoc.authentication.methods.length > 0 && (
                           <div className="text-sm">
-                            <span className="font-medium">Methods: </span>
+                            <span className="font-medium">{t('sections.authentication.methods')}</span>
                             {selectedDoc.authentication.methods.join(', ')}
                           </div>
                         )}
                         {selectedDoc.authentication.envVars && selectedDoc.authentication.envVars.length > 0 && (
                           <div className="text-sm">
-                            <span className="font-medium">Environment Variables: </span>
+                            <span className="font-medium">{t('sections.authentication.envVars')}</span>
                             {selectedDoc.authentication.envVars.join(', ')}
                           </div>
                         )}
@@ -223,15 +231,15 @@ export function ServerDocsViewer({ open, onOpenChange, serverId }: ServerDocsVie
                   {/* Configuration */}
                   <div>
                     <h3 className="font-semibold flex items-center gap-2 mb-2">
-                      <Code className="h-4 w-4" />
-                      Configuration
+                      <Code aria-hidden className="h-4 w-4" />
+                      {t('sections.configuration.title')}
                     </h3>
 
                     <Tabs defaultValue="stdio" className="w-full">
                       <TabsList>
-                        {selectedDoc.configuration.stdio && <TabsTrigger value="stdio">stdio</TabsTrigger>}
-                        {selectedDoc.configuration.sse && <TabsTrigger value="sse">SSE</TabsTrigger>}
-                        {selectedDoc.configuration.http && <TabsTrigger value="http">HTTP</TabsTrigger>}
+                        {selectedDoc.configuration.stdio && <TabsTrigger value="stdio">{t('sections.configuration.tabs.stdio')}</TabsTrigger>}
+                        {selectedDoc.configuration.sse && <TabsTrigger value="sse">{t('sections.configuration.tabs.sse')}</TabsTrigger>}
+                        {selectedDoc.configuration.http && <TabsTrigger value="http">{t('sections.configuration.tabs.http')}</TabsTrigger>}
                       </TabsList>
 
                       {selectedDoc.configuration.stdio && (
@@ -263,8 +271,9 @@ export function ServerDocsViewer({ open, onOpenChange, serverId }: ServerDocsVie
                                   )
                                 )
                               }
+                              aria-label={t('actions.copyConfig')}
                             >
-                              <Copy className="h-3 w-3" />
+                              <Copy aria-hidden className="h-3 w-3" />
                             </Button>
                           </div>
                           {selectedDoc.configuration.stdio.notes && (
@@ -318,11 +327,11 @@ export function ServerDocsViewer({ open, onOpenChange, serverId }: ServerDocsVie
                   {/* Features */}
                   {selectedDoc.features.length > 0 && (
                     <div>
-                      <h3 className="font-semibold mb-2">Features</h3>
+                      <h3 className="font-semibold mb-2">{t('sections.features.title')}</h3>
                       <ul className="space-y-1">
                         {selectedDoc.features.map((feature, i) => (
                           <li key={i} className="text-sm flex items-start gap-2">
-                            <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <CheckCircle2 aria-hidden className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
                             {feature}
                           </li>
                         ))}
@@ -333,11 +342,11 @@ export function ServerDocsViewer({ open, onOpenChange, serverId }: ServerDocsVie
                   {/* Requirements */}
                   {selectedDoc.requirements && selectedDoc.requirements.length > 0 && (
                     <div>
-                      <h3 className="font-semibold mb-2">Requirements</h3>
+                      <h3 className="font-semibold mb-2">{t('sections.requirements.title')}</h3>
                       <ul className="space-y-1">
                         {selectedDoc.requirements.map((req, i) => (
                           <li key={i} className="text-sm flex items-start gap-2">
-                            <AlertCircle className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+                            <AlertCircle aria-hidden className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
                             {req}
                           </li>
                         ))}
@@ -348,7 +357,7 @@ export function ServerDocsViewer({ open, onOpenChange, serverId }: ServerDocsVie
                   {/* Notes */}
                   {selectedDoc.notes && selectedDoc.notes.length > 0 && (
                     <div>
-                      <h3 className="font-semibold mb-2">Notes</h3>
+                      <h3 className="font-semibold mb-2">{t('sections.notes.title')}</h3>
                       <ul className="space-y-1">
                         {selectedDoc.notes.map((note, i) => (
                           <li key={i} className="text-sm text-muted-foreground">
@@ -363,8 +372,8 @@ export function ServerDocsViewer({ open, onOpenChange, serverId }: ServerDocsVie
             ) : (
               <div className="h-full flex items-center justify-center text-muted-foreground">
                 <div className="text-center">
-                  <BookOpen className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>Select a server to view documentation</p>
+                  <BookOpen aria-hidden className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <p>{t('states.placeholder')}</p>
                 </div>
               </div>
             )}

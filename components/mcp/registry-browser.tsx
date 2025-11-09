@@ -5,7 +5,8 @@
  * Browse and search MCP servers from the registry
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,7 @@ interface RegistryBrowserProps {
 }
 
 export function RegistryBrowser({ onSelectServer }: RegistryBrowserProps) {
+  const t = useTranslations('components.registryBrowser');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [selectedSource, setSelectedSource] = useState<'npm' | 'github' | undefined>(undefined);
@@ -84,9 +86,9 @@ export function RegistryBrowser({ onSelectServer }: RegistryBrowserProps) {
       {/* Search Bar */}
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search aria-hidden className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search MCP servers..."
+            placeholder={t('search.placeholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyPress={handleKeyPress}
@@ -94,7 +96,14 @@ export function RegistryBrowser({ onSelectServer }: RegistryBrowserProps) {
           />
         </div>
         <Button onClick={handleSearch} disabled={isSearching}>
-          {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Search'}
+          {isSearching ? (
+            <>
+              <Loader2 aria-hidden className="mr-2 h-4 w-4 animate-spin" />
+              <span>{t('search.loading')}</span>
+            </>
+          ) : (
+            t('search.button')
+          )}
         </Button>
       </div>
 
@@ -105,23 +114,23 @@ export function RegistryBrowser({ onSelectServer }: RegistryBrowserProps) {
           size="sm"
           onClick={() => setSelectedSource(undefined)}
         >
-          All
+          {t('filters.all')}
         </Button>
         <Button
           variant={selectedSource === 'npm' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setSelectedSource('npm')}
         >
-          <Package className="h-4 w-4 mr-1" />
-          NPM
+          <Package aria-hidden className="h-4 w-4 mr-1" />
+          {t('filters.npm')}
         </Button>
         <Button
           variant={selectedSource === 'github' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setSelectedSource('github')}
         >
-          <Github className="h-4 w-4 mr-1" />
-          GitHub
+          <Github aria-hidden className="h-4 w-4 mr-1" />
+          {t('filters.github')}
         </Button>
       </div>
 
@@ -130,7 +139,7 @@ export function RegistryBrowser({ onSelectServer }: RegistryBrowserProps) {
         <div className="space-y-3">
           {searchResults.length === 0 && !isSearching && (
             <div className="text-center py-12 text-muted-foreground">
-              No servers found. Try a different search query.
+              {t('empty')}
             </div>
           )}
 
@@ -153,6 +162,19 @@ interface RegistryServerCardProps {
 }
 
 function RegistryServerCard({ server, onSelect }: RegistryServerCardProps) {
+  const t = useTranslations('components.registryBrowser');
+  const locale = useLocale();
+  const compactNumberFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(locale, {
+        notation: 'compact',
+        maximumFractionDigits: 1,
+      }),
+    [locale]
+  );
+
+  const formatNumber = (num: number) => compactNumberFormatter.format(num);
+
   return (
     <Card className="cursor-pointer hover:bg-accent transition-colors" onClick={onSelect}>
       <CardHeader className="pb-3">
@@ -162,7 +184,7 @@ function RegistryServerCard({ server, onSelect }: RegistryServerCardProps) {
               <CardTitle className="text-base">{server.name}</CardTitle>
               {server.verified && (
                 <Badge variant="default" className="text-xs">
-                  Verified
+                  {t('badges.verified')}
                 </Badge>
               )}
             </div>
@@ -172,9 +194,9 @@ function RegistryServerCard({ server, onSelect }: RegistryServerCardProps) {
           </div>
           <div className="flex items-center gap-1 text-muted-foreground">
             {server.source === 'npm' ? (
-              <Package className="h-4 w-4" />
+              <Package aria-hidden className="h-4 w-4" />
             ) : (
-              <Github className="h-4 w-4" />
+              <Github aria-hidden className="h-4 w-4" />
             )}
           </div>
         </div>
@@ -182,16 +204,16 @@ function RegistryServerCard({ server, onSelect }: RegistryServerCardProps) {
       <CardContent className="pt-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            {server.version && <span>v{server.version}</span>}
+            {server.version && <span>{t('metrics.version', { version: server.version })}</span>}
             {server.downloads !== undefined && (
               <div className="flex items-center gap-1">
-                <Download className="h-3 w-3" />
+                <Download aria-hidden className="h-3 w-3" />
                 <span>{formatNumber(server.downloads)}</span>
               </div>
             )}
             {server.stars !== undefined && (
               <div className="flex items-center gap-1">
-                <Star className="h-3 w-3" />
+                <Star aria-hidden className="h-3 w-3" />
                 <span>{formatNumber(server.stars)}</span>
               </div>
             )}
@@ -205,8 +227,9 @@ function RegistryServerCard({ server, onSelect }: RegistryServerCardProps) {
                 e.stopPropagation();
                 window.open(server.homepage, '_blank');
               }}
+              aria-label={t('actions.openHomepage')}
             >
-              <ExternalLink className="h-4 w-4" />
+              <ExternalLink aria-hidden className="h-4 w-4" />
             </Button>
           )}
         </div>
@@ -223,17 +246,5 @@ function RegistryServerCard({ server, onSelect }: RegistryServerCardProps) {
       </CardContent>
     </Card>
   );
-}
-
-/**
- * Format large numbers with K/M suffixes
- */
-function formatNumber(num: number): string {
-  if (num >= 1000000) {
-    return `${(num / 1000000).toFixed(1)}M`;
-  } else if (num >= 1000) {
-    return `${(num / 1000).toFixed(1)}K`;
-  }
-  return num.toString();
 }
 

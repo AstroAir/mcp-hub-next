@@ -82,7 +82,7 @@ pub fn mcp_start_server(server_id: String, cfg: StdioConfig) -> Result<MCPServer
     }
     cmd.stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped());
 
-    let mut child = cmd.spawn().map_err(|e| format!("Failed to start process: {e}"))?;
+    let child = cmd.spawn().map_err(|e| format!("Failed to start process: {e}"))?;
     let pid_val = child.id();
 
     let process = MCPServerProcess {

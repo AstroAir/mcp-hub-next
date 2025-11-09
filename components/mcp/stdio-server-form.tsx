@@ -6,6 +6,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,6 +20,8 @@ interface StdioServerFormProps {
 }
 
 export function StdioServerForm({ initialData, onSubmit, onCancel }: StdioServerFormProps) {
+  const t = useTranslations('components.serverForms');
+  const actions = useTranslations('common.actions');
   const [name, setName] = useState(initialData?.name || '');
   const [description, setDescription] = useState(initialData?.description || '');
   const [command, setCommand] = useState(initialData?.command || '');
@@ -55,82 +58,76 @@ export function StdioServerForm({ initialData, onSubmit, onCancel }: StdioServer
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="name">Server Name *</Label>
+        <Label htmlFor="name">{t('common.nameLabel')}</Label>
         <Input
           id="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="My MCP Server"
+          placeholder={t('common.namePlaceholder')}
           required
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
+        <Label htmlFor="description">{t('common.descriptionLabel')}</Label>
         <Input
           id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Optional description"
+          placeholder={t('common.descriptionPlaceholder')}
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="command">Command *</Label>
+        <Label htmlFor="command">{t('stdio.commandLabel')}</Label>
         <Input
           id="command"
           value={command}
           onChange={(e) => setCommand(e.target.value)}
-          placeholder="npx"
+          placeholder={t('stdio.commandPlaceholder')}
           required
         />
-        <p className="text-xs text-muted-foreground">
-          The command to execute (e.g., npx, node, python)
-        </p>
+        <p className="text-xs text-muted-foreground">{t('stdio.commandHelp')}</p>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="args">Arguments</Label>
+        <Label htmlFor="args">{t('stdio.argsLabel')}</Label>
         <Input
           id="args"
           value={args}
           onChange={(e) => setArgs(e.target.value)}
-          placeholder="-y @modelcontextprotocol/server-filesystem /path/to/dir"
+          placeholder={t('stdio.argsPlaceholder')}
         />
-        <p className="text-xs text-muted-foreground">
-          Space-separated arguments for the command
-        </p>
+        <p className="text-xs text-muted-foreground">{t('stdio.argsHelp')}</p>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="env">Environment Variables</Label>
+        <Label htmlFor="env">{t('stdio.envLabel')}</Label>
         <Textarea
           id="env"
           value={env}
           onChange={(e) => setEnv(e.target.value)}
-          placeholder="KEY=value&#10;ANOTHER_KEY=another_value"
+          placeholder={t('stdio.envPlaceholder')}
           rows={4}
         />
-        <p className="text-xs text-muted-foreground">
-          One per line in KEY=value format
-        </p>
+        <p className="text-xs text-muted-foreground">{t('stdio.envHelp')}</p>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="cwd">Working Directory</Label>
+        <Label htmlFor="cwd">{t('stdio.cwdLabel')}</Label>
         <Input
           id="cwd"
           value={cwd}
           onChange={(e) => setCwd(e.target.value)}
-          placeholder="/path/to/working/directory"
+          placeholder={t('stdio.cwdPlaceholder')}
         />
       </div>
 
       <div className="flex gap-2 justify-end">
         <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
+          {actions('cancel')}
         </Button>
-        <Button type="submit">Save Server</Button>
+        <Button type="submit">{t('common.submit')}</Button>
       </div>
     </form>
   );

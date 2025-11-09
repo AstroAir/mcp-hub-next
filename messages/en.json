@@ -1,0 +1,1295 @@
+{
+  "common": {
+    "language": {
+      "english": "English",
+      "chinese": "Chinese (Simplified)",
+      "switcherLabel": "Language",
+      "followSystem": "Follow system"
+    },
+    "navigation": {
+      "home": "Home",
+      "dashboard": "Dashboard",
+      "chat": "Chat",
+      "settings": "Settings",
+      "servers": "Servers",
+      "marketplace": "Marketplace",
+      "developer": "Developer",
+      "updates": "Updates"
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "close": "Close",
+      "retry": "Retry",
+      "learnMore": "Learn more",
+      "clear": "Clear"
+    },
+    "status": {
+      "connected": "Connected",
+      "connecting": "Connecting",
+      "disconnected": "Disconnected",
+      "error": "Error",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "reconnecting": "Reconnecting"
+    },
+    "errors": {
+      "unknown": "Something went wrong. Please try again.",
+      "forbidden": "You do not have permission to perform this action.",
+      "notFound": "We couldn\u2019t find what you were looking for.",
+      "sectionFallback": "Something went wrong in this section",
+      "sectionFallbackMessage": "An unexpected error occurred."
+    },
+    "a11y": {
+      "more": "More options"
+    }
+  },
+  "metadata": {
+    "title": "Model Context Protocol Hub",
+    "description": "Manage MCP servers, configurations, and chat sessions in one place.",
+    "keywords": "model context protocol, mcp, server, chat, developer tools"
+  },
+  "errorPage": {
+    "title": "Something went wrong!",
+    "description": "We encountered an unexpected error while processing your request.",
+    "labels": {
+      "error": "Error:",
+      "errorId": "Error ID:"
+    },
+    "fallbackMessage": "An unexpected error occurred",
+    "instructions": {
+      "intro": "This error has been logged. You can try the following:",
+      "refresh": "Refresh the page or try again",
+      "dashboard": "Go back to the dashboard",
+      "report": "Report this issue if it persists"
+    },
+    "actions": {
+      "retry": "Try Again",
+      "dashboard": "Go to Dashboard",
+      "report": "Report Issue"
+    }
+  },
+  "globalErrorPage": {
+    "title": "Critical Error",
+    "description": "A critical error occurred that prevented the application from loading properly.",
+    "labels": {
+      "error": "Error:",
+      "errorId": "Error ID:"
+    },
+    "fallbackMessage": "An unexpected critical error occurred",
+    "instructions": {
+      "intro": "This is a critical error that affected the entire application. Please try:",
+      "refresh": "Refreshing the page",
+      "clearCache": "Clearing your browser cache",
+      "contact": "Contacting support if the issue persists"
+    },
+    "actions": {
+      "reload": "Reload Application"
+    }
+  },
+  "loadingState": {
+    "title": "Loading",
+    "description": "Please wait while we load your content..."
+  },
+  "notFoundPage": {
+    "title": "Page Not Found",
+    "description": "The page you're looking for doesn't exist or has been moved.",
+    "suggestions": {
+      "intro": "Here are some helpful links instead:",
+      "dashboard": "Go back to the dashboard",
+      "url": "Check the URL for typos",
+      "navigation": "Use the navigation menu to find what you need"
+    },
+    "actions": {
+      "dashboard": "Go to Dashboard",
+      "chat": "Go to Chat",
+      "back": "Go Back"
+    }
+  },
+  "testErrorPage": {
+    "errors": {
+      "boundaryExample": "This is a test error to demonstrate error boundary functionality"
+    },
+    "breadcrumbs": {
+      "label": "Test Error"
+    },
+    "hero": {
+      "title": "Error Handling Test Page",
+      "description": "This page is for testing error boundaries and error handling. Click the button below to trigger an error."
+    },
+    "sections": {
+      "boundary": {
+        "title": "Test Error Boundary",
+        "description": "This will trigger the error boundary and display the error page.",
+        "action": "Trigger Error"
+      },
+      "notFound": {
+        "title": "Test 404 Page",
+        "description": "Navigate to a non-existent page to see the 404 error page.",
+        "action": "Go to Non-Existent Page"
+      },
+      "loading": {
+        "title": "Test Loading State",
+        "description": "Navigate to a page with loading state to see the loading UI.",
+        "action": "Go to Chat (with loading)"
+      }
+    },
+    "warning": {
+      "title": "Warning",
+      "description": "This page should be removed in production. It's only for testing error handling during development."
+    }
+  },
+  "marketplace": {
+    "error": {
+      "title": "Marketplace Error",
+      "description": "An error occurred while loading the marketplace. Please try again."
+    },
+    "filters": {
+      "searchPlaceholder": "Search MCP servers...",
+      "sort": {
+        "placeholder": "Sort by",
+        "options": {
+          "stars": "Most stars",
+          "downloads": "Most downloads",
+          "updated": "Recently updated",
+          "name": "Name A–Z"
+        }
+      },
+      "category": {
+        "placeholder": "Category",
+        "all": "All categories"
+      },
+      "tags": {
+        "button": "Tags",
+        "dropdownLabel": "Select tags"
+      },
+      "quickFilters": {
+        "recommended": "Recommended",
+        "noApiKey": "No API key"
+      },
+      "reset": "Reset filters"
+    },
+    "card": {
+      "badges": { "recommended": "Recommended" },
+      "author": "by {author}",
+      "stats": {
+        "stars": "stars",
+        "downloads": "downloads",
+        "requiresApiKey": "Requires API key"
+      },
+      "buttons": {
+        "github": "GitHub",
+        "install": "Install",
+        "installing": "Installing...",
+        "details": "Details"
+      },
+      "dialog": {
+        "installing": "Installing {name}"
+      }
+    },
+    "toasts": {
+      "parseRepository": "Only GitHub URLs are supported",
+      "installing": "Installing {name}...",
+      "installStartFailed": "Failed to start installation",
+      "installed": "Installed {name}"
+    },
+    "detail": {
+      "stats": { "updated": "Updated {date}" },
+      "meta": { "category": "Category", "tags": "Tags" },
+      "mcpId": { "label": "MCP ID", "copied": "Copied", "copy": "Copy ID" },
+      "actions": { "viewOnGitHub": "View on GitHub" },
+      "readme": { "title": "README" }
+    },
+    "view": {
+      "title": "MCP Server Marketplace",
+      "subtitle": "Discover, install, and manage MCP servers from the community.",
+      "actions": {
+        "refresh": "Refresh",
+        "resetFilters": "Reset filters"
+      },
+      "states": {
+        "errorTitle": "Failed to load marketplace",
+        "errorDescription": "Please try again.",
+        "emptyTitle": "No servers match your filters",
+        "emptyDescription": "Try adjusting your filters or search query."
+      },
+      "stats": {
+        "resultCount": "Found {count, plural, one {# server} other {# servers}}"
+      }
+    }
+  },
+  "oauthCallback": {
+    "status": {
+      "processing": "Processing authorization...",
+      "exchanging": "Exchanging authorization code for tokens...",
+      "success": "Authorization successful! You can close this window."
+    },
+    "errors": {
+      "unknownError": "An unknown authorization error occurred",
+      "missingCodeOrState": "Missing authorization code or state",
+      "stateExpired": "OAuth state not found or expired",
+      "configMissing": "OAuth configuration not found",
+      "genericFailure": "Authorization failed"
+    },
+    "headings": {
+      "processing": "Processing Authorization",
+      "success": "Success!",
+      "error": "Authorization Failed"
+    },
+    "actions": {
+      "closeWindow": "Close Window"
+    }
+  },
+  "chat": {
+    "error": {
+      "title": "Chat Error",
+      "description": "An error occurred while loading the chat interface."
+    },
+    "session": {
+      "defaultTitle": "New Chat"
+    },
+    "toasts": {
+      "sessionExported": "Chat session exported successfully",
+      "chatCleared": "Chat cleared",
+      "modelSwitched": "Switched to {model}",
+      "streamingEnabled": "Streaming enabled",
+      "streamingDisabled": "Streaming disabled",
+      "newSession": "New chat session created",
+      "sessionCount": "{count, plural, one {# session} other {# sessions}}",
+      "responseFailure": "Failed to get response",
+      "sendFailure": "Failed to send message",
+      "toolUse": "Using tool: {tool}",
+      "toolExecution": "{count, plural, one {Executed # tool} other {Executed # tools}}"
+    },
+    "labels": {
+      "streaming": "Streaming",
+      "standard": "Standard",
+      "connected": "Connected:",
+      "noServers": "No servers"
+    },
+    "messages": {
+      "optimizationNotice": "Your prompt has been optimized for better results."
+    },
+    "sidebar": {
+      "newChat": "New Chat",
+      "empty": "No chat sessions yet",
+      "confirmDelete": "Delete this chat session? This cannot be undone.",
+      "messageCount": "{count, plural, one {# message} other {# messages}}"
+    },
+    "input": {
+      "placeholder": "Type your message...",
+      "errors": {
+        "optimizeFailure": "Failed to optimize prompt"
+      },
+      "toast": {
+        "optimized": "Prompt optimized",
+        "optimizeError": "Failed to optimize prompt"
+      },
+      "shortcuts": {
+        "send": "to send",
+        "newline": "for new line"
+      },
+      "aria": {
+        "optimize": "Optimize prompt",
+        "send": "Send message"
+      },
+      "tooltip": {
+        "optimize": "Optimize prompt with AI",
+        "send": "Send message",
+        "waiting": "Waiting for response..."
+      }
+    },
+    "message": {
+      "user": "You",
+      "assistant": "Assistant",
+      "system": "System",
+      "copy": "Copy message",
+      "copied": "Copied!",
+      "download": "Download",
+      "preview": "Preview",
+      "attachmentsCount": "{count, plural, one {# attachment} other {# attachments}}",
+      "attachmentIcon": "Attachment icon",
+      "previewPdf": "Preview PDF",
+      "previewButton": "Preview",
+      "previewTooltip": "Preview {name}",
+      "downloadTooltip": "Download {name}",
+      "imagePreviewAlt": "Image preview",
+      "pdfPreviewTitle": "PDF Preview",
+      "toolCall": {
+        "title": "Tool call: {name}",
+        "parameters": "Parameters",
+        "response": "Response",
+        "unknownError": "Unknown error",
+        "status": {
+          "requested": "Requested",
+          "success": "Success",
+          "error": "Error"
+        }
+      },
+      "toolResult": {
+        "title": "Tool: {name}",
+        "error": "Error: {message}"
+      }
+    },
+    "interface": {
+      "messageCount": "{count, plural, one {# message} other {# messages}}",
+      "empty": {
+        "title": "Start a conversation",
+        "description": "Send a message to begin chatting with Claude using your connected MCP servers."
+      },
+      "emptyState": {
+        "title": "No messages yet",
+        "description": "Start a conversation by sending a message below.",
+        "tips": {
+          "0": "Connect MCP servers to enhance your chat experience",
+          "1": "Use Shift+Enter for multi-line messages",
+          "2": "Enable prompt optimization for better results"
+        }
+      },
+      "actions": {
+        "clear": "Clear chat",
+        "clearChat": "Clear chat",
+        "confirmClear": "Clear all messages?",
+        "stopGeneration": "Stop generating"
+      },
+      "clearDialog": {
+        "title": "Clear Chat",
+        "description": "Are you sure you want to clear all messages?",
+        "warning": "This action cannot be undone.",
+        "confirm": "Clear all messages"
+      },
+      "status": {
+        "thinking": "Thinking...",
+        "streaming": "Streaming..."
+      }
+    },
+    "selector": {
+      "placeholder": "Select server",
+      "autoOption": "Auto (all connected)"
+    },
+    "prompt": {
+      "label": "Optimize prompts"
+    }
+  },
+  "developerPage": {
+    "hero": {
+      "title": "Developer Tools",
+      "description": "Debug MCP protocol messages, monitor performance, and troubleshoot issues"
+    },
+    "error": {
+      "title": "Developer Tools Error",
+      "description": "An error occurred while loading the developer tools."
+    },
+    "loading": {
+      "title": "Loading developer tools",
+      "description": "Please wait while we load the developer tools..."
+    }
+  },
+  "settings": {
+    "page": {
+      "title": "Settings",
+      "description": "Configure preferences, integrations, and advanced options.",
+      "errors": {
+        "title": "Settings Error",
+        "description": "An error occurred while loading the settings."
+      },
+      "loading": {
+        "title": "Loading settings",
+        "description": "Please wait while we load your preferences..."
+      }
+    },
+    "locale": {
+      "title": "Language & Region",
+      "description": "Choose your preferred language and regional settings.",
+      "fields": {
+        "locale": {
+          "label": "Language",
+          "options": {
+            "en": "English",
+            "zh-CN": "Chinese (Simplified)",
+            "ja": "Japanese",
+            "es": "Spanish"
+          }
+        }
+      },
+      "actions": {
+        "reset": "Reset to default"
+      }
+    },
+    "notifications": {
+      "title": "Notifications",
+      "description": "Manage notification preferences and alerts.",
+      "toggles": {
+        "enabled": {
+          "label": "Enable notifications",
+          "description": "Receive notifications for important events"
+        },
+        "playSound": {
+          "label": "Play sound",
+          "description": "Play a sound when notifications appear"
+        },
+        "showBadges": {
+          "label": "Show badges",
+          "description": "Display notification badges on the app icon"
+        }
+      },
+      "actions": {
+        "reset": "Reset to default"
+      }
+    },
+    "privacy": {
+      "title": "Privacy & Security",
+      "description": "Control your privacy and security settings.",
+      "toggles": {
+        "telemetry": {
+          "label": "Send usage data",
+          "description": "Help improve the app by sending anonymous usage statistics"
+        },
+        "crashReports": {
+          "label": "Send crash reports",
+          "description": "Automatically send crash reports to help fix bugs"
+        },
+        "requireConfirmOnClear": {
+          "label": "Confirm before clearing data",
+          "description": "Ask for confirmation before clearing chat history or data"
+        }
+      },
+      "actions": {
+        "reset": "Reset to default"
+      }
+    },
+    "appearance": {
+      "title": "Appearance",
+      "description": "Customize the look and feel of the application.",
+      "fields": {
+        "theme": {
+          "label": "Theme",
+          "options": {
+            "system": "System",
+            "light": "Light",
+            "dark": "Dark"
+          }
+        },
+        "colorScheme": {
+          "label": "Color scheme",
+          "options": {
+            "zinc": "Zinc",
+            "slate": "Slate",
+            "gray": "Gray",
+            "neutral": "Neutral",
+            "stone": "Stone",
+            "blue": "Blue",
+            "violet": "Violet",
+            "emerald": "Emerald",
+            "rose": "Rose"
+          }
+        },
+        "fontScale": {
+          "label": "Font size",
+          "options": {
+            "sm": "Small",
+            "md": "Medium",
+            "lg": "Large"
+          }
+        }
+      },
+      "actions": {
+        "reset": "Reset to default",
+        "tooltip": "Reset appearance settings to default values"
+      }
+    },
+    "advanced": {
+      "title": "Advanced",
+      "description": "Advanced settings for power users.",
+      "experimental": {
+        "label": "Experimental features",
+        "description": "Enable experimental features (may be unstable)"
+      },
+      "devMode": {
+        "label": "Developer mode",
+        "description": "Enable developer tools and debugging features"
+      },
+      "actions": {
+        "reset": "Reset to default"
+      }
+    },
+    "backup": {
+      "format": {
+        "size": "{value} KB"
+      },
+      "sections": {
+        "automatic": {
+          "title": "Automatic Backups",
+          "description": "Configure automatic backup settings to protect your data.",
+          "enable": {
+            "label": "Enable automatic backups",
+            "description": "Automatically create backups based on the schedule below"
+          },
+          "frequency": {
+            "label": "Backup frequency",
+            "options": {
+              "daily": "Daily",
+              "weekly": "Weekly",
+              "monthly": "Monthly",
+              "manual": "Manual only"
+            }
+          },
+          "retention": {
+            "label": "Keep backups for",
+            "description": "Older backups will be automatically deleted",
+            "options": {
+              "7": "7 days",
+              "14": "14 days",
+              "30": "30 days",
+              "60": "60 days",
+              "90": "90 days"
+            }
+          },
+          "lastBackup": "Last backup: {time}"
+        },
+        "manual": {
+          "title": "Manual Backup",
+          "description": "Create and import backups manually.",
+          "create": "Create backup now",
+          "import": {
+            "label": "Import backup",
+            "ariaLabel": "Select backup file to import",
+            "modes": {
+              "single": {
+                "title": "Single file",
+                "description": "Import one backup file"
+              },
+              "multiple": {
+                "title": "Multiple files",
+                "description": "Import multiple backup files at once"
+              }
+            },
+            "button": {
+              "single": "Import backup",
+              "multiple": "Import backups"
+            }
+          }
+        },
+        "history": {
+          "title": "Backup History",
+          "description": "View and manage your backup history.",
+          "badge": "{count, plural, one {# backup} other {# backups}}",
+          "empty": {
+            "title": "No backups yet",
+            "description": "Create your first backup to get started"
+          }
+        }
+      },
+      "cards": {
+        "servers": "{count, plural, one {server} other {servers}}",
+        "sessions": "{count, plural, one {session} other {sessions}}"
+      },
+      "actions": {
+        "restore": "Restore",
+        "export": "Export",
+        "delete": "Delete"
+      },
+      "dialogs": {
+        "restore": {
+          "title": "Restore Backup",
+          "description": "Select which data to restore from this backup.",
+          "options": {
+            "servers": "Server configurations",
+            "chatSessions": "Chat sessions",
+            "chatMessages": "Chat messages",
+            "connectionHistory": "Connection history",
+            "settings": "Settings"
+          },
+          "cancel": "Cancel",
+          "confirm": "Restore"
+        },
+        "delete": {
+          "title": "Delete Backup",
+          "description": "Are you sure you want to delete this backup? This action cannot be undone.",
+          "cancel": "Cancel",
+          "confirm": "Delete"
+        }
+      },
+      "toasts": {
+        "settingsUpdated": "Backup settings updated",
+        "createSuccess": "Backup created successfully",
+        "createError": "Failed to create backup",
+        "exportSuccess": "Backup exported successfully",
+        "exportError": "Failed to export backup",
+        "importSuccess": "{count, plural, one {Backup imported successfully} other {# backups imported successfully}}",
+        "importPartial": "{success} imported, {failed} failed",
+        "importError": "Failed to import backup",
+        "restoreSuccess": "Backup restored successfully",
+        "restoreError": "Failed to restore backup",
+        "deleteSuccess": "Backup deleted successfully",
+        "deleteError": "Failed to delete backup"
+      }
+    }
+  },
+  "dashboard": {
+    "breadcrumbs": {
+      "dashboard": "Dashboard"
+    },
+    "hero": {
+      "title": "Model Context Protocol Hub",
+      "subtitle": "Connect, monitor, and manage your MCP servers from a single control center.",
+      "connected": "{count, plural, one {Currently {count} server connected.} other {Currently {count} servers connected.}}"
+    },
+    "actions": {
+      "goToChat": "Open chat",
+      "remoteServers": "Remote library",
+      "templates": "Templates",
+      "importExport": "Import / Export",
+      "addServer": "Add server"
+    },
+    "filters": {
+      "searchPlaceholder": "Search servers by name or description...",
+      "statusLabel": "Status",
+      "transportLabel": "Transport",
+      "resultCount": "{count, plural, one {# result} other {# results}}",
+      "statusAll": "All status",
+      "transportAll": "All transports",
+      "searchBadge": "Search",
+      "statusBadge": "Status",
+      "transportBadge": "Transport",
+      "transportOptions": {
+        "stdio": "Stdio",
+        "sse": "Server-Sent Events",
+        "http": "HTTP"
+      }
+    },
+    "confirmations": {
+      "delete": "Remove this server configuration? This action cannot be undone."
+    },
+    "toast": {
+      "connectSuccess": "Server connection established.",
+      "connectFailed": "Failed to connect to the server.",
+      "connectError": "Unexpected error while connecting.",
+      "disconnectSuccess": "Server disconnected successfully.",
+      "disconnectFailed": "Failed to disconnect from the server.",
+      "disconnectError": "Unexpected error while disconnecting.",
+      "reconnectPending": "Reconnecting to server...",
+      "reconnectSuccess": "Server reconnected successfully.",
+      "reconnectError": "Failed to reconnect to the server.",
+      "deleteSuccess": "Server configuration removed.",
+      "templateAdded": "Template added to your configurations.",
+      "updateSuccess": "Server configuration updated.",
+      "createSuccess": "New server created successfully.",
+      "createFailed": "Unable to create the server configuration.",
+      "saveError": "Failed to save the server configuration."
+    }
+  },
+  "serverList": {
+    "empty": {
+      "title": "No servers configured yet",
+      "subtitle": "Use the Add server button to set up your first connection."
+    }
+  },
+  "serverCard": {
+    "actions": {
+      "connect": "Connect",
+      "disconnect": "Disconnect"
+    }
+  },
+  "servers": {
+    "breadcrumbs": {
+      "root": "Servers"
+    },
+    "hero": {
+      "title": "Servers Management",
+      "subtitle": "Unified status across transports",
+      "stats": "{connected, number} connected • {running, number} running processes"
+    },
+    "actions": {
+      "refresh": "Refresh",
+      "enableAll": "Enable all",
+      "disableAll": "Disable all",
+      "bulkConnect": "Connect enabled",
+      "bulkDisconnect": "Disconnect all"
+    },
+    "toasts": {
+      "loadFailed": "Failed to load MCP status",
+      "connect": "Connected",
+      "connectFailed": "Failed to connect",
+      "disconnect": "Disconnected",
+      "disconnectFailed": "Failed to disconnect",
+      "bulkConnect": "Connected {success, number}/{total, number}",
+      "bulkDisconnect": "Disconnected {success, number}/{total, number}",
+      "enableAll": "All servers enabled",
+      "disableAll": "All servers disabled"
+    },
+    "error": {
+      "title": "Servers Error",
+      "description": "An error occurred while loading the servers page."
+    },
+    "loading": {
+      "title": "Loading servers",
+      "description": "Please wait while we load your MCP servers..."
+    },
+    "processes": {
+      "title": "Running Processes",
+      "empty": "No stdio processes running",
+      "meta": "PID {pid} • {state} • restarted {restarts, number}×",
+      "uptime": "{seconds, number}s"
+    },
+    "detail": {
+      "notFound": {
+        "title": "Server not found",
+        "description": "The server you're looking for doesn't exist.",
+        "cta": "Back to dashboard"
+      },
+      "configuration": {
+        "title": "Configuration",
+        "description": "Server connection details",
+        "transport": "Transport type:",
+        "command": "Command:",
+        "cwd": "Working directory:",
+        "env": "Environment variables:",
+        "url": "URL:"
+      },
+      "tools": {
+        "title": "{count, plural, one {Available tool ({count})} other {Available tools ({count})}}",
+        "description": "Tools provided by this server"
+      },
+      "resources": {
+        "title": "{count, plural, one {Available resource ({count})} other {Available resources ({count})}}",
+        "description": "Resources provided by this server"
+      },
+      "prompts": {
+        "title": "{count, plural, one {Available prompt ({count})} other {Available prompts ({count})}}",
+        "description": "Prompts provided by this server"
+      }
+    }
+  },
+  "components": {
+    "configUploader": {
+      "dialog": {
+        "title": "Configuration Import/Export",
+        "description": "Import servers from Claude Desktop, VS Code, Cursor, or Cline, or export your current configuration."
+      },
+      "import": {
+        "title": "Import configuration",
+        "example": "Example",
+        "mode": {
+          "single": "Single file",
+          "multiple": "Multiple files",
+          "directory": "Directory"
+        },
+        "fileHelp": "JSON exported from Claude Desktop, VS Code, Cursor, or Cline",
+        "selection": {
+          "singlePlaceholder": "Click to upload a configuration file",
+          "multiplePlaceholder": "Click to upload configuration files",
+          "singleSelected": "{name}",
+          "multipleSelected": "{count} files selected"
+        },
+        "directory": {
+          "placeholder": "Click to select a directory",
+          "selected": "{count} JSON files selected",
+          "help": "All JSON configuration files will be scanned"
+        }
+      },
+      "status": {
+        "processingSingle": "Processing file...",
+        "processingMultiple": "Processing {count} files..."
+      },
+      "results": {
+        "title": "Parse results",
+        "success": "Successfully parsed {count} server(s)",
+        "successAggregated": "Successfully parsed {count} server(s)",
+        "filesBadge": "{success} of {total} files",
+        "formatBadge": "{format}",
+        "failure": "Failed to parse configuration",
+        "failureAggregated": "Failed to parse all {total} file(s)",
+        "errorsTitle": "Errors",
+        "warningsTitle": "Warnings",
+        "serversTitle": "Servers to import"
+      },
+      "toast": {
+        "invalidConfig": "Invalid configuration: {reason}",
+        "processFailed": "Failed to process file(s)",
+        "directoryNoJson": "No JSON configuration files found in the selected directory",
+        "directoryFailed": "Failed to process directory",
+        "parseSuccessSingle": "Found {count} server(s) in configuration{format}",
+        "parseFailureSingle": "Failed to parse configuration file",
+        "parseSuccessMultiple": "Processed {total} file(s): found {count} server(s) from {success} successful file(s)",
+        "parseFailureMultiple": "Failed to parse {total} file(s)",
+        "importSuccessSingle": "Imported {count} new server(s)",
+        "importSuccessMultiple": "Imported {count} new server(s) from {files} file(s)",
+        "importFailure": "Failed to import servers",
+        "exportSuccess": "Configuration exported successfully",
+        "exportFailure": "Failed to export configuration",
+        "downloadSuccess": "Example configuration downloaded"
+      },
+      "export": {
+        "title": "Export configuration",
+        "description": "Export your current {count} server(s) to Claude Desktop format",
+        "cta": "Export current servers"
+      },
+      "footer": {
+        "import": "Import {count} server(s)"
+      }
+    },
+    "installServer": {
+      "dialog": {
+        "title": "Install MCP server",
+        "description": "Install an MCP server from npm, GitHub, or a local path."
+      },
+      "tabs": {
+        "npm": "npm",
+        "github": "GitHub",
+        "local": "Local"
+      },
+      "fields": {
+        "npm": {
+          "packageLabel": "Package name *",
+          "packagePlaceholder": "@modelcontextprotocol/server-filesystem",
+          "versionLabel": "Version (optional)",
+          "versionPlaceholder": "latest",
+          "registryLabel": "Registry URL (optional)",
+          "registryPlaceholder": "https://registry.npmjs.org"
+        },
+        "github": {
+          "repoLabel": "Repository *",
+          "repoPlaceholder": "owner/repository",
+          "branchLabel": "Branch (optional)",
+          "branchPlaceholder": "main",
+          "tagLabel": "Tag (optional)",
+          "tagPlaceholder": "v1.0.0",
+          "subPathLabel": "Sub-path (optional)",
+          "subPathPlaceholder": "packages/server"
+        },
+        "local": {
+          "pathLabel": "Path *",
+          "pathPlaceholder": "/path/to/server"
+        },
+        "common": {
+          "nameLabel": "Server name *",
+          "namePlaceholder": "My MCP server",
+          "descriptionLabel": "Description (optional)",
+          "descriptionPlaceholder": "Description of the server"
+        }
+      },
+      "alerts": {
+        "troubleshooting": "Troubleshooting",
+        "warningsTitle": "Warnings"
+      },
+      "actions": {
+        "validate": "Validate",
+        "install": "Install",
+        "retry": "Retry install"
+      },
+      "errors": {
+        "packageNameRequired": "Package name is required",
+        "repositoryRequired": "Repository is required",
+        "pathRequired": "Path is required",
+        "serverNameRequired": "Server name is required",
+        "validationFailed": "Validation failed",
+        "installationFailed": "Installation failed"
+      }
+    },
+    "installationProgress": {
+      "title": "Installation progress",
+      "progress": {
+        "step": "Step {current} of {total}: {name}",
+        "processing": "Processing..."
+      },
+      "errorLabel": "Error:",
+      "logs": {
+        "show": "Show logs",
+        "hide": "Hide logs"
+      },
+      "timestamps": {
+        "started": "Started: {value}",
+        "completed": "Completed: {value}",
+        "separator": "•"
+      },
+      "actions": {
+        "retrying": "Retrying..."
+      },
+      "status": {
+        "pending": "Pending",
+        "downloading": "Downloading",
+        "installing": "Installing",
+        "configuring": "Configuring",
+        "completed": "Completed",
+        "failed": "Failed",
+        "cancelled": "Cancelled"
+      },
+      "list": {
+        "title": "Active installations"
+      }
+    },
+    "serverHealth": {
+      "status": {
+        "healthy": "Healthy",
+        "degraded": "Degraded",
+        "offline": "Offline"
+      },
+      "tooltip": {
+        "uptime": "Uptime: {value}",
+        "response": "Response: {value}",
+        "error": "Error: {message}",
+        "failures": "Failures: {count}"
+      },
+      "labels": {
+        "uptime": "Uptime",
+        "responseTime": "Response time",
+        "lastCheck": "Last check",
+        "failures": "Failures",
+        "lastError": "Last error"
+      },
+      "actions": {
+        "reconnect": "Reconnect"
+      },
+      "format": {
+        "uptime": {
+          "days": "{days}d {hours}h",
+          "hours": "{hours}h {minutes}m",
+          "minutes": "{minutes}m {seconds}s",
+          "seconds": "{seconds}s"
+        },
+        "response": {
+          "milliseconds": "{value}ms",
+          "seconds": "{value}s"
+        }
+      }
+    },
+    "registryBrowser": {
+      "search": {
+        "placeholder": "Search MCP servers...",
+        "button": "Search",
+        "loading": "Searching..."
+      },
+      "filters": {
+        "all": "All",
+        "npm": "npm",
+        "github": "GitHub"
+      },
+      "empty": "No servers found. Try a different search query.",
+      "badges": {
+        "verified": "Verified"
+      },
+      "metrics": {
+        "version": "v{version}"
+      },
+      "actions": {
+        "openHomepage": "Open server homepage"
+      }
+    },
+    "oauthAuth": {
+      "dialog": {
+        "title": "OAuth authentication",
+        "description": "Authenticate with {name} using OAuth 2.1 with PKCE"
+      },
+      "status": {
+        "authenticating": "Waiting for authentication...",
+        "success": "Successfully authenticated",
+        "idle": "Ready to authenticate"
+      },
+      "errors": {
+        "authFailed": "Authentication failed",
+        "tokenExpired": "Token has expired. Please re-authenticate.",
+        "startFailed": "Failed to start authentication",
+        "refreshMissing": "No refresh token available. Please re-authenticate.",
+        "refreshFailed": "Failed to refresh token"
+      },
+      "toasts": {
+        "success": "Successfully authenticated with {name}",
+        "error": "Authentication failed: {reason}",
+        "popup": "Please complete authentication in the popup window",
+        "startFailed": "Failed to start authentication",
+        "refreshSuccess": "Token refreshed successfully",
+        "refreshFailed": "Failed to refresh token. Please re-authenticate."
+      },
+      "token": {
+        "expires": "Expires: {value}",
+        "never": "Never",
+        "expired": "Token expired"
+      },
+      "badges": {
+        "active": "Active"
+      },
+      "info": {
+        "clientId": "Client ID:",
+        "scope": "Scope:",
+        "pkce": "PKCE:",
+        "pkceEnabled": "Enabled (S256)",
+        "pkceDisabled": "Disabled"
+      },
+      "alerts": {
+        "success": "You are successfully authenticated with {name}"
+      },
+      "buttons": {
+        "authenticate": "Authenticate",
+        "reauthenticate": "Re-authenticate",
+        "authenticating": "Authenticating...",
+        "refresh": "Refresh token",
+        "refreshing": "Refreshing..."
+      }
+    },
+    "remoteLibrary": {
+      "dialog": {
+        "title": "Remote MCP server library",
+        "description": "Browse and connect to pre-configured remote MCP servers"
+      },
+      "search": {
+        "placeholder": "Search servers..."
+      },
+      "categories": {
+        "all": "All",
+        "ai": "AI",
+        "productivity": "Productivity",
+        "developerTools": "Developer tools",
+        "knowledge": "Knowledge",
+        "creative": "Creative",
+        "data": "Data",
+        "utilities": "Utilities"
+      },
+      "badges": {
+        "oauth": "OAuth",
+        "apiKey": "API key",
+        "authenticated": "Authenticated"
+      },
+      "actions": {
+        "connecting": "Connecting...",
+        "connect": "Connect",
+        "addServer": "Add server",
+        "viewDocs": "View documentation",
+        "docsLabel": "Docs"
+      },
+      "toasts": {
+        "oauthSuccess": "Added {name} with OAuth authentication",
+        "added": "Added {name} to your servers",
+        "configureKeys": "Configure API keys in server settings",
+        "connectFailed": "Failed to connect"
+      },
+      "errors": {
+        "oauthConfigMissing": "OAuth configuration not found",
+        "connectFailed": "Failed to connect"
+      },
+      "empty": "No servers found matching your criteria",
+      "footer": {
+        "count": "Showing {visible} of {total} servers"
+      }
+    },
+    "serverTemplates": {
+      "dialog": {
+        "title": "Server templates",
+        "description": "Choose from pre-configured templates for common MCP servers."
+      },
+      "tabs": {
+        "all": "All",
+        "popular": "Popular",
+        "categories": "Categories"
+      },
+      "configuration": {
+        "title": "Configuration required",
+        "description": "Provide the configuration values to continue."
+      },
+      "fields": {
+        "env": "Environment variable {key}",
+        "args": "Arguments",
+        "url": "URL"
+      },
+      "placeholders": {
+        "env": "Enter value",
+        "args": "Space-separated arguments",
+        "url": "Enter URL",
+        "default": "Enter value"
+      },
+      "actions": {
+        "useTemplate": "Use this template"
+      },
+      "empty": {
+        "title": "Select a template to get started",
+        "description": "Browse the templates on the left to view configuration details."
+      }
+    },
+    "serverDocs": {
+      "dialog": {
+        "title": "MCP server documentation",
+        "description": "Browse documentation for popular MCP servers"
+      },
+      "search": {
+        "placeholder": "Search servers..."
+      },
+      "states": {
+        "loading": "Loading...",
+        "empty": "No servers found",
+        "placeholder": "Select a server to view documentation"
+      },
+      "links": {
+        "github": "GitHub",
+        "npm": "npm"
+      },
+      "sections": {
+        "authentication": {
+          "title": "Authentication",
+          "required": "Required",
+          "optional": "Not required",
+          "methods": "Methods: ",
+          "envVars": "Environment variables: "
+        },
+        "configuration": {
+          "title": "Configuration",
+          "tabs": {
+            "stdio": "Stdio",
+            "sse": "SSE",
+            "http": "HTTP"
+          }
+        },
+        "features": {
+          "title": "Features"
+        },
+        "requirements": {
+          "title": "Requirements"
+        },
+        "notes": {
+          "title": "Notes"
+        }
+      },
+      "actions": {
+        "copyConfig": "Copy configuration"
+      },
+      "toasts": {
+        "loadFailed": "Failed to load documentation",
+        "copy": "Copied to clipboard"
+      }
+    },
+    "troubleshooting": {
+      "networkCheckConnection": "Check your internet connection and retry.",
+      "networkProxy": "If using a proxy/VPN, ensure it allows GitHub/NPM traffic.",
+      "npmEnsureNode": "Ensure Node.js and npm are installed and available in PATH.",
+      "npmVerifyPackage": "Verify the package name/version exists on npm.",
+      "githubVerifyRepo": "Verify the GitHub repository exists and is public or you have access.",
+      "githubRateLimit": "If rate limited, try again later or authenticate to GitHub.",
+      "permissionsElevate": "Try running the app with sufficient permissions.",
+      "generalRetry": "Retry the installation.",
+      "generalCheckLogs": "Check logs for details and share with maintainers if the issue persists."
+    },
+    "errorAlert": {
+      "title": "Error"
+    },
+    "serverForms": {
+      "common": {
+        "nameLabel": "Server name *",
+        "namePlaceholder": "My MCP server",
+        "descriptionLabel": "Description",
+        "descriptionPlaceholder": "Optional description",
+        "submit": "Save server"
+      },
+      "dialog": {
+        "createTitle": "Add new MCP server",
+        "editTitle": "Edit MCP server",
+        "description": "Configure your MCP server connection. Choose the transport type and fill in the required details.",
+        "tabs": {
+          "stdio": "Stdio",
+          "sse": "SSE",
+          "http": "HTTP"
+        }
+      },
+      "stdio": {
+        "commandLabel": "Command *",
+        "commandPlaceholder": "npx",
+        "commandHelp": "The command to execute (e.g., npx, node, python)",
+        "argsLabel": "Arguments",
+        "argsPlaceholder": "-y @modelcontextprotocol/server-filesystem /path/to/dir",
+        "argsHelp": "Space-separated arguments for the command",
+        "envLabel": "Environment variables",
+        "envPlaceholder": "KEY=value\nANOTHER_KEY=another_value",
+        "envHelp": "One per line in KEY=value format",
+        "cwdLabel": "Working directory",
+        "cwdPlaceholder": "/path/to/working/directory"
+      },
+      "sse": {
+        "namePlaceholder": "My SSE server",
+        "urlLabel": "Server URL *",
+        "urlPlaceholder": "http://localhost:3001/sse",
+        "urlHelp": "The SSE endpoint URL for the MCP server",
+        "headersLabel": "Custom headers (optional)",
+        "headersPlaceholder": "Authorization: Bearer token\nX-Custom-Header: value",
+        "headersHelp": "One header per line in format: Header-Name: value"
+      },
+      "http": {
+        "namePlaceholder": "My HTTP server",
+        "urlLabel": "Server URL *",
+        "urlPlaceholder": "https://api.example.com/mcp",
+        "urlHelp": "The HTTP endpoint URL for the MCP server",
+        "methodLabel": "HTTP method",
+        "methodOptions": {
+          "post": "POST",
+          "get": "GET"
+        },
+        "timeoutLabel": "Request timeout (ms)",
+        "timeoutPlaceholder": "30000",
+        "timeoutHelp": "Timeout in milliseconds (1000-300000)",
+        "auth": {
+          "label": "Authentication",
+          "options": {
+            "none": "None",
+            "bearer": "Bearer token",
+            "apikey": "API key",
+            "basic": "Basic auth"
+          },
+          "bearer": {
+            "label": "Bearer token *",
+            "placeholder": "your-bearer-token"
+          },
+          "apiKey": {
+            "headerLabel": "API key header name",
+            "headerPlaceholder": "X-API-Key",
+            "valueLabel": "API key value *",
+            "valuePlaceholder": "your-api-key"
+          },
+          "basic": {
+            "usernameLabel": "Username *",
+            "usernamePlaceholder": "username",
+            "passwordLabel": "Password *",
+            "passwordPlaceholder": "password"
+          }
+        },
+        "headers": {
+          "label": "Additional headers (optional)",
+          "placeholder": "Content-Type: application/json\nX-Custom-Header: value",
+          "help": "One header per line in format: Header-Name: value"
+        }
+      }
+    },
+    "lifecycle": {
+      "statusTitle": "Server status",
+      "tooltip": {
+        "start": "Start server",
+        "stop": "Stop server",
+        "restart": "Restart server"
+      },
+      "actions": {
+        "start": "Start",
+        "stop": "Stop",
+        "restart": "Restart"
+      },
+      "errors": {
+        "start": "Failed to start server",
+        "stop": "Failed to stop server",
+        "restart": "Failed to restart server"
+      },
+      "metrics": {
+        "pid": "PID: {value}",
+        "uptime": "Uptime: {value}",
+        "restarts": "Restarts: {count}",
+        "lastError": "Error: {message}",
+        "memoryLabel": "Memory",
+        "cpuLabel": "CPU",
+        "uptimeLabel": "Uptime",
+        "na": "N/A"
+      },
+      "status": {
+        "stopped": "Stopped",
+        "starting": "Starting",
+        "running": "Running",
+        "stopping": "Stopping",
+        "restarting": "Restarting",
+        "error": "Error"
+      }
+    }
+  }
+}

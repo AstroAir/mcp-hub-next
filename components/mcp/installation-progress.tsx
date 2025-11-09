@@ -6,6 +6,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
@@ -29,6 +30,11 @@ export function InstallationProgressCard({ installId, onComplete, onError, onRet
   const [showLogs, setShowLogs] = useState(false);
   const [retrying, setRetrying] = useState(false);
   const { setInstallationProgress, removeInstallation } = useServerStore();
+  const t = useTranslations('components.installationProgress');
+  const actions = useTranslations('common.actions');
+  const troubleshooting = useTranslations('components.troubleshooting');
+  const alerts = useTranslations('components.installServer.alerts');
+  const installErrors = useTranslations('components.installServer.errors');
 
   useEffect(() => {
     const fetchProgress = async (intervalRef: { current: NodeJS.Timeout | null }) => {
@@ -45,7 +51,7 @@ export function InstallationProgressCard({ installId, onComplete, onError, onRet
             onComplete?.();
           } else if (response.data.status === 'failed') {
             if (intervalRef.current) clearInterval(intervalRef.current);
-            onError?.(response.data.error || 'Installation failed');
+            onError?.(response.data.error || installErrors('installationFailed'));
           }
         }
       } catch (error) {
@@ -64,7 +70,7 @@ export function InstallationProgressCard({ installId, onComplete, onError, onRet
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [installId, onComplete, onError, setInstallationProgress]);
+  }, [installErrors, installId, onComplete, onError, setInstallationProgress]);
 
   const handleCancel = async () => {
     try {
@@ -98,12 +104,12 @@ export function InstallationProgressCard({ installId, onComplete, onError, onRet
   const getStatusIcon = () => {
     switch (progress.status) {
       case 'completed':
-        return <CheckCircle2 className="h-5 w-5 text-green-500" />;
+        return <CheckCircle2 aria-hidden className="h-5 w-5 text-green-500" />;
       case 'failed':
       case 'cancelled':
-        return <XCircle className="h-5 w-5 text-red-500" />;
+        return <XCircle aria-hidden className="h-5 w-5 text-red-500" />;
       default:
-        return <Loader2 className="h-5 w-5 animate-spin text-blue-500" />;
+        return <Loader2 aria-hidden className="h-5 w-5 animate-spin text-blue-500" />;
     }
   };
 
@@ -118,9 +124,21 @@ export function InstallationProgressCard({ installId, onComplete, onError, onRet
       cancelled: 'destructive',
     };
 
+    const labelMap: Record<string, string> = {
+      pending: t('status.pending'),
+      downloading: t('status.downloading'),
+      installing: t('status.installing'),
+      configuring: t('status.configuring'),
+      completed: t('status.completed'),
+      failed: t('status.failed'),
+      cancelled: t('status.cancelled'),
+    };
+
+    const label = labelMap[progress.status] ?? progress.status;
+
     return (
       <Badge variant={variants[progress.status] || 'default'}>
-        {progress.status.charAt(0).toUpperCase() + progress.status.slice(1)}
+        {label}
       </Badge>
     );
   };
@@ -131,7 +149,7 @@ export function InstallationProgressCard({ installId, onComplete, onError, onRet
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {getStatusIcon()}
-            <CardTitle className="text-lg">Installation Progress</CardTitle>
+            <CardTitle className="text-lg">{t('title')}</CardTitle>
           </div>
           {getStatusBadge()}
         </div>
@@ -143,8 +161,12 @@ export function InstallationProgressCard({ installId, onComplete, onError, onRet
           <div className="flex justify-between text-sm">
             <span>
               {progress.currentStep && progress.totalSteps
-                ? `Step ${progress.currentStepNumber} of ${progress.totalSteps}: ${progress.currentStep}`
-                : 'Processing...'}
+                ? t('progress.step', {
+                    current: String(progress.currentStepNumber ?? 0),
+                    total: String(progress.totalSteps ?? 0),
+                    name: progress.currentStep,
+                  })
+                : t('progress.processing')}
             </span>
             <span className="font-medium">{progress.progress}%</span>
           </div>
@@ -155,16 +177,16 @@ export function InstallationProgressCard({ installId, onComplete, onError, onRet
         {progress.error && (
           <div className="space-y-3">
             <div className="rounded-md bg-red-50 p-3 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-200">
-              <div className="font-semibold">Error:</div>
+              <div className="font-semibold">{t('errorLabel')}</div>
               <div className="mt-1">{progress.error}</div>
             </div>
             <div className="rounded-md border p-3 bg-muted/40">
               <div className="flex items-center gap-2 mb-2 text-sm font-medium">
-                <LifeBuoy className="h-4 w-4" /> Troubleshooting
+                <LifeBuoy className="h-4 w-4" aria-hidden /> {alerts('troubleshooting')}
               </div>
               <ul className="list-disc list-inside text-xs text-muted-foreground space-y-1">
-                {getTroubleshootingTips(progress.error).map((tip, i) => (
-                  <li key={i}>{tip}</li>
+                {getTroubleshootingTips(progress.error).map((tipKey) => (
+                  <li key={tipKey}>{troubleshooting(tipKey)}</li>
                 ))}
               </ul>
             </div>
@@ -179,7 +201,7 @@ export function InstallationProgressCard({ installId, onComplete, onError, onRet
               size="sm"
               onClick={() => setShowLogs(!showLogs)}
             >
-              {showLogs ? 'Hide' : 'Show'} Logs
+              {showLogs ? t('logs.hide') : t('logs.show')}
             </Button>
 
             {showLogs && (
@@ -195,22 +217,27 @@ export function InstallationProgressCard({ installId, onComplete, onError, onRet
         {/* Actions */}
         <div className="flex justify-between items-center pt-2">
           <div className="text-xs text-muted-foreground">
-            Started: {new Date(progress.startedAt).toLocaleString()}
+            {t('timestamps.started', { value: new Date(progress.startedAt).toLocaleString() })}
             {progress.completedAt && (
-              <> • Completed: {new Date(progress.completedAt).toLocaleString()}</>
+              <>
+                {' '}
+                {t('timestamps.separator')}
+                {' '}
+                {t('timestamps.completed', { value: new Date(progress.completedAt).toLocaleString() })}
+              </>
             )}
           </div>
 
           {progress.status !== 'completed' && progress.status !== 'failed' && progress.status !== 'cancelled' && (
             <Button variant="destructive" size="sm" onClick={handleCancel}>
-              <X className="h-4 w-4 mr-1" />
-              Cancel
+              <X className="h-4 w-4 mr-1" aria-hidden />
+              {actions('cancel')}
             </Button>
           )}
           {progress.status === 'failed' && onRetry && (
             <Button size="sm" onClick={handleRetry} disabled={retrying}>
-              <RotateCcw className="h-4 w-4 mr-1" />
-              {retrying ? 'Retrying…' : 'Retry'}
+              <RotateCcw className="h-4 w-4 mr-1" aria-hidden />
+              {retrying ? t('actions.retrying') : actions('retry')}
             </Button>
           )}
         </div>
@@ -225,6 +252,7 @@ export function InstallationProgressCard({ installId, onComplete, onError, onRet
  */
 export function InstallationProgressList() {
   const { installations } = useServerStore();
+  const t = useTranslations('components.installationProgress');
   const activeInstallations = Object.entries(installations).filter(
     ([, progress]) => progress.status !== 'completed' && progress.status !== 'failed'
   );
@@ -235,7 +263,7 @@ export function InstallationProgressList() {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Active Installations</h3>
+      <h3 className="text-lg font-semibold">{t('list.title')}</h3>
       {activeInstallations.map(([installId]) => (
         <InstallationProgressCard key={installId} installId={installId} />
       ))}

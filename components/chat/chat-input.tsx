@@ -6,6 +6,7 @@
  */
 
 import { useState, useRef, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -26,9 +27,11 @@ interface ChatInputProps {
 export function ChatInput({
   onSend,
   disabled,
-  placeholder = 'Type your message... (Enter to send, Shift+Enter for new line)',
+  placeholder,
   maxLength = 4000
 }: ChatInputProps) {
+  const t = useTranslations('chat.input');
+  const shortcutsT = useTranslations('chat.input.shortcuts');
   const [message, setMessage] = useState('');
   const [attachments, setAttachments] = useState<FileAttachment[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -90,7 +93,7 @@ export function ChatInput({
       });
       const data = await res.json();
       if (!res.ok || !data?.success) {
-        throw new Error(data?.error || 'Failed to optimize');
+        throw new Error(data?.error || t('errors.optimizeFailure'));
       }
       const optimized = data?.data?.optimized || message.trim();
       setMessage(optimized);
@@ -99,10 +102,10 @@ export function ChatInput({
         textareaRef.current.style.height = 'auto';
         textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
       }
-      toast.success('Prompt optimized');
+      toast.success(t('toast.optimized'));
     } catch (err) {
       console.error(err);
-      toast.error('Optimization failed');
+      toast.error(t('toast.optimizeError'));
     } finally {
       setOptimizing(false);
     }
@@ -148,7 +151,7 @@ export function ChatInput({
               value={message}
               onChange={handleChange}
               onKeyDown={handleKeyDown}
-              placeholder={placeholder}
+              placeholder={placeholder ?? t('placeholder')}
               disabled={disabled}
               className={cn(
                 "min-h-[60px] max-h-[200px] resize-none pr-16",
@@ -175,7 +178,7 @@ export function ChatInput({
                 type="button"
                 variant="outline"
                 size="icon"
-                aria-label="Optimize prompt"
+                aria-label={t('aria.optimize')}
                 onClick={handleOptimize}
                 disabled={disabled || optimizing || message.trim().length === 0}
                 className="size-10 shrink-0"
@@ -187,7 +190,7 @@ export function ChatInput({
                 )}
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Optimize prompt</TooltipContent>
+            <TooltipContent>{t('tooltip.optimize')}</TooltipContent>
           </Tooltip>
 
           {/* Send button */}
@@ -198,7 +201,7 @@ export function ChatInput({
                 disabled={!canSend || optimizing}
                 size="icon"
                 className="size-[60px] shrink-0"
-                aria-label="Send message"
+                aria-label={t('aria.send')}
               >
                 {disabled ? (
                   <Loader2 className="size-5 animate-spin" />
@@ -208,18 +211,18 @@ export function ChatInput({
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              {disabled ? 'Waiting for response...' : 'Send message (Enter)'}
+              {disabled ? t('tooltip.waiting') : t('tooltip.send')}
             </TooltipContent>
           </Tooltip>
         </div>
 
         {/* Keyboard shortcuts hint */}
         <div className="mt-2 text-xs text-muted-foreground">
-          <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px]">Enter</kbd> to send
+          <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px]">Enter</kbd> {shortcutsT('send')}
           {' • '}
           <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px]">Shift</kbd>
           {' + '}
-          <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px]">Enter</kbd> for new line
+          <kbd className="px-1.5 py-0.5 rounded bg-muted border text-[10px]">Enter</kbd> {shortcutsT('newline')}
         </div>
       </div>
     </form>

@@ -6,6 +6,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -21,6 +22,9 @@ interface ServerLifecycleControlsProps {
 }
 
 export function ServerLifecycleControls({ serverId, config, compact = false }: ServerLifecycleControlsProps) {
+  const t = useTranslations('components.lifecycle');
+  const status = useTranslations('components.lifecycle.status');
+  const metrics = useTranslations('components.lifecycle.metrics');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { processes, setProcess, updateProcessState } = useLifecycleStore();
@@ -38,10 +42,10 @@ export function ServerLifecycleControls({ serverId, config, compact = false }: S
       if (response.success && response.data) {
         setProcess(serverId, response.data);
       } else {
-        setError(response.error || 'Failed to start server');
+  setError(response.error || t('errors.start')); 
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to start server');
+  setError(err instanceof Error ? err.message : t('errors.start'));
     } finally {
       setIsLoading(false);
     }
@@ -57,10 +61,10 @@ export function ServerLifecycleControls({ serverId, config, compact = false }: S
       if (response.success) {
         updateProcessState(serverId, { state: 'stopped', stoppedAt: new Date().toISOString() });
       } else {
-        setError(response.error || 'Failed to stop server');
+  setError(response.error || t('errors.stop'));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to stop server');
+  setError(err instanceof Error ? err.message : t('errors.stop'));
     } finally {
       setIsLoading(false);
     }
@@ -76,10 +80,10 @@ export function ServerLifecycleControls({ serverId, config, compact = false }: S
       if (response.success && response.data) {
         setProcess(serverId, response.data);
       } else {
-        setError(response.error || 'Failed to restart server');
+  setError(response.error || t('errors.restart'));
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to restart server');
+  setError(err instanceof Error ? err.message : t('errors.restart'));
     } finally {
       setIsLoading(false);
     }
@@ -87,12 +91,12 @@ export function ServerLifecycleControls({ serverId, config, compact = false }: S
 
   const getStateBadge = () => {
     const variants: Record<LifecycleState, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }> = {
-      stopped: { variant: 'secondary', label: 'Stopped' },
-      starting: { variant: 'default', label: 'Starting' },
-      running: { variant: 'default', label: 'Running' },
-      stopping: { variant: 'secondary', label: 'Stopping' },
-      restarting: { variant: 'default', label: 'Restarting' },
-      error: { variant: 'destructive', label: 'Error' },
+      stopped: { variant: 'secondary', label: status('stopped') },
+      starting: { variant: 'default', label: status('starting') },
+      running: { variant: 'default', label: status('running') },
+      stopping: { variant: 'secondary', label: status('stopping') },
+      restarting: { variant: 'default', label: status('restarting') },
+      error: { variant: 'destructive', label: status('error') },
     };
 
     const { variant, label } = variants[state];
@@ -125,7 +129,7 @@ export function ServerLifecycleControls({ serverId, config, compact = false }: S
                   {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Start Server</TooltipContent>
+              <TooltipContent>{t('tooltip.start')}</TooltipContent>
             </Tooltip>
           )}
 
@@ -142,7 +146,7 @@ export function ServerLifecycleControls({ serverId, config, compact = false }: S
                     {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Square className="h-4 w-4" />}
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Stop Server</TooltipContent>
+                <TooltipContent>{t('tooltip.stop')}</TooltipContent>
               </Tooltip>
 
               <Tooltip>
@@ -156,7 +160,7 @@ export function ServerLifecycleControls({ serverId, config, compact = false }: S
                     {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCw className="h-4 w-4" />}
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Restart Server</TooltipContent>
+                <TooltipContent>{t('tooltip.restart')}</TooltipContent>
               </Tooltip>
             </>
           )}
@@ -170,22 +174,22 @@ export function ServerLifecycleControls({ serverId, config, compact = false }: S
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <h4 className="font-semibold">Server Status</h4>
+            <h4 className="font-semibold">{t('statusTitle')}</h4>
             {getStateBadge()}
           </div>
           {process && (
             <div className="text-sm text-muted-foreground">
-              {process.pid && <span>PID: {process.pid}</span>}
+              {process.pid && <span>{metrics('pid', { value: String(process.pid) })}</span>}
               {process.uptime !== undefined && (
-                <span className="ml-3">Uptime: {formatUptime(process.uptime)}</span>
+                <span className="ml-3">{metrics('uptime', { value: formatUptime(process.uptime) })}</span>
               )}
               {process.restartCount > 0 && (
-                <span className="ml-3">Restarts: {process.restartCount}</span>
+                <span className="ml-3">{metrics('restarts', { count: String(process.restartCount) })}</span>
               )}
             </div>
           )}
           {process?.lastError && (
-            <div className="text-sm text-red-500">Error: {process.lastError}</div>
+            <div className="text-sm text-red-500">{metrics('lastError', { message: process.lastError })}</div>
           )}
         </div>
 
@@ -193,7 +197,7 @@ export function ServerLifecycleControls({ serverId, config, compact = false }: S
           {state === 'stopped' && (
             <Button onClick={handleStart} disabled={isLoading}>
               {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
-              Start
+              {t('actions.start')}
             </Button>
           )}
 
@@ -201,11 +205,11 @@ export function ServerLifecycleControls({ serverId, config, compact = false }: S
             <>
               <Button variant="outline" onClick={handleStop} disabled={isLoading}>
                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Square className="mr-2 h-4 w-4" />}
-                Stop
+                {t('actions.stop')}
               </Button>
               <Button variant="outline" onClick={handleRestart} disabled={isLoading}>
                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RotateCw className="mr-2 h-4 w-4" />}
-                Restart
+                {t('actions.restart')}
               </Button>
             </>
           )}
@@ -222,21 +226,21 @@ export function ServerLifecycleControls({ serverId, config, compact = false }: S
       {process && state === 'running' && (
         <div className="grid grid-cols-3 gap-4 rounded-md border p-4">
           <div>
-            <div className="text-sm font-medium text-muted-foreground">Memory</div>
+            <div className="text-sm font-medium text-muted-foreground">{metrics('memoryLabel')}</div>
             <div className="text-2xl font-bold">
-              {process.memoryUsage ? formatBytes(process.memoryUsage) : 'N/A'}
+              {process.memoryUsage ? formatBytes(process.memoryUsage) : metrics('na')}
             </div>
           </div>
           <div>
-            <div className="text-sm font-medium text-muted-foreground">CPU</div>
+            <div className="text-sm font-medium text-muted-foreground">{metrics('cpuLabel')}</div>
             <div className="text-2xl font-bold">
-              {process.cpuUsage !== undefined ? `${process.cpuUsage.toFixed(1)}%` : 'N/A'}
+              {process.cpuUsage !== undefined ? `${process.cpuUsage.toFixed(1)}%` : metrics('na')}
             </div>
           </div>
           <div>
-            <div className="text-sm font-medium text-muted-foreground">Uptime</div>
+            <div className="text-sm font-medium text-muted-foreground">{metrics('uptimeLabel')}</div>
             <div className="text-2xl font-bold">
-              {process.uptime !== undefined ? formatUptime(process.uptime) : 'N/A'}
+              {process.uptime !== undefined ? formatUptime(process.uptime) : metrics('na')}
             </div>
           </div>
         </div>

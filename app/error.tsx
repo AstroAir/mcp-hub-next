@@ -6,6 +6,7 @@
  */
 
 import { useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,10 +21,11 @@ export default function Error({
   reset: () => void;
 }) {
   const router = useRouter();
+  const t = useTranslations('errorPage');
 
   useEffect(() => {
     // Log error to console for debugging
-    console.error('Application error:', error);
+  console.error('Application error:', error);
 
     // In production, you could send this to an error tracking service
     // Example: Sentry, LogRocket, etc.
@@ -57,9 +59,9 @@ export default function Error({
               <AlertCircle className="h-12 w-12 text-destructive" />
             </div>
           </div>
-          <CardTitle className="text-3xl">Something went wrong!</CardTitle>
+          <CardTitle className="text-3xl">{t('title')}</CardTitle>
           <CardDescription className="text-base mt-2">
-            We encountered an unexpected error while processing your request.
+            {t('description')}
           </CardDescription>
         </CardHeader>
 
@@ -67,22 +69,22 @@ export default function Error({
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription className="ml-2">
-              <span className="font-semibold">Error:</span> {error.message || 'An unexpected error occurred'}
+              <span className="font-semibold">{t('labels.error')}</span> {error.message || t('fallbackMessage')}
             </AlertDescription>
           </Alert>
 
           {error.digest && (
             <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md font-mono">
-              <span className="font-semibold">Error ID:</span> {error.digest}
+              <span className="font-semibold">{t('labels.errorId')}</span> {error.digest}
             </div>
           )}
 
           <div className="text-sm text-muted-foreground">
-            <p>This error has been logged. You can try the following:</p>
+            <p>{t('instructions.intro')}</p>
             <ul className="list-disc list-inside mt-2 space-y-1 ml-2">
-              <li>Refresh the page or try again</li>
-              <li>Go back to the dashboard</li>
-              <li>Report this issue if it persists</li>
+              <li>{t('instructions.refresh')}</li>
+              <li>{t('instructions.dashboard')}</li>
+              <li>{t('instructions.report')}</li>
             </ul>
           </div>
         </CardContent>
@@ -90,15 +92,15 @@ export default function Error({
         <CardFooter className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button onClick={reset} variant="default" className="w-full sm:w-auto">
             <RefreshCw className="h-4 w-4 mr-2" />
-            Try Again
+            {t('actions.retry')}
           </Button>
           <Button onClick={handleGoHome} variant="outline" className="w-full sm:w-auto">
             <Home className="h-4 w-4 mr-2" />
-            Go to Dashboard
+            {t('actions.dashboard')}
           </Button>
           <Button onClick={handleReportIssue} variant="ghost" className="w-full sm:w-auto">
             <Bug className="h-4 w-4 mr-2" />
-            Report Issue
+            {t('actions.report')}
           </Button>
         </CardFooter>
       </Card>

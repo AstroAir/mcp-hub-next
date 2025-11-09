@@ -3,11 +3,14 @@
  * Displayed while pages are loading
  */
 
+'use client';
+
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2 } from 'lucide-react';
 
 export default function Loading() {
+
   return (
     <div className="flex min-h-screen items-center justify-center p-4 bg-muted/30">
       <Card className="max-w-md w-full">
@@ -18,7 +21,7 @@ export default function Loading() {
             </div>
             <div className="text-center space-y-2">
               <h3 className="font-semibold text-lg">Loading</h3>
-              <p className="text-sm text-muted-foreground">Please wait while we load your content...</p>
+              <p className="text-sm text-muted-foreground">Please wait while we prepare things…</p>
             </div>
             <div className="w-full space-y-2 pt-4">
               <Skeleton className="h-4 w-full" />

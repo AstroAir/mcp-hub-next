@@ -8,6 +8,8 @@ mod mcp_registry;
 
 use updates::UpdateState;
 
+use tauri::Manager;
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
@@ -26,6 +28,81 @@ pub fn run() {
         app.handle().plugin(tauri_plugin_updater::Builder::new().build())?;
         app.handle().plugin(tauri_plugin_dialog::init())?;
         app.handle().plugin(tauri_plugin_fs::init())?;
+
+        // Launch embedded Next.js server then open the window once it's ready
+        use std::{net::TcpStream, path::PathBuf, thread, time::Duration, process::Command};
+
+        let app_handle = app.handle().clone();
+        thread::spawn(move || {
+          let port = std::env::var("TAURI_NEXT_PORT").unwrap_or_else(|_| "34115".to_string());
+
+          // Resolve resource directory where we bundled .next and public
+          let resource_dir: PathBuf = match app_handle.path().resource_dir() {
+            Ok(p) => p,
+            Err(e) => {
+              log::error!("Failed to resolve resource_dir: {e}");
+              return;
+            }
+          };
+
+          // Node binary path (bundled), fallback to system 'node'
+          #[cfg(target_os = "windows")]
+          let node_name = "node.exe";
+          #[cfg(not(target_os = "windows"))]
+          let node_name = "node";
+          let bundled_node = resource_dir.join("resources").join("node").join(node_name);
+          let node_path = if bundled_node.exists() { bundled_node } else { PathBuf::from("node") };
+
+          // Server entry (our small launcher written by scripts/tauri-build.js)
+          let server_js = resource_dir.join("resources").join("server.js");
+          if !server_js.exists() {
+            log::error!("Server launcher not found at {:?}", server_js);
+            return;
+          }
+
+          // Spawn the Next server
+          let mut child = match Command::new(&node_path)
+            .arg(&server_js)
+            .env("PORT", &port)
+            .current_dir(&resource_dir)
+            .spawn()
+          {
+            Ok(c) => c,
+            Err(e) => {
+              log::error!("Failed to spawn Next server with {:?}: {}", node_path, e);
+              return;
+            }
+          };
+
+          // Wait for the port to be available
+          let addr = format!("127.0.0.1:{}", port);
+          let mut ready = false;
+          for _ in 0..200 { // ~20s
+            if TcpStream::connect(&addr).is_ok() { ready = true; break; }
+            thread::sleep(Duration::from_millis(100));
+          }
+          if !ready {
+            log::error!("Next server did not become ready at {}", addr);
+            let _ = child.kill();
+            return;
+          }
+
+          // Create the main window pointing to the local Next server
+          let url = format!("http://{}", addr);
+          match tauri::WebviewWindowBuilder::new(
+            &app_handle,
+            "main",
+            tauri::WebviewUrl::External(url.parse().unwrap()),
+          )
+          .title("mcp-hub-next")
+          .build() {
+            Ok(win) => { let _ = win.set_focus(); },
+            Err(e) => log::error!("Failed to create main window: {}", e),
+          }
+
+          // NOTE: We no longer hook an on-exit handler here (Tauri v2 has no AppHandle::on_exit).
+          // If needed, we could listen for window events and kill the child then.
+        });
       }
 
       Ok(())

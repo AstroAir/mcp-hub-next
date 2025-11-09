@@ -6,6 +6,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +25,9 @@ interface InstallServerDialogProps {
 }
 
 export function InstallServerDialog({ open, onOpenChange }: InstallServerDialogProps) {
+  const t = useTranslations('components.installServer');
+  const actions = useTranslations('common.actions');
+  const troubleshooting = useTranslations('components.troubleshooting');
   const [source, setSource] = useState<'npm' | 'github' | 'local'>('npm');
   const [isValidating, setIsValidating] = useState(false);
   const [isInstalling, setIsInstalling] = useState(false);
@@ -71,7 +75,7 @@ export function InstallServerDialog({ open, onOpenChange }: InstallServerDialogP
     switch (source) {
       case 'npm':
         if (!npmPackage) {
-          setError('Package name is required');
+          setError(t('errors.packageNameRequired'));
           return null;
         }
         return {
@@ -83,7 +87,7 @@ export function InstallServerDialog({ open, onOpenChange }: InstallServerDialogP
 
       case 'github':
         if (!githubRepo) {
-          setError('Repository is required');
+          setError(t('errors.repositoryRequired'));
           return null;
         }
         return {
@@ -96,7 +100,7 @@ export function InstallServerDialog({ open, onOpenChange }: InstallServerDialogP
 
       case 'local':
         if (!localPath) {
-          setError('Path is required');
+          setError(t('errors.pathRequired'));
           return null;
         }
         return {
@@ -124,15 +128,15 @@ export function InstallServerDialog({ open, onOpenChange }: InstallServerDialogP
 
       if (response.success && response.data) {
         if (!response.data.valid) {
-          setError(response.data.errors.join(', '));
+          setError(response.data.errors.join(', ') || t('errors.validationFailed'));
         } else if (response.data.warnings.length > 0) {
           setValidationWarnings(response.data.warnings);
         }
       } else {
-        setError(response.error || 'Validation failed');
+        setError(response.error || t('errors.validationFailed'));
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Validation failed';
+      const msg = err instanceof Error ? err.message : t('errors.validationFailed');
       setError(msg);
     } finally {
       setIsValidating(false);
@@ -143,7 +147,7 @@ export function InstallServerDialog({ open, onOpenChange }: InstallServerDialogP
     setError(null);
 
     if (!serverName) {
-      setError('Server name is required');
+      setError(t('errors.serverNameRequired'));
       return;
     }
 
@@ -169,11 +173,11 @@ export function InstallServerDialog({ open, onOpenChange }: InstallServerDialogP
         resetForm();
         onOpenChange(false);
       } else {
-        const msg = response.error || 'Installation failed';
+        const msg = response.error || t('errors.installationFailed');
         setError(msg);
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Installation failed';
+      const msg = err instanceof Error ? err.message : t('errors.installationFailed');
       setError(msg);
     } finally {
       setIsInstalling(false);
@@ -184,10 +188,8 @@ export function InstallServerDialog({ open, onOpenChange }: InstallServerDialogP
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Install MCP Server</DialogTitle>
-          <DialogDescription>
-            Install an MCP server from npm, GitHub, or a local path
-          </DialogDescription>
+          <DialogTitle>{t('dialog.title')}</DialogTitle>
+          <DialogDescription>{t('dialog.description')}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -200,11 +202,11 @@ export function InstallServerDialog({ open, onOpenChange }: InstallServerDialogP
               </Alert>
               <div className="rounded-md border p-3 bg-muted/40">
                 <div className="flex items-center gap-2 mb-2 text-sm font-medium">
-                  <LifeBuoy className="h-4 w-4" /> Troubleshooting
+                  <LifeBuoy className="h-4 w-4" /> {t('alerts.troubleshooting')}
                 </div>
                 <ul className="list-disc list-inside text-xs text-muted-foreground space-y-1">
-                  {getTroubleshootingTips(error).map((tip, i) => (
-                    <li key={i}>{tip}</li>
+                  {getTroubleshootingTips(error).map((tipKey) => (
+                    <li key={tipKey}>{troubleshooting(tipKey)}</li>
                   ))}
                 </ul>
               </div>
@@ -216,7 +218,7 @@ export function InstallServerDialog({ open, onOpenChange }: InstallServerDialogP
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                <div className="font-semibold mb-1">Warnings:</div>
+                <div className="font-semibold mb-1">{t('alerts.warningsTitle')}</div>
                 <ul className="list-disc list-inside">
                   {validationWarnings.map((warning, i) => (
                     <li key={i}>{warning}</li>
@@ -231,43 +233,43 @@ export function InstallServerDialog({ open, onOpenChange }: InstallServerDialogP
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="npm">
                 <Package className="h-4 w-4 mr-2" />
-                NPM
+                {t('tabs.npm')}
               </TabsTrigger>
               <TabsTrigger value="github">
                 <Github className="h-4 w-4 mr-2" />
-                GitHub
+                {t('tabs.github')}
               </TabsTrigger>
               <TabsTrigger value="local">
                 <FolderOpen className="h-4 w-4 mr-2" />
-                Local
+                {t('tabs.local')}
               </TabsTrigger>
             </TabsList>
 
             {/* NPM Tab */}
             <TabsContent value="npm" className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="npm-package">Package Name *</Label>
+                <Label htmlFor="npm-package">{t('fields.npm.packageLabel')}</Label>
                 <Input
                   id="npm-package"
-                  placeholder="@modelcontextprotocol/server-filesystem"
+                  placeholder={t('fields.npm.packagePlaceholder')}
                   value={npmPackage}
                   onChange={(e) => setNpmPackage(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="npm-version">Version (optional)</Label>
+                <Label htmlFor="npm-version">{t('fields.npm.versionLabel')}</Label>
                 <Input
                   id="npm-version"
-                  placeholder="latest"
+                  placeholder={t('fields.npm.versionPlaceholder')}
                   value={npmVersion}
                   onChange={(e) => setNpmVersion(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="npm-registry">Registry URL (optional)</Label>
+                <Label htmlFor="npm-registry">{t('fields.npm.registryLabel')}</Label>
                 <Input
                   id="npm-registry"
-                  placeholder="https://registry.npmjs.org"
+                  placeholder={t('fields.npm.registryPlaceholder')}
                   value={npmRegistry}
                   onChange={(e) => setNpmRegistry(e.target.value)}
                 />
@@ -277,39 +279,39 @@ export function InstallServerDialog({ open, onOpenChange }: InstallServerDialogP
             {/* GitHub Tab */}
             <TabsContent value="github" className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="github-repo">Repository *</Label>
+                <Label htmlFor="github-repo">{t('fields.github.repoLabel')}</Label>
                 <Input
                   id="github-repo"
-                  placeholder="owner/repository"
+                  placeholder={t('fields.github.repoPlaceholder')}
                   value={githubRepo}
                   onChange={(e) => setGithubRepo(e.target.value)}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="github-branch">Branch (optional)</Label>
+                  <Label htmlFor="github-branch">{t('fields.github.branchLabel')}</Label>
                   <Input
                     id="github-branch"
-                    placeholder="main"
+                    placeholder={t('fields.github.branchPlaceholder')}
                     value={githubBranch}
                     onChange={(e) => setGithubBranch(e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="github-tag">Tag (optional)</Label>
+                  <Label htmlFor="github-tag">{t('fields.github.tagLabel')}</Label>
                   <Input
                     id="github-tag"
-                    placeholder="v1.0.0"
+                    placeholder={t('fields.github.tagPlaceholder')}
                     value={githubTag}
                     onChange={(e) => setGithubTag(e.target.value)}
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="github-subpath">Sub-path (optional)</Label>
+                <Label htmlFor="github-subpath">{t('fields.github.subPathLabel')}</Label>
                 <Input
                   id="github-subpath"
-                  placeholder="packages/server"
+                  placeholder={t('fields.github.subPathPlaceholder')}
                   value={githubSubPath}
                   onChange={(e) => setGithubSubPath(e.target.value)}
                 />
@@ -319,10 +321,10 @@ export function InstallServerDialog({ open, onOpenChange }: InstallServerDialogP
             {/* Local Tab */}
             <TabsContent value="local" className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="local-path">Path *</Label>
+                <Label htmlFor="local-path">{t('fields.local.pathLabel')}</Label>
                 <Input
                   id="local-path"
-                  placeholder="/path/to/server"
+                  placeholder={t('fields.local.pathPlaceholder')}
                   value={localPath}
                   onChange={(e) => setLocalPath(e.target.value)}
                 />
@@ -333,19 +335,19 @@ export function InstallServerDialog({ open, onOpenChange }: InstallServerDialogP
           {/* Common Fields */}
           <div className="space-y-4 pt-4 border-t">
             <div className="space-y-2">
-              <Label htmlFor="server-name">Server Name *</Label>
+              <Label htmlFor="server-name">{t('fields.common.nameLabel')}</Label>
               <Input
                 id="server-name"
-                placeholder="My MCP Server"
+                placeholder={t('fields.common.namePlaceholder')}
                 value={serverName}
                 onChange={(e) => setServerName(e.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="server-description">Description (optional)</Label>
+              <Label htmlFor="server-description">{t('fields.common.descriptionLabel')}</Label>
               <Input
                 id="server-description"
-                placeholder="Description of the server"
+                placeholder={t('fields.common.descriptionPlaceholder')}
                 value={serverDescription}
                 onChange={(e) => setServerDescription(e.target.value)}
               />
@@ -360,15 +362,15 @@ export function InstallServerDialog({ open, onOpenChange }: InstallServerDialogP
               disabled={isValidating || isInstalling}
             >
               {isValidating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Validate
+              {t('actions.validate')}
             </Button>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => onOpenChange(false)}>
-                Cancel
+                {actions('cancel')}
               </Button>
               <Button onClick={handleInstall} disabled={isValidating || isInstalling}>
                 {isInstalling && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {error ? 'Retry Install' : 'Install'}
+                {error ? t('actions.retry') : t('actions.install')}
               </Button>
             </div>
           </div>

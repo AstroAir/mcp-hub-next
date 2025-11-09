@@ -6,6 +6,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -33,6 +34,7 @@ export function ServerFormDialog({
   onSubmit,
   initialData,
 }: ServerFormDialogProps) {
+  const t = useTranslations('components.serverForms.dialog');
   const [transportType, setTransportType] = useState<MCPTransportType>(
     initialData?.transportType || 'stdio'
   );
@@ -46,27 +48,23 @@ export function ServerFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {initialData ? 'Edit MCP Server' : 'Add New MCP Server'}
-          </DialogTitle>
-          <DialogDescription>
-            Configure your MCP server connection. Choose the transport type and fill in the required details.
-          </DialogDescription>
+          <DialogTitle>{initialData ? t('editTitle') : t('createTitle')}</DialogTitle>
+          <DialogDescription>{t('description')}</DialogDescription>
         </DialogHeader>
 
         <Tabs value={transportType} onValueChange={(v) => setTransportType(v as MCPTransportType)}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="stdio" className="flex items-center gap-2">
               <Terminal className="h-4 w-4" />
-              Stdio
+              {t('tabs.stdio')}
             </TabsTrigger>
             <TabsTrigger value="sse" className="flex items-center gap-2">
               <Radio className="h-4 w-4" />
-              SSE
+              {t('tabs.sse')}
             </TabsTrigger>
             <TabsTrigger value="http" className="flex items-center gap-2">
               <Globe className="h-4 w-4" />
-              HTTP
+              {t('tabs.http')}
             </TabsTrigger>
           </TabsList>
 

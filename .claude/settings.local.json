@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm install:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm build)",
+      "Bash(pnpm tauri build:*)",
+      "Bash(ls -la \"D:\\Project\\mcp-hub-next\\llmdoc\"\" && echo \"---\" && ls -la \"D:Projectmcp-hub-nextllmdocsop\"\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

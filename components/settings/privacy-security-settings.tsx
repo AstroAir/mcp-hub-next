@@ -6,8 +6,10 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { useSettingsStore } from '@/lib/stores/settings-store';
 import { Shield } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export function PrivacySecuritySettings() {
+  const t = useTranslations('settings.privacy');
   const { privacy, setPrivacy, resetSection } = useSettingsStore();
 
   return (
@@ -15,34 +17,34 @@ export function PrivacySecuritySettings() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Shield className="h-5 w-5 text-primary" />
-          Privacy & Security
+          {t('title')}
         </CardTitle>
-        <CardDescription>Control what data is collected and sensitive operations</CardDescription>
+        <CardDescription>{t('description')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
           <div>
-            <Label className="cursor-pointer">Anonymous telemetry</Label>
-            <p className="text-xs text-muted-foreground">Share usage to improve the product (no personal data)</p>
+            <Label className="cursor-pointer">{t('toggles.telemetry.label')}</Label>
+            <p className="text-xs text-muted-foreground">{t('toggles.telemetry.description')}</p>
           </div>
           <Switch checked={privacy.telemetry} onCheckedChange={(v) => setPrivacy({ telemetry: v })} />
         </div>
         <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
           <div>
-            <Label className="cursor-pointer">Crash reports</Label>
-            <p className="text-xs text-muted-foreground">Send error details when something breaks</p>
+            <Label className="cursor-pointer">{t('toggles.crashReports.label')}</Label>
+            <p className="text-xs text-muted-foreground">{t('toggles.crashReports.description')}</p>
           </div>
           <Switch checked={privacy.crashReports} onCheckedChange={(v) => setPrivacy({ crashReports: v })} />
         </div>
         <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
           <div>
-            <Label className="cursor-pointer">Confirm before clearing data</Label>
-            <p className="text-xs text-muted-foreground">Show an extra confirmation dialog</p>
+            <Label className="cursor-pointer">{t('toggles.requireConfirmOnClear.label')}</Label>
+            <p className="text-xs text-muted-foreground">{t('toggles.requireConfirmOnClear.description')}</p>
           </div>
           <Switch checked={privacy.requireConfirmOnClear} onCheckedChange={(v) => setPrivacy({ requireConfirmOnClear: v })} />
         </div>
         <div className="flex justify-end pt-1">
-          <Button variant="outline" onClick={() => resetSection('privacy')}>Reset to defaults</Button>
+          <Button variant="outline" onClick={() => resetSection('privacy')}>{t('actions.reset')}</Button>
         </div>
       </CardContent>
     </Card>

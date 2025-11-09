@@ -33,11 +33,13 @@ export const useUIStore = create<UIStoreState>((set) => ({
     })),
 
   clearError: (key: string) =>
-    set((state) => {
-       
-      const { [key]: _removed, ...rest } = state.errors;
-      return { errors: rest };
-    }),
+    set((state) => ({
+      errors: (() => {
+        const rest = { ...state.errors };
+        delete rest[key];
+        return rest;
+      })(),
+    })),
 
   clearAllErrors: () => set({ errors: {} }),
 }));

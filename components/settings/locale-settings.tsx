@@ -6,15 +6,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { useSettingsStore } from '@/lib/stores/settings-store';
 import { Globe } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
-const SUPPORTED = [
-  { value: 'en', label: 'English' },
-  { value: 'zh-CN', label: '中文（简体）' },
-  { value: 'ja', label: '日本語' },
-  { value: 'es', label: 'Español' },
-];
+const SUPPORTED = ['en', 'zh-CN', 'ja', 'es'] as const;
 
 export function LocaleSettings() {
+  const t = useTranslations('settings.locale');
   const { locale, setLocale, resetSection } = useSettingsStore();
 
   return (
@@ -22,26 +19,26 @@ export function LocaleSettings() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Globe className="h-5 w-5 text-primary" />
-          Language & locale
+          {t('title')}
         </CardTitle>
-        <CardDescription>Choose your preferred language</CardDescription>
+        <CardDescription>{t('description')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2 max-w-sm">
-          <Label htmlFor="locale">Locale</Label>
+          <Label htmlFor="locale">{t('fields.locale.label')}</Label>
           <Select value={locale.locale} onValueChange={setLocale}>
             <SelectTrigger id="locale">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {SUPPORTED.map((l) => (
-                <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>
+              {SUPPORTED.map((value) => (
+                <SelectItem key={value} value={value}>{t(`fields.locale.options.${value}`)}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
         <div className="flex justify-end">
-          <Button variant="outline" onClick={() => resetSection('locale')}>Reset to defaults</Button>
+          <Button variant="outline" onClick={() => resetSection('locale')}>{t('actions.reset')}</Button>
         </div>
       </CardContent>
     </Card>

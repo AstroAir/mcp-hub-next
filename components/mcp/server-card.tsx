@@ -14,6 +14,7 @@ import { Switch } from '@/components/ui/switch';
 import type { MCPServerConfig, ConnectionStatus } from '@/lib/types';
 import type { ServerHealth } from '@/lib/services/health-monitor';
 import { Play, Square, Trash2, Settings } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface ServerCardProps {
   server: MCPServerConfig;
@@ -42,6 +43,8 @@ export function ServerCard({
 }: ServerCardProps) {
   const isConnected = status === 'connected';
   const isConnecting = status === 'connecting' || status === 'reconnecting';
+  const t = useTranslations('serverCard');
+  const common = useTranslations('common');
 
   return (
     <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={onViewDetails}>
@@ -53,7 +56,7 @@ export function ServerCard({
           </div>
           <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">Enabled</span>
+              <span className="text-xs text-muted-foreground">{common('status.enabled')}</span>
               <Switch
                 checked={server.enabled !== false}
                 onCheckedChange={(val) => onToggleEnabled?.(val)}
@@ -107,7 +110,7 @@ export function ServerCard({
                 disabled={isConnecting || server.enabled === false}
               >
                 <Play className="h-4 w-4 mr-1" />
-                Connect
+                {t('actions.connect')}
               </Button>
             )}
             {isConnected && (
@@ -117,7 +120,7 @@ export function ServerCard({
                 onClick={onDisconnect}
               >
                 <Square className="h-4 w-4 mr-1" />
-                Disconnect
+                {t('actions.disconnect')}
               </Button>
             )}
             <Button

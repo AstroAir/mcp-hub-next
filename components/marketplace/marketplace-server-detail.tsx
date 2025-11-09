@@ -37,6 +37,7 @@ import { useServerStore } from '@/lib/stores';
 import { InstallationProgressCard } from '@/components/mcp/installation-progress';
 import { toast } from 'sonner';
 import { shouldNotify, buildErrorKey } from '@/lib/utils/error-dedupe';
+import { useTranslations } from 'next-intl';
 
 interface MarketplaceServerDetailProps {
   server: MarketplaceMCPServer | null;
@@ -50,6 +51,9 @@ export function MarketplaceServerDetail({ server, open, onOpenChange }: Marketpl
   const [installing, setInstalling] = useState(false);
   const [installId, setInstallId] = useState<string | null>(null);
   const { setInstallationProgress } = useServerStore();
+  const cardT = useTranslations('marketplace.card');
+  const detailT = useTranslations('marketplace.detail');
+  const toasts = useTranslations('marketplace.toasts');
 
   if (!server) return null;
 
@@ -80,7 +84,8 @@ export function MarketplaceServerDetail({ server, open, onOpenChange }: Marketpl
     try {
       const repo = parseGithubRepo(server.githubUrl);
       if (!repo) {
-        toast.error('Unable to parse GitHub repository for this server');
+        const message = toasts('parseRepository');
+        toast.error(message);
         setInstalling(false);
         return;
       }
@@ -93,15 +98,17 @@ export function MarketplaceServerDetail({ server, open, onOpenChange }: Marketpl
         setInstallationProgress(res.data.installId, res.data.progress);
         useServerStore.getState().registerInstallationRequest?.(res.data.installId, { config: { source: 'github', repository: repo }, serverName: server.name, serverDescription: server.description });
         setInstallId(res.data.installId);
-        toast.success(`Installing ${server.name}...`);
+        toast.success(toasts('installing', { name: server.name }));
       } else {
-        const msg = res.error || 'Failed to start installation';
+        const fallback = toasts('installStartFailed');
+        const msg = res.error || fallback;
         if (shouldNotify(buildErrorKey('install-start', server.mcpId, msg))) {
           toast.error(msg);
         }
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to start installation';
+      const fallback = toasts('installStartFailed');
+      const msg = err instanceof Error ? err.message : fallback;
       if (shouldNotify(buildErrorKey('install-start', server.mcpId, msg))) {
         toast.error(msg);
       }
@@ -127,12 +134,12 @@ export function MarketplaceServerDetail({ server, open, onOpenChange }: Marketpl
                 {server.isRecommended && (
                   <Badge variant="default" className="gap-1">
                     <Star className="h-3 w-3 fill-current" />
-                    Recommended
+                    {cardT('badges.recommended')}
                   </Badge>
                 )}
               </div>
               <DialogDescription className="text-base">
-                by {server.author}
+                {cardT('author', { author: server.author })}
               </DialogDescription>
             </div>
           </div>
@@ -148,23 +155,23 @@ export function MarketplaceServerDetail({ server, open, onOpenChange }: Marketpl
               <div className="flex items-center gap-1.5">
                 <Star className="h-4 w-4 text-muted-foreground" />
                 <span className="font-medium">{server.githubStars.toLocaleString()}</span>
-                <span className="text-muted-foreground">stars</span>
+                <span className="text-muted-foreground">{cardT('stats.stars')}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Download className="h-4 w-4 text-muted-foreground" />
                 <span className="font-medium">{server.downloadCount.toLocaleString()}</span>
-                <span className="text-muted-foreground">downloads</span>
+                <span className="text-muted-foreground">{cardT('stats.downloads')}</span>
               </div>
               {server.requiresApiKey && (
                 <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-500">
                   <Key className="h-4 w-4" />
-                  <span className="font-medium">Requires API Key</span>
+                  <span className="font-medium">{cardT('stats.requiresApiKey')}</span>
                 </div>
               )}
               <div className="flex items-center gap-1.5">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground">
-                  Updated {new Date(server.updatedAt).toLocaleDateString()}
+                  {detailT('stats.updated', { date: new Date(server.updatedAt).toLocaleDateString() })}
                 </span>
               </div>
             </div>
@@ -173,13 +180,13 @@ export function MarketplaceServerDetail({ server, open, onOpenChange }: Marketpl
             <div className="space-y-3">
               {server.category && (
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground min-w-[70px]">Category:</span>
+                  <span className="text-sm text-muted-foreground min-w-[70px]">{detailT('meta.category')}</span>
                   <Badge variant="secondary">{server.category}</Badge>
                 </div>
               )}
               {server.tags && server.tags.length > 0 && (
                 <div className="flex items-start gap-2">
-                  <span className="text-sm text-muted-foreground min-w-[70px] pt-1">Tags:</span>
+                  <span className="text-sm text-muted-foreground min-w-[70px] pt-1">{detailT('meta.tags')}</span>
                   <div className="flex flex-wrap gap-1.5">
                     {server.tags.map((tag) => (
                       <Badge key={tag} variant="outline" className="text-xs">
@@ -194,7 +201,7 @@ export function MarketplaceServerDetail({ server, open, onOpenChange }: Marketpl
             {/* MCP ID */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">MCP Server ID</span>
+                <span className="text-sm font-medium text-muted-foreground">{detailT('mcpId.label')}</span>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -204,12 +211,12 @@ export function MarketplaceServerDetail({ server, open, onOpenChange }: Marketpl
                   {copiedId ? (
                     <>
                       <Check className="h-4 w-4 mr-1.5 text-green-600" />
-                      <span className="text-green-600">Copied!</span>
+                      <span className="text-green-600">{detailT('mcpId.copied')}</span>
                     </>
                   ) : (
                     <>
                       <Copy className="h-4 w-4 mr-1.5" />
-                      Copy
+                      {detailT('mcpId.copy')}
                     </>
                   )}
                 </Button>
@@ -228,10 +235,10 @@ export function MarketplaceServerDetail({ server, open, onOpenChange }: Marketpl
                 className="flex-1"
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
-                View on GitHub
+                {detailT('actions.viewOnGitHub')}
               </Button>
               <Button onClick={handleInstall} className="flex-1" disabled={installing}>
-                {installing ? 'Installing…' : 'Install'}
+                {installing ? cardT('buttons.installing') : cardT('buttons.install')}
               </Button>
             </div>
 
@@ -239,7 +246,7 @@ export function MarketplaceServerDetail({ server, open, onOpenChange }: Marketpl
               <div className="pt-2">
                 <InstallationProgressCard
                   installId={installId}
-                  onComplete={() => toast.success(`${server.name} installed`)}
+                  onComplete={() => toast.success(toasts('installed', { name: server.name }))}
                   onError={(msg) => {
                     if (shouldNotify(buildErrorKey('install-fail', installId || server.mcpId, msg))) {
                       toast.error(msg);
@@ -258,7 +265,8 @@ export function MarketplaceServerDetail({ server, open, onOpenChange }: Marketpl
                       useServerStore.getState().registerInstallationRequest?.(res.data.installId, { config: { source: 'github', repository: repo }, serverName: server.name, serverDescription: server.description });
                       setInstallId(res.data.installId);
                     } else {
-                      const msg = res.error || 'Failed to start installation';
+                      const fallback = toasts('installStartFailed');
+                      const msg = res.error || fallback;
                       if (shouldNotify(buildErrorKey('install-retry', installId || server.mcpId, msg))) {
                         toast.error(msg);
                       }
@@ -277,7 +285,7 @@ export function MarketplaceServerDetail({ server, open, onOpenChange }: Marketpl
                   variant="ghost"
                   className="w-full justify-between p-0 h-auto font-semibold text-base hover:bg-transparent"
                 >
-                  <span>README</span>
+                  <span>{detailT('readme.title')}</span>
                   {readmeOpen ? (
                     <ChevronUp className="h-5 w-5" />
                   ) : (

@@ -6,6 +6,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,6 +20,8 @@ interface SSEServerFormProps {
 }
 
 export function SSEServerForm({ initialData, onSubmit, onCancel }: SSEServerFormProps) {
+  const t = useTranslations('components.serverForms');
+  const actions = useTranslations('common.actions');
   const [name, setName] = useState(initialData?.name || '');
   const [description, setDescription] = useState(initialData?.description || '');
   const [url, setUrl] = useState(initialData?.url || '');
@@ -56,60 +59,56 @@ export function SSEServerForm({ initialData, onSubmit, onCancel }: SSEServerForm
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="name">Name *</Label>
+        <Label htmlFor="name">{t('common.nameLabel')}</Label>
         <Input
           id="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="My SSE Server"
+          placeholder={t('sse.namePlaceholder')}
           required
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
+        <Label htmlFor="description">{t('common.descriptionLabel')}</Label>
         <Input
           id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Optional description"
+          placeholder={t('common.descriptionPlaceholder')}
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="url">Server URL *</Label>
+        <Label htmlFor="url">{t('sse.urlLabel')}</Label>
         <Input
           id="url"
           type="url"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          placeholder="http://localhost:3001/sse"
+          placeholder={t('sse.urlPlaceholder')}
           required
         />
-        <p className="text-xs text-muted-foreground">
-          The SSE endpoint URL for the MCP server
-        </p>
+        <p className="text-xs text-muted-foreground">{t('sse.urlHelp')}</p>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="headers">Custom Headers (Optional)</Label>
+        <Label htmlFor="headers">{t('sse.headersLabel')}</Label>
         <Textarea
           id="headers"
           value={headers}
           onChange={(e) => setHeaders(e.target.value)}
-          placeholder="Authorization: Bearer token&#10;X-Custom-Header: value"
+          placeholder={t('sse.headersPlaceholder')}
           rows={4}
         />
-        <p className="text-xs text-muted-foreground">
-          One header per line in format: Header-Name: value
-        </p>
+        <p className="text-xs text-muted-foreground">{t('sse.headersHelp')}</p>
       </div>
 
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
+          {actions('cancel')}
         </Button>
-        <Button type="submit">Save Server</Button>
+        <Button type="submit">{t('common.submit')}</Button>
       </div>
     </form>
   );

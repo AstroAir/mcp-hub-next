@@ -12,7 +12,19 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Ignore Tauri's build output
+    "src-tauri/target/**",
   ]),
+  // Project-wide rule adjustments
+  {
+    rules: {
+      // Allow intentionally unused identifiers prefixed with _
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_", "caughtErrorsIgnorePattern": "^_" }
+      ],
+    },
+  },
   // Test and setup file overrides
   {
     files: [
@@ -25,6 +37,7 @@ const eslintConfig = defineConfig([
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-require-imports": "off",
       "react-hooks/preserve-manual-memoization": "off",
+      "@typescript-eslint/no-unused-vars": "off",
     },
   },
 ]);
