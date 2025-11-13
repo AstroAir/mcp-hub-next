@@ -36,12 +36,15 @@
     "errors": {
       "unknown": "Something went wrong. Please try again.",
       "forbidden": "You do not have permission to perform this action.",
-      "notFound": "We couldn\u2019t find what you were looking for.",
+      "notFound": "We couldn't find what you were looking for.",
       "sectionFallback": "Something went wrong in this section",
-      "sectionFallbackMessage": "An unexpected error occurred."
+      "sectionFallbackMessage": "An unexpected error occurred.",
+      "rateLimitExceeded": "Rate limit exceeded. Please try again later."
     },
     "a11y": {
-      "more": "More options"
+      "more": "More options",
+      "toggleMenu": "Toggle menu",
+      "home": "Home"
     }
   },
   "metadata": {
@@ -170,7 +173,9 @@
       "reset": "Reset filters"
     },
     "card": {
-      "badges": { "recommended": "Recommended" },
+      "badges": {
+        "recommended": "Recommended"
+      },
       "author": "by {author}",
       "stats": {
         "stars": "stars",
@@ -194,11 +199,24 @@
       "installed": "Installed {name}"
     },
     "detail": {
-      "stats": { "updated": "Updated {date}" },
-      "meta": { "category": "Category", "tags": "Tags" },
-      "mcpId": { "label": "MCP ID", "copied": "Copied", "copy": "Copy ID" },
-      "actions": { "viewOnGitHub": "View on GitHub" },
-      "readme": { "title": "README" }
+      "stats": {
+        "updated": "Updated {date}"
+      },
+      "meta": {
+        "category": "Category",
+        "tags": "Tags"
+      },
+      "mcpId": {
+        "label": "MCP ID",
+        "copied": "Copied",
+        "copy": "Copy ID"
+      },
+      "actions": {
+        "viewOnGitHub": "View on GitHub"
+      },
+      "readme": {
+        "title": "README"
+      }
     },
     "view": {
       "title": "MCP Server Marketplace",
@@ -369,6 +387,23 @@
     },
     "prompt": {
       "label": "Optimize prompts"
+    },
+    "fileUpload": {
+      "errors": {
+        "maxFilesExceeded": "Maximum {count} files allowed",
+        "invalidFile": "Invalid file",
+        "processingFailed": "Failed to process {filename}"
+      },
+      "success": {
+        "filesAdded": "{count, plural, one {Added # file} other {Added # files}}"
+      },
+      "accessibility": {
+        "attachButton": "Attach files",
+        "attachTooltip": "Attach files",
+        "maxFilesReached": "Maximum {count} files reached",
+        "attachmentPreviewAlt": "Attachment preview",
+        "pdfPreviewTitle": "PDF attachment preview"
+      }
     }
   },
   "developerPage": {
@@ -406,9 +441,7 @@
           "label": "Language",
           "options": {
             "en": "English",
-            "zh-CN": "Chinese (Simplified)",
-            "ja": "Japanese",
-            "es": "Spanish"
+            "zh-CN": "Chinese (Simplified)"
           }
         }
       },
@@ -624,6 +657,207 @@
         "deleteSuccess": "Backup deleted successfully",
         "deleteError": "Failed to delete backup"
       }
+    },
+    "models": {
+      "title": "AI Models",
+      "description": "Configure models, provider API keys, and defaults.",
+      "providers": {
+        "anthropic": "Anthropic",
+        "openai": "OpenAI",
+        "google": "Google (Gemini)",
+        "ollama": "Ollama (Local)",
+        "mistral": "Mistral",
+        "together": "Together",
+        "azure-openai": "Azure OpenAI",
+        "other": "Other"
+      },
+      "sections": {
+        "models": "Models",
+        "providerKeys": "Provider API Keys"
+      },
+      "table": {
+        "label": "Label",
+        "modelId": "Model ID",
+        "provider": "Provider",
+        "temperature": "Temperature",
+        "maxTokens": "Max tokens",
+        "topP": "Top P",
+        "default": "Default",
+        "remove": "Remove"
+      },
+      "form": {
+        "label": {
+          "label": "Label",
+          "placeholder": "My Custom Model"
+        },
+        "modelId": {
+          "label": "Model ID",
+          "placeholder": "claude-3-5-sonnet-20241022"
+        },
+        "provider": {
+          "label": "Provider",
+          "placeholder": "Select provider"
+        },
+        "temperature": {
+          "label": "Temperature",
+          "description": "Controls randomness (0-1)"
+        },
+        "maxTokens": {
+          "label": "Max tokens",
+          "description": "Maximum response length"
+        },
+        "topP": {
+          "label": "Top P",
+          "description": "Nucleus sampling (0-1)"
+        },
+        "addModel": "Add Model"
+      },
+      "providerKeys": {
+        "apiKey": {
+          "label": "API key (client)",
+          "description": "Stored locally in your browser",
+          "placeholder": "sk-..."
+        },
+        "baseUrl": {
+          "label": "Base URL",
+          "description": "Optional",
+          "placeholder": "http://127.0.0.1:11434"
+        },
+        "envVar": {
+          "label": "Env var (server)",
+          "description": "For server-side API keys, set environment variables like ANTHROPIC_API_KEY, OPENAI_API_KEY, etc. These are more secure than client-side keys and won't be exposed in the browser."
+        }
+      }
+    },
+    "updates": {
+      "title": "Application Version",
+      "currentVersion": "Current Version",
+      "lastChecked": "Last checked: {time}",
+      "checkForUpdates": "Check for Updates",
+      "checking": "Checking...",
+      "updateReady": "Update Ready",
+      "updateReadyMessage": "Version {version} is ready to install. The update will be applied when you restart the application.",
+      "updateChannel": {
+        "title": "Update Channel",
+        "description": "Choose which type of updates you want to receive",
+        "options": {
+          "stable": {
+            "label": "Stable",
+            "description": "Recommended for most users. Only receive stable, tested releases."
+          },
+          "beta": {
+            "label": "Beta",
+            "description": "Get early access to new features. May contain minor bugs."
+          },
+          "alpha": {
+            "label": "Alpha",
+            "description": "Bleeding edge updates. May be unstable and contain bugs."
+          }
+        }
+      },
+      "autoDownload": {
+        "label": "Automatically download updates",
+        "description": "Download updates in the background when available"
+      },
+      "installOnQuit": {
+        "label": "Install updates on quit",
+        "description": "Automatically install downloaded updates when you quit the application"
+      },
+      "checkOnStartup": {
+        "label": "Check for updates on startup",
+        "description": "Automatically check for new updates when the application starts"
+      },
+      "info": {
+        "title": "About Updates",
+        "description": "Updates are delivered through the Tauri updater system. When an update is available, it will be downloaded and verified before installation. You can choose to install updates immediately or wait until you restart the application."
+      },
+      "time": {
+        "never": "Never",
+        "justNow": "Just now",
+        "minutesAgo": "{minutes, plural, one {# minute ago} other {# minutes ago}}",
+        "hoursAgo": "{hours, plural, one {# hour ago} other {# hours ago}}",
+        "daysAgo": "{days, plural, one {# day ago} other {# days ago}}"
+      },
+      "toasts": {
+        "preferencesSaved": "Update preferences saved",
+        "preferencesFailed": "Failed to save preferences",
+        "notAvailableInBrowser": "Update check not available in browser mode",
+        "checkFailed": "Failed to check for updates",
+        "downloadFailed": "Failed to download update",
+        "installFailed": "Failed to install update",
+        "checkingForUpdates": "Checking for updates...",
+        "updateAvailable": "Update available: v{version}",
+        "updateDownloaded": "Update downloaded and ready to install",
+        "updateError": "Update error: {message}",
+        "noUpdateAvailable": "You're up to date!"
+      },
+      "status": {
+        "updateAvailable": "Update Available",
+        "updateAvailableMessage": "Version {version} is ready to download",
+        "downloading": "Downloading Update",
+        "downloadingMessage": "Downloading version {version}...",
+        "downloadComplete": "Download Complete",
+        "downloadCompleteMessage": "Version {version} has been downloaded and is ready to install",
+        "upToDate": "Up to Date",
+        "upToDateMessage": "You're running the latest version"
+      },
+      "actions": {
+        "download": "Download Update",
+        "installNow": "Restart & Install",
+        "installLater": "Later",
+        "viewReleaseNotes": "View Release Notes",
+        "dismiss": "Dismiss"
+      },
+      "releaseNotes": {
+        "title": "What's New in v{version}",
+        "noNotes": "No release notes available"
+      },
+      "progress": {
+        "downloading": "Downloading... {percent}%",
+        "installing": "Installing update..."
+      }
+    },
+    "keyboardShortcuts": {
+      "title": "Keyboard Shortcuts",
+      "description": "View, customize, and reset keyboard shortcuts",
+      "searchPlaceholder": "Search shortcuts...",
+      "resetAll": "Reset All",
+      "change": "Change",
+      "pressKeys": "Press new keys…",
+      "clickThenPress": "Click, then press the keys",
+      "conflict": "Conflict with {action}. Saving anyway.",
+      "labels": {
+        "open-search": "Open command palette",
+        "open-settings": "Open settings",
+        "new": "New (contextual)",
+        "save": "Save (contextual)",
+        "navigate-dashboard": "Navigate: Dashboard",
+        "navigate-chat": "Navigate: Chat",
+        "navigate-settings": "Navigate: Settings",
+        "help": "Show shortcuts help",
+        "tab-next": "Next tab/window",
+        "tab-prev": "Previous tab/window"
+      },
+      "actions": {
+        "toggleCommandPalette": "Toggle command palette",
+        "newChat": "New chat session",
+        "clearChat": "Clear current chat",
+        "toggleSidebar": "Toggle sidebar",
+        "focusInput": "Focus chat input",
+        "sendMessage": "Send message",
+        "cancelMessage": "Cancel message",
+        "scrollToTop": "Scroll to top",
+        "scrollToBottom": "Scroll to bottom",
+        "nextServer": "Next server",
+        "prevServer": "Previous server",
+        "connectServer": "Connect selected server",
+        "disconnectServer": "Disconnect selected server",
+        "openSettings": "Open settings",
+        "openDeveloper": "Open developer tools",
+        "toggleTheme": "Toggle theme",
+        "search": "Search",
+        "help": "Show help"
+      }
     }
   },
   "dashboard": {
@@ -717,6 +951,21 @@
       "bulkDisconnect": "Disconnected {success, number}/{total, number}",
       "enableAll": "All servers enabled",
       "disableAll": "All servers disabled"
+    },
+    "ideConfigDiscovery": "IDE Config Discovery",
+    "ideConfigDiscoveryDesc": "Automatically discover and import MCP server configurations from installed IDEs",
+    "discoverIDEConfigs": "Discover IDE Configs",
+    "scanning": "Scanning for IDE configs...",
+    "noIDEConfigsFound": "No IDE configs found. Click \"Discover IDE Configs\" to scan.",
+    "serversFound": "{count} server(s) found",
+    "import": "Import",
+    "toast": {
+      "importSuccess": "Successfully imported {count} server(s) from {clientType}",
+      "importError": "Failed to import config: {error}",
+      "noServersFound": "No servers found in config file",
+      "discoveryError": "Failed to discover IDE configs: {error}",
+      "noConfigsFound": "No IDE configs found on this system",
+      "duplicatesRenamed": "{count} duplicate server(s) were renamed"
     },
     "error": {
       "title": "Servers Error",
@@ -818,7 +1067,8 @@
         "importFailure": "Failed to import servers",
         "exportSuccess": "Configuration exported successfully",
         "exportFailure": "Failed to export configuration",
-        "downloadSuccess": "Example configuration downloaded"
+        "downloadSuccess": "Example configuration downloaded",
+        "validationSuccess": "Validated {count} server(s) successfully"
       },
       "export": {
         "title": "Export configuration",
@@ -1290,6 +1540,196 @@
         "restarting": "Restarting",
         "error": "Error"
       }
+    }
+  },
+  "commandPalette": {
+    "navigation": {
+      "dashboard": {
+        "label": "Go to Dashboard",
+        "description": "View all servers",
+        "keywords": "home, servers, main"
+      },
+      "chat": {
+        "label": "Go to Chat",
+        "description": "Chat with Claude",
+        "keywords": "conversation, claude, ai"
+      },
+      "developer": {
+        "label": "Go to Developer Tools",
+        "description": "Debug and monitor",
+        "keywords": "debug, logs, metrics"
+      },
+      "settings": {
+        "label": "Go to Settings",
+        "description": "Configure application",
+        "keywords": "config, preferences, backup"
+      }
+    },
+    "chat": {
+      "clear": {
+        "label": "Clear Chat",
+        "description": "Clear all messages in current chat",
+        "keywords": "delete, remove, reset"
+      },
+      "export": {
+        "label": "Export Chat Session",
+        "description": "Download current chat session",
+        "keywords": "download, save, backup"
+      },
+      "modelSonnet": {
+        "label": "Switch to Claude Sonnet",
+        "description": "Use Claude 3.5 Sonnet model",
+        "keywords": "model, ai, change"
+      },
+      "modelHaiku": {
+        "label": "Switch to Claude Haiku",
+        "description": "Use Claude 3.5 Haiku model",
+        "keywords": "model, ai, change, fast"
+      },
+      "modelOpus": {
+        "label": "Switch to Claude Opus",
+        "description": "Use Claude 3 Opus model",
+        "keywords": "model, ai, change, powerful"
+      },
+      "toggleStreaming": {
+        "label": "Toggle Streaming Mode",
+        "description": "Enable or disable streaming responses",
+        "keywords": "stream, response, mode"
+      },
+      "newSession": {
+        "label": "Create New Chat Session",
+        "description": "Start a new conversation",
+        "keywords": "new, conversation, start"
+      },
+      "viewSessions": {
+        "label": "View All Sessions",
+        "description": "Browse and switch between chat sessions",
+        "keywords": "history, conversations, switch"
+      }
+    },
+    "server": {
+      "add": {
+        "label": "Add New Server",
+        "description": "Create a new MCP server",
+        "keywords": "create, new, configure"
+      },
+      "templates": {
+        "label": "Browse Server Templates",
+        "description": "Use pre-configured templates",
+        "keywords": "examples, presets, quick"
+      },
+      "view": {
+        "label": "View {name}",
+        "description": "Open {name} details"
+      },
+      "connect": {
+        "label": "Connect to {name}",
+        "description": "Establish connection to {name}"
+      },
+      "disconnect": {
+        "label": "Disconnect from {name}",
+        "description": "Close connection to {name}"
+      }
+    },
+    "settings": {
+      "export": {
+        "label": "Export Data",
+        "description": "Download all data",
+        "keywords": "backup, save, download"
+      },
+      "import": {
+        "label": "Import Data",
+        "description": "Restore from backup",
+        "keywords": "restore, load, upload"
+      }
+    },
+    "categories": {
+      "navigation": "Navigation",
+      "server": "Server",
+      "chat": "Chat",
+      "settings": "Settings",
+      "recent": "Recent"
+    },
+    "empty": {
+      "title": "No commands found",
+      "description": "Try a different search term"
+    },
+    "recent": "Recent commands"
+  },
+  "debugPanel": {
+    "title": "Debug Console",
+    "description": "Real-time MCP protocol messages, performance metrics, and error logs",
+    "stats": {
+      "totalLogs": "Total Logs",
+      "activeServers": "Active Servers",
+      "avgResponse": "Avg Response",
+      "successRate": "Success Rate",
+      "errors": "{count} errors",
+      "warnings": "{count} warnings",
+      "beingMonitored": "Being monitored",
+      "operations": "{count} operations"
+    },
+    "tabs": {
+      "logs": "Debug Logs",
+      "metrics": "Performance"
+    },
+    "filters": {
+      "searchPlaceholder": "Search logs...",
+      "level": "Level",
+      "category": "Category",
+      "allLevels": "All Levels",
+      "allCategories": "All Categories",
+      "levels": {
+        "error": "Error",
+        "warn": "Warning",
+        "info": "Info",
+        "debug": "Debug"
+      },
+      "categories": {
+        "mcp": "MCP",
+        "connection": "Connection",
+        "tool": "Tool",
+        "chat": "Chat",
+        "system": "System"
+      }
+    },
+    "actions": {
+      "live": "Live",
+      "paused": "Paused",
+      "export": "Export",
+      "clear": "Clear",
+      "clearMetrics": "Clear Metrics"
+    },
+    "logs": {
+      "showing": "Showing {filtered} of {total} logs",
+      "empty": {
+        "title": "No logs to display",
+        "noLogs": "Logs will appear here as your application runs",
+        "tryFilters": "Try adjusting your filters"
+      },
+      "viewData": "View data →",
+      "stackTrace": "Stack trace →"
+    },
+    "metrics": {
+      "tracking": "Tracking {count} operations across {servers} servers",
+      "serverPerformance": "Server Performance Overview",
+      "recentOperations": "Recent Operations",
+      "avgDuration": "Avg Duration",
+      "success": "Success",
+      "failed": "Failed",
+      "empty": {
+        "title": "No performance metrics yet",
+        "description": "Metrics will appear as servers perform operations"
+      }
+    },
+    "dialogs": {
+      "clearLogs": "Are you sure you want to clear all debug logs?",
+      "clearMetrics": "Are you sure you want to clear all performance metrics?"
+    },
+    "toasts": {
+      "logsCleared": "Debug logs cleared",
+      "metricsCleared": "Performance metrics cleared",
+      "logsExported": "Debug logs exported"
     }
   }
 }

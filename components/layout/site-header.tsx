@@ -6,6 +6,7 @@
  */
 
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
 import { useBreadcrumbs } from '@/components/layout/breadcrumb-provider';
@@ -13,10 +14,11 @@ import { Home, ChevronRight } from 'lucide-react';
 
 export function SiteHeader() {
   const { items } = useBreadcrumbs();
+  const t = useTranslations("common.a11y");
 
   return (
     <header className="sticky top-0 z-50 flex h-14 md:h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-3 md:px-4">
-      <SidebarTrigger className="-ml-1" />
+      <SidebarTrigger className="-ml-1" aria-label={t("toggleMenu")} />
       <Separator
         orientation="vertical"
         className="mr-2 data-[orientation=vertical]:h-4 hidden sm:block"

@@ -9,6 +9,8 @@ import { ServerFormDialog } from "@/components/mcp/server-form-dialog";
 import { ServerTemplatesDialog } from "@/components/mcp/server-templates-dialog";
 import { RemoteServerLibrary } from "@/components/mcp/remote-server-library";
 import { ConfigUploader } from "@/components/mcp/config-uploader";
+import { IDEConfigDiscoveryDialog } from "@/components/mcp/ide-config-discovery-dialog";
+import { IDEConfigExportDialog } from "@/components/mcp/ide-config-export-dialog";
 import {
   ServerSearchFilter,
   type ServerFilterStatus,
@@ -253,6 +255,8 @@ export default function DashboardPage() {
             <Library className="h-4 w-4 mr-2" />
             {t("actions.templates")}
           </Button>
+          <IDEConfigDiscoveryDialog onImportComplete={() => toast.success(t("toast.ideImportSuccess"))} />
+          <IDEConfigExportDialog />
           <Button variant="outline" onClick={() => setIsConfigUploaderOpen(true)}>
             <FileJson className="h-4 w-4 mr-2" />
             {t("actions.importExport")}

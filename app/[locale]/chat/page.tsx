@@ -11,6 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { useBreadcrumbs } from '@/components/layout/breadcrumb-provider';
 import { ChatInterface } from '@/components/chat/chat-interface';
 import { ChatSessionSidebar } from '@/components/chat/chat-session-sidebar';
@@ -20,7 +22,7 @@ import { useStreamingChat } from '@/lib/hooks/use-streaming-chat';
 import type { FileAttachment, ModelId } from '@/lib/types';
 import { nanoid } from 'nanoid';
 import { toast } from 'sonner';
-import { Zap, ZapOff } from 'lucide-react';
+import { Zap, ZapOff, Menu } from 'lucide-react';
 import { MCPServerSelector } from '@/components/chat/mcp-server-selector';
 import { PromptOptimizationToggle } from '@/components/chat/prompt-optimization-toggle';
 
@@ -54,6 +56,7 @@ export default function ChatPage() {
   const { models, defaultModelId } = useModelStore();
   const [isLoading, setIsLoading] = useState(false);
   const [useStreaming, setUseStreaming] = useState(true);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const { isStreaming, streamedContent, sendMessage: sendStreamingMessage, stopStreaming } = useStreamingChat();
 
   const connectedServersList = servers.filter((s) => connections[s.id]?.status === 'connected');
@@ -263,20 +266,52 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] md:h-[calc(100vh-4rem)]">
-      <ChatSessionSidebar
-        sessions={chatSessions}
-        currentSessionId={currentSessionId}
-        onSelectSession={setCurrentSession}
-        onCreateSession={() => createSession(sessionT('defaultTitle'))}
-        onDeleteSession={deleteSession}
-        onRenameSession={renameSession}
-        onExportSession={handleExportSession}
-      />
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:flex w-64 border-r bg-muted/10 flex-col h-full">
+        <ChatSessionSidebar
+          sessions={chatSessions}
+          currentSessionId={currentSessionId}
+          onSelectSession={setCurrentSession}
+          onCreateSession={() => createSession(sessionT('defaultTitle'))}
+          onDeleteSession={deleteSession}
+          onRenameSession={renameSession}
+          onExportSession={handleExportSession}
+        />
+      </div>
+
+      {/* Mobile Sidebar Sheet */}
+      <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
+        <SheetContent side="left" className="p-0 w-80 sm:w-96 flex flex-col">
+          <ChatSessionSidebar
+            sessions={chatSessions}
+            currentSessionId={currentSessionId}
+            onSelectSession={(id) => {
+              setCurrentSession(id);
+              setIsMobileSidebarOpen(false);
+            }}
+            onCreateSession={() => {
+              createSession(sessionT('defaultTitle'));
+              setIsMobileSidebarOpen(false);
+            }}
+            onDeleteSession={deleteSession}
+            onRenameSession={renameSession}
+            onExportSession={handleExportSession}
+          />
+        </SheetContent>
+      </Sheet>
 
       <div className="flex-1 flex flex-col">
-        <div className="border-b p-3 md:p-4">
-          <div className="w-full px-3 md:px-6">
+        <div className="border-b p-2 sm:p-3 md:p-4">
+          <div className="w-full px-2 sm:px-3 md:px-4 lg:px-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden h-9 w-9"
+                onClick={() => setIsMobileSidebarOpen(true)}
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
               <div className="flex flex-wrap items-center gap-2 md:gap-4 w-full sm:w-auto">
                 <div className="flex items-center gap-2">
                   <Switch

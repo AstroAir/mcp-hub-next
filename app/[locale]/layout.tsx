@@ -16,6 +16,7 @@ import "../globals.css";
 import { ThemeProvider } from "next-themes";
 import { ThemeBridge } from "@/components/layout/theme-bridge";
 import { ErrorBoundary } from "@/components/error/error-boundary";
+import { UpdateNotification } from "@/components/updates/update-notification";
 import type { ReactNode } from "react";
 
 export const dynamic = "force-dynamic";
@@ -90,6 +91,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
               <ShortcutsHelp />
               <ThemeBridge />
               <CleanupHandler />
+              <UpdateNotification />
             </BreadcrumbProvider>
           </CommandPaletteProvider>
         </ThemeProvider>

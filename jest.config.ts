@@ -118,6 +118,10 @@ const config: Config = {
     // Handle module aliases (this will be automatically configured for you by Next.js)
     "^@/(.*)$": "<rootDir>/$1",
 
+    // Handle next-intl
+    "^next-intl$": "<rootDir>/__mocks__/next-intl.ts",
+    "^next-intl/routing$": "<rootDir>/__mocks__/next-intl.ts",
+
     // Handle CSS imports (with CSS modules)
     "^.+\\.module\\.(css|sass|scss)$": "identity-obj-proxy",
 
@@ -236,7 +240,7 @@ const config: Config = {
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
   transformIgnorePatterns: [
-    "node_modules/(?!(nanoid)/)",
+    "node_modules/(?!(nanoid|next-intl)/)",
   ],
 
   // An array of regexp pattern strings that are matched against all modules before the module loader will automatically return a mock for them

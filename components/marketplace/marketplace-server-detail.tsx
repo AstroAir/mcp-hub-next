@@ -294,7 +294,7 @@ export function MarketplaceServerDetail({ server, open, onOpenChange }: Marketpl
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent className="mt-4">
-                <ScrollArea className="h-[500px] rounded-md border bg-muted/30">
+                <ScrollArea className="h-[300px] sm:h-[400px] md:h-[500px] rounded-md border bg-muted/30">
                   <div className="prose prose-sm dark:prose-invert max-w-none p-6">
                     <ReactMarkdown>{server.readmeContent}</ReactMarkdown>
                   </div>

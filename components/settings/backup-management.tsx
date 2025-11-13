@@ -418,7 +418,7 @@ export function BackupManagement() {
               <p className="text-sm mt-1">{t('sections.history.empty.description')}</p>
             </div>
           ) : (
-            <ScrollArea className="h-[400px] pr-4">
+            <ScrollArea className="h-[250px] sm:h-[325px] md:h-[400px] pr-4">
               <div className="space-y-3">
                 {backupHistory.map((backup) => (
                   <div

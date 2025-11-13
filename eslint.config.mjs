@@ -14,6 +14,9 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Ignore Tauri's build output
     "src-tauri/target/**",
+    "src-tauri/resources/**",
+    // Ignore coverage reports
+    "coverage/**",
   ]),
   // Project-wide rule adjustments
   {

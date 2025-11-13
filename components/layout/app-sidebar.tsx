@@ -8,6 +8,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { Home, MessageSquare, Settings, Server, Bug, Store } from "lucide-react"
 import {
   Sidebar,
@@ -21,36 +22,37 @@ import {
   SidebarGroupContent,
 } from "@/components/ui/sidebar"
 
-const navItems = [
-  {
-    title: "Dashboard",
-    url: "/",
-    icon: Home,
-  },
-  {
-    title: "Marketplace",
-    url: "/marketplace",
-    icon: Store,
-  },
-  {
-    title: "Chat",
-    url: "/chat",
-    icon: MessageSquare,
-  },
-  {
-    title: "Developer",
-    url: "/developer",
-    icon: Bug,
-  },
-  {
-    title: "Settings",
-    url: "/settings",
-    icon: Settings,
-  },
-]
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
+  const t = useTranslations("common.navigation")
+
+  const navItems = [
+    {
+      title: t("dashboard"),
+      url: "/",
+      icon: Home,
+    },
+    {
+      title: t("marketplace"),
+      url: "/marketplace",
+      icon: Store,
+    },
+    {
+      title: t("chat"),
+      url: "/chat",
+      icon: MessageSquare,
+    },
+    {
+      title: t("developer"),
+      url: "/developer",
+      icon: Bug,
+    },
+    {
+      title: t("settings"),
+      url: "/settings",
+      icon: Settings,
+    },
+  ]
 
   const isActive = (href: string) => {
     if (href === "/") {

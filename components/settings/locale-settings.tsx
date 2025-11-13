@@ -8,7 +8,7 @@ import { useSettingsStore } from '@/lib/stores/settings-store';
 import { Globe } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-const SUPPORTED = ['en', 'zh-CN', 'ja', 'es'] as const;
+const SUPPORTED = ['en', 'zh-CN'] as const;
 
 export function LocaleSettings() {
   const t = useTranslations('settings.locale');

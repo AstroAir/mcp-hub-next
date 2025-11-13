@@ -105,8 +105,8 @@ export function MarketplaceView({ gridColumns }: MarketplaceViewProps) {
             onClick={handleRefresh}
             disabled={isLoading}
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-            {t('actions.refresh')}
+            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''} sm:mr-2`} />
+            <span className="hidden sm:inline">{t('actions.refresh')}</span>
           </Button>
           <div className="flex items-center border rounded-lg overflow-hidden">
             <Button
@@ -182,7 +182,7 @@ export function MarketplaceView({ gridColumns }: MarketplaceViewProps) {
       )}
 
       {/* Card View */}
-      {!isLoading && !error && viewMode === 'card' && filteredServers.length > 0 && (
+      {!error && viewMode === 'card' && filteredServers.length > 0 && (
         <div className={`${getGridClass(gridColumns)} gap-6 pb-6`}>
           {filteredServers.map((server) => (
             <MarketplaceServerCard
@@ -195,7 +195,7 @@ export function MarketplaceView({ gridColumns }: MarketplaceViewProps) {
       )}
 
       {/* List View */}
-      {!isLoading && !error && viewMode === 'list' && filteredServers.length > 0 && (
+      {!error && viewMode === 'list' && filteredServers.length > 0 && (
         <div className="space-y-3 pb-6">
           {filteredServers.map((server) => (
             <MarketplaceServerListItem

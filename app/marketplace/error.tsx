@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { ErrorState } from '@/components/error/error-state';
 
 export default function MarketplaceError({
@@ -10,6 +11,8 @@ export default function MarketplaceError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations('marketplace.error');
+
   useEffect(() => {
     console.error('Marketplace error:', error);
   }, [error]);
@@ -17,8 +20,8 @@ export default function MarketplaceError({
   return (
     <div className="container mx-auto p-6 max-w-7xl">
       <ErrorState
-        title="Something went wrong in the marketplace"
-        description={error.message || 'An unexpected error occurred'}
+        title={t('title')}
+        description={error.message || t('description')}
         error={error}
         showRetryButton
         onRetry={reset}

@@ -60,6 +60,21 @@ jest.mock('next/navigation', () => ({
   },
 }));
 
+// Mock ResizeObserver for Radix UI components
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
+
+// Mock PointerCapture methods for Radix UI Select component
+if (typeof Element !== 'undefined') {
+  Element.prototype.hasPointerCapture = jest.fn(() => false);
+  Element.prototype.setPointerCapture = jest.fn();
+  Element.prototype.releasePointerCapture = jest.fn();
+  Element.prototype.scrollIntoView = jest.fn();
+}
+
 // Suppress console errors in tests (optional)
 // global.console = {
 //   ...console,

@@ -5,6 +5,7 @@ mod secure_storage;
 mod mcp_lifecycle;
 mod mcp_installer;
 mod mcp_registry;
+mod ide_config;
 
 use updates::UpdateState;
 
@@ -28,6 +29,52 @@ pub fn run() {
         app.handle().plugin(tauri_plugin_updater::Builder::new().build())?;
         app.handle().plugin(tauri_plugin_dialog::init())?;
         app.handle().plugin(tauri_plugin_fs::init())?;
+
+        // Load installation metadata on startup
+        let app_handle_for_metadata = app.handle().clone();
+        tauri::async_runtime::spawn(async move {
+          match storage::load_installation_metadata(app_handle_for_metadata) {
+            Ok(json) if !json.is_empty() && json != "[]" => {
+              if let Ok(metadata_vec) = serde_json::from_str::<Vec<mcp_installer::InstallMetadata>>(&json) {
+                if let Ok(mut meta_map) = mcp_installer::install_metadata().lock() {
+                  for metadata in metadata_vec {
+                    meta_map.insert(metadata.install_id.clone(), metadata);
+                  }
+                  log::info!("Loaded {} installation metadata entries", meta_map.len());
+                }
+              }
+            }
+            Ok(_) => log::info!("No installation metadata to load"),
+            Err(e) => log::error!("Failed to load installation metadata: {}", e),
+          }
+        });
+
+        // Check for updates on startup if enabled
+        let app_handle_for_update = app.handle().clone();
+
+        tauri::async_runtime::spawn(async move {
+          // Load preferences to check if we should run update check on startup
+          let prefs_result = updates::load_preferences_from_disk(&app_handle_for_update);
+
+          let should_check = prefs_result
+            .map(|prefs| prefs.check_on_startup)
+            .unwrap_or(false);
+
+          if should_check {
+            log::info!("Checking for updates on startup...");
+
+            // Wait a bit for the window to be ready
+            tokio::time::sleep(tokio::time::Duration::from_secs(3)).await;
+
+            // Get the update state from the app handle
+            let update_state = app_handle_for_update.state::<UpdateState>();
+
+            // Invoke check_for_updates
+            if let Err(e) = updates::check_for_updates(app_handle_for_update.clone(), update_state).await {
+              log::error!("Startup update check failed: {}", e);
+            }
+          }
+        });
 
         // Launch embedded Next.js server then open the window once it's ready
         use std::{net::TcpStream, path::PathBuf, thread, time::Duration, process::Command};
@@ -88,14 +135,19 @@ pub fn run() {
           }
 
           // Create the main window pointing to the local Next server
-          let url = format!("http://{}", addr);
-          match tauri::WebviewWindowBuilder::new(
-            &app_handle,
-            "main",
-            tauri::WebviewUrl::External(url.parse().unwrap()),
-          )
-          .title("mcp-hub-next")
-          .build() {
+          let url_str = format!("http://{}", addr);
+          // Use try! equivalent pattern to handle URL parsing gracefully
+          let webview_url: tauri::WebviewUrl = match url_str.as_str().try_into() {
+            Ok(url) => tauri::WebviewUrl::External(url),
+            Err(e) => {
+              log::error!("Failed to parse Next server URL '{}': {}", url_str, e);
+              return;
+            }
+          };
+
+          match tauri::WebviewWindowBuilder::new(&app_handle, "main", webview_url)
+            .title("mcp-hub-next")
+            .build() {
             Ok(win) => { let _ = win.set_focus(); },
             Err(e) => log::error!("Failed to create main window: {}", e),
           }
@@ -114,6 +166,7 @@ pub fn run() {
       updates::set_update_preferences,
       updates::get_update_status,
       updates::check_for_updates,
+      updates::download_update,
       updates::quit_and_install,
       // Storage commands
       storage::get_app_data_path,
@@ -130,6 +183,8 @@ pub fn run() {
       storage::delete_backup,
       storage::list_backups,
       storage::clear_all_data,
+      storage::save_installation_metadata,
+      storage::load_installation_metadata,
       // File dialog commands
       file_dialogs::open_file_dialog,
       file_dialogs::open_files_dialog,
@@ -170,11 +225,19 @@ pub fn run() {
       mcp_installer::get_install_progress,
       mcp_installer::cancel_install,
       mcp_installer::cleanup_install,
+      mcp_installer::get_installation_metadata,
+      mcp_installer::uninstall_server,
       // MCP registry
       mcp_registry::registry_search,
       mcp_registry::registry_categories,
       mcp_registry::registry_popular,
       mcp_registry::registry_refresh,
+      // IDE config
+      ide_config::discover_ide_configs,
+      ide_config::validate_ide_config,
+      ide_config::import_ide_config,
+      ide_config::export_to_ide_format,
+      ide_config::validate_config_path,
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

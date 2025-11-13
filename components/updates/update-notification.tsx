@@ -8,11 +8,12 @@
 import { useEffect, useState, useCallback } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
-import type { UpdateStatus, UpdateNotificationData } from '@/lib/types/tauri';
+import type { UpdateStatus } from '@/lib/types/tauri';
 import { Download, RefreshCw, X, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Progress as ProgressBar } from '@/components/ui/progress';
+import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 interface UpdateNotificationProps {
   onInstall?: () => void;
@@ -20,20 +21,38 @@ interface UpdateNotificationProps {
 }
 
 export function UpdateNotification({ onInstall, onDismiss }: UpdateNotificationProps) {
+  const t = useTranslations('settings.updates');
+  const tStatus = useTranslations('settings.updates.status');
+  const tActions = useTranslations('settings.updates.actions');
+  const tToasts = useTranslations('settings.updates.toasts');
+  const tProgress = useTranslations('settings.updates.progress');
+
   const [status, setStatus] = useState<UpdateStatus | null>(null);
   const [downloadProgress, setDownloadProgress] = useState(0);
-  const [updateInfo, setUpdateInfo] = useState<UpdateStatus['data'] | null>(null);
   const [visible, setVisible] = useState(false);
 
-  const handleInstall = useCallback(() => {
+  const handleInstall = useCallback(async () => {
     if (typeof window !== 'undefined' && window.__TAURI__) {
-      invoke('quit_and_install').catch((error) => {
+      try {
+        await invoke('quit_and_install');
+        onInstall?.();
+      } catch (error) {
         console.error('Failed to quit and install:', error);
-        toast.error('Failed to install update');
-      });
+        toast.error(tToasts('installFailed'));
+      }
     }
-    onInstall?.();
-  }, [onInstall]);
+  }, [onInstall, tToasts]);
+
+  const handleDownload = useCallback(async () => {
+    if (typeof window !== 'undefined' && window.__TAURI__) {
+      try {
+        await invoke('download_update');
+      } catch (error) {
+        console.error('Failed to download update:', error);
+        toast.error(tToasts('downloadFailed'));
+      }
+    }
+  }, [tToasts]);
 
   useEffect(() => {
     // Check if running in Tauri
@@ -48,58 +67,45 @@ export function UpdateNotification({ onInstall, onDismiss }: UpdateNotificationP
 
       switch (statusData.event) {
         case 'checking-for-update':
-          toast.info('Checking for updates...');
+          setVisible(true);
           break;
 
         case 'update-available':
-          setUpdateInfo(statusData.data || null);
           setVisible(true);
-          toast.success(`Update available: v${statusData.data?.version}`);
+          toast.success(tToasts('updateAvailable', { version: statusData.data?.version || '' }));
           break;
 
         case 'update-not-available':
-          // Silent - only show if manually triggered
+          setVisible(false);
+          // Don't show toast for "no update" unless manually triggered
           break;
 
         case 'download-progress':
+          setVisible(true);
           setDownloadProgress(statusData.data?.percent || 0);
           break;
 
-        case 'update-downloaded':
-          setUpdateInfo(statusData.data || null);
+        case 'update-installing':
           setVisible(true);
-          toast.success('Update downloaded and ready to install');
+          toast.info(tProgress('installing'));
+          break;
+
+        case 'update-downloaded':
+          setVisible(true);
+          toast.success(tToasts('updateDownloaded'));
           break;
 
         case 'update-error':
-          toast.error('Update error: ' + (statusData.data?.message || 'Unknown error'));
+          toast.error(tToasts('updateError', { message: statusData.data?.message || 'Unknown error' }));
           setVisible(false);
           break;
       }
     });
 
-    // Listen for custom update notifications
-    const unlistenNotificationPromise = listen<UpdateNotificationData>('update-notification', (event) => {
-      const notification = event.payload;
-      const firstAction = notification.actions?.[0];
-      toast(notification.message, {
-        description: notification.title,
-        action: firstAction ? {
-          label: firstAction.label,
-          onClick: () => {
-            if (firstAction.action === 'install-now') {
-              handleInstall();
-            }
-          },
-        } : undefined,
-      });
-    });
-
     return () => {
       unlistenStatusPromise.then((unlisten) => unlisten());
-      unlistenNotificationPromise.then((unlisten) => unlisten());
     };
-  }, [handleInstall]);
+  }, [tToasts, tProgress]);
 
   const handleDismiss = () => {
     setVisible(false);
@@ -117,7 +123,7 @@ export function UpdateNotification({ onInstall, onDismiss }: UpdateNotificationP
         <div className="flex items-center gap-3">
           <RefreshCw className="h-5 w-5 animate-spin text-primary" />
           <div className="flex-1">
-            <p className="text-sm font-medium">Checking for updates...</p>
+            <p className="text-sm font-medium">{t('checking')}</p>
           </div>
           <Button
             variant="ghost"
@@ -132,7 +138,7 @@ export function UpdateNotification({ onInstall, onDismiss }: UpdateNotificationP
     );
   }
 
-  // Update available - downloading
+  // Downloading - showing progress
   if (status.event === 'download-progress') {
     return (
       <div className="fixed bottom-4 right-4 z-50 w-96 rounded-lg border bg-card p-4 shadow-lg">
@@ -140,9 +146,9 @@ export function UpdateNotification({ onInstall, onDismiss }: UpdateNotificationP
           <div className="flex items-center gap-3">
             <Download className="h-5 w-5 text-primary" />
             <div className="flex-1">
-              <p className="text-sm font-medium">Downloading update...</p>
+              <p className="text-sm font-medium">{tStatus('downloading')}</p>
               <p className="text-xs text-muted-foreground">
-                Version {updateInfo?.version}
+                {tStatus('downloadingMessage', { version: status.data?.version || '' })}
               </p>
             </div>
             <Button
@@ -155,11 +161,33 @@ export function UpdateNotification({ onInstall, onDismiss }: UpdateNotificationP
             </Button>
           </div>
           <div className="space-y-1">
-            <ProgressBar value={downloadProgress} className="h-2" />
+            <Progress value={downloadProgress} className="h-2" />
             <p className="text-xs text-muted-foreground text-right">
-              {Math.round(downloadProgress)}%
+              {tProgress('downloading', { percent: Math.round(downloadProgress) })}
             </p>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Installing
+  if (status.event === 'update-installing') {
+    return (
+      <div className="fixed bottom-4 right-4 z-50 w-96 rounded-lg border bg-card p-4 shadow-lg">
+        <div className="flex items-center gap-3">
+          <RefreshCw className="h-5 w-5 animate-spin text-primary" />
+          <div className="flex-1">
+            <p className="text-sm font-medium">{tProgress('installing')}</p>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={handleDismiss}
+          >
+            <X className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     );
@@ -173,9 +201,9 @@ export function UpdateNotification({ onInstall, onDismiss }: UpdateNotificationP
           <div className="flex items-center gap-3">
             <CheckCircle2 className="h-5 w-5 text-green-500" />
             <div className="flex-1">
-              <p className="text-sm font-medium">Update ready to install</p>
+              <p className="text-sm font-medium">{tStatus('downloadComplete')}</p>
               <p className="text-xs text-muted-foreground">
-                Version {updateInfo?.version} has been downloaded
+                {tStatus('downloadCompleteMessage', { version: status.data?.version || '' })}
               </p>
             </div>
             <Button
@@ -193,7 +221,7 @@ export function UpdateNotification({ onInstall, onDismiss }: UpdateNotificationP
               className="flex-1"
               onClick={handleInstall}
             >
-              Restart & Install
+              {tActions('installNow')}
             </Button>
             <Button
               size="sm"
@@ -201,7 +229,7 @@ export function UpdateNotification({ onInstall, onDismiss }: UpdateNotificationP
               className="flex-1"
               onClick={handleDismiss}
             >
-              Later
+              {tActions('installLater')}
             </Button>
           </div>
         </div>
@@ -217,9 +245,9 @@ export function UpdateNotification({ onInstall, onDismiss }: UpdateNotificationP
           <div className="flex items-center gap-3">
             <AlertCircle className="h-5 w-5 text-blue-500" />
             <div className="flex-1">
-              <p className="text-sm font-medium">Update available</p>
+              <p className="text-sm font-medium">{tStatus('updateAvailable')}</p>
               <p className="text-xs text-muted-foreground">
-                Version {updateInfo?.version} is ready to download
+                {tStatus('updateAvailableMessage', { version: status.data?.version || '' })}
               </p>
             </div>
             <Button
@@ -231,11 +259,28 @@ export function UpdateNotification({ onInstall, onDismiss }: UpdateNotificationP
               <X className="h-4 w-4" />
             </Button>
           </div>
-          {updateInfo?.releaseNotes && (
-            <div className="text-xs text-muted-foreground max-h-20 overflow-y-auto">
-              {updateInfo.releaseNotes}
+          {status.data?.body && (
+            <div className="text-xs text-muted-foreground max-h-20 overflow-y-auto whitespace-pre-wrap">
+              {status.data.body}
             </div>
           )}
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              className="flex-1"
+              onClick={handleDownload}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              {tActions('download')}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleDismiss}
+            >
+              {tActions('installLater')}
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -243,4 +288,3 @@ export function UpdateNotification({ onInstall, onDismiss }: UpdateNotificationP
 
   return null;
 }
-

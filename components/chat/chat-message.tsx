@@ -147,19 +147,19 @@ export function ChatMessage({ message }: ChatMessageProps) {
           </div>
 
           {/* Action buttons */}
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="size-7"
+                  className="size-9 sm:size-7"
                   onClick={handleCopy}
                 >
                   {copied ? (
-                    <Check className="size-3.5 text-green-500" />
+                    <Check className="size-4 sm:size-3.5 text-green-500" />
                   ) : (
-                    <Copy className="size-3.5" />
+                    <Copy className="size-4 sm:size-3.5" />
                   )}
                 </Button>
               </TooltipTrigger>
@@ -195,7 +195,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
                 {t('attachmentsCount', { count: message.attachments.length })}
               </Badge>
             </div>
-            <div className="grid w-full grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2">
+            <div className="grid w-full grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(180px,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2">
               {message.attachments.map((attachment) => {
                 const isImage = isImageFile(attachment.type);
                 const isPdf = attachment.type === 'application/pdf';
@@ -253,10 +253,10 @@ export function ChatMessage({ message }: ChatMessageProps) {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-7 text-xs"
+                                  className="h-9 sm:h-7 text-xs"
                                   onClick={() => setPdfPreviewSrc(attachment.url!)}
                                 >
-                                  <FileText className="size-3 mr-1" />
+                                  <FileText className="size-3.5 sm:size-3 mr-1" />
                                   {t('previewButton')}
                                 </Button>
                               </TooltipTrigger>
@@ -270,10 +270,10 @@ export function ChatMessage({ message }: ChatMessageProps) {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-7 text-xs"
+                              className="h-9 sm:h-7 text-xs"
                               onClick={() => downloadAttachment(attachment)}
                             >
-                              <Download className="size-3 mr-1" />
+                              <Download className="size-3.5 sm:size-3 mr-1" />
                               {t('download')}
                             </Button>
                           </TooltipTrigger>

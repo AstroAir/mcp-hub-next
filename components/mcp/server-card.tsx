@@ -7,13 +7,15 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { ServerStatusBadge } from './server-status-badge';
 import { ServerHealthIndicator } from './server-health-indicator';
 import { ConnectionTypeIcon } from './connection-type-icon';
 import { Switch } from '@/components/ui/switch';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { MCPServerConfig, ConnectionStatus } from '@/lib/types';
 import type { ServerHealth } from '@/lib/services/health-monitor';
-import { Play, Square, Trash2, Settings } from 'lucide-react';
+import { Play, Square, Trash2, Settings, FileCode } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 interface ServerCardProps {
@@ -46,15 +48,49 @@ export function ServerCard({
   const t = useTranslations('serverCard');
   const common = useTranslations('common');
 
+  const getClientTypeLabel = (clientType: string): string => {
+    const labels: Record<string, string> = {
+      'claude-desktop': 'Claude Desktop',
+      'vscode': 'VS Code',
+      'cursor': 'Cursor',
+      'windsurf': 'Windsurf',
+      'zed': 'Zed',
+      'cline': 'Cline',
+      'continue': 'Continue',
+      'mcp-hub': 'MCP Hub',
+    };
+    return labels[clientType] || clientType;
+  };
+
   return (
     <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={onViewDetails}>
       <CardHeader>
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-2">
-            <ConnectionTypeIcon type={server.transportType} className="h-5 w-5" />
-            <CardTitle className="text-lg">{server.name}</CardTitle>
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <ConnectionTypeIcon type={server.transportType} className="h-5 w-5 flex-shrink-0" />
+            <CardTitle className="text-lg truncate">{server.name}</CardTitle>
+            {server.clientType && server.clientType !== 'mcp-hub' && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge variant="outline" className="text-xs flex-shrink-0">
+                      <FileCode className="h-3 w-3 mr-1" />
+                      {getClientTypeLabel(server.clientType)}
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-xs">Imported from {getClientTypeLabel(server.clientType)}</p>
+                    {server.configSourcePath && (
+                      <p className="text-xs font-mono mt-1 max-w-xs truncate">
+                        {server.configSourcePath}
+                      </p>
+                    )}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
-          <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center gap-3 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">{common('status.enabled')}</span>
               <Switch

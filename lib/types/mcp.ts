@@ -5,12 +5,26 @@
 
 export type MCPTransportType = 'stdio' | 'sse' | 'http';
 
-export type ConnectionStatus = 
-  | 'disconnected' 
-  | 'connecting' 
-  | 'connected' 
-  | 'error' 
+export type ConnectionStatus =
+  | 'disconnected'
+  | 'connecting'
+  | 'connected'
+  | 'error'
   | 'reconnecting';
+
+/**
+ * IDE/Client types that can install and manage MCP servers
+ */
+export type MCPClientType =
+  | 'mcp-hub'           // MCP Hub Next (this application)
+  | 'claude-desktop'    // Claude Desktop app
+  | 'vscode'            // VSCode MCP extension
+  | 'cursor'            // Cursor IDE
+  | 'windsurf'          // Windsurf IDE
+  | 'zed'               // Zed editor
+  | 'cline'             // Cline VSCode extension
+  | 'continue'          // Continue VSCode extension
+  | 'custom';           // Custom/unknown client type
 
 /**
  * Base configuration shared by all server types
@@ -24,6 +38,12 @@ export interface BaseMCPServerConfig {
   enabled?: boolean;
   createdAt: string;
   updatedAt: string;
+  /** IDE/client type that created/imported this server configuration */
+  clientType?: MCPClientType;
+  /** Path to the IDE config file this was imported from */
+  configSourcePath?: string;
+  /** Original configuration JSON for potential reconstruction or export */
+  originalConfig?: string;
 }
 
 /**
@@ -372,4 +392,97 @@ export interface MarketplaceFilters {
  * Marketplace view mode
  */
 export type MarketplaceViewMode = 'card' | 'list';
+
+/**
+ * IDE Configuration Formats
+ * These types represent the configuration formats used by different IDE clients
+ */
+
+/**
+ * Claude Desktop configuration format
+ * Located at:
+ * - macOS: ~/Library/Application Support/Claude/claude_desktop_config.json
+ * - Windows: %APPDATA%\Claude\claude_desktop_config.json
+ * - Linux: ~/.config/Claude/claude_desktop_config.json
+ */
+export interface ClaudeDesktopConfig {
+  mcpServers: {
+    [serverName: string]: {
+      command: string;
+      args?: string[];
+      env?: Record<string, string>;
+      cwd?: string;
+    };
+  };
+}
+
+/**
+ * VSCode/Cline MCP configuration format
+ * Typically in .vscode/settings.json or user settings
+ */
+export interface VSCodeMCPConfig {
+  mcpServers: {
+    [serverName: string]: {
+      command: string;
+      args?: string[];
+      env?: Record<string, string>;
+      cwd?: string;
+    };
+  };
+}
+
+/**
+ * Generic IDE config entry (common structure across IDEs)
+ */
+export interface IDEServerConfig {
+  command: string;
+  args?: string[];
+  env?: Record<string, string>;
+  cwd?: string;
+}
+
+/**
+ * IDE config import options
+ */
+export interface IDEConfigImportOptions {
+  clientType: MCPClientType;
+  configPath?: string;
+  autoDiscoverPath?: boolean;
+  mergeStrategy?: 'replace' | 'merge' | 'skip-existing';
+  preserveOriginal?: boolean;
+}
+
+/**
+ * IDE config export options
+ */
+export interface IDEConfigExportOptions {
+  clientType: MCPClientType;
+  outputPath?: string;
+  serverIds?: string[];
+  includeDisabled?: boolean;
+  format?: 'json' | 'pretty';
+}
+
+/**
+ * IDE config discovery result
+ */
+export interface IDEConfigDiscovery {
+  clientType: MCPClientType;
+  configPath: string;
+  found: boolean;
+  readable: boolean;
+  serverCount?: number;
+  servers?: string[];
+}
+
+/**
+ * Config validation result for IDE formats
+ */
+export interface IDEConfigValidation {
+  valid: boolean;
+  clientType?: MCPClientType;
+  errors: string[];
+  warnings: string[];
+  serverCount?: number;
+}
 

@@ -31,3 +31,10 @@ dirs = "5"
 chrono = { version = "0.4", features = ["clock", "serde"] }
 regex = "1"
 nanoid = "0.4"
+tokio = { version = "1.40", features = ["time"] }
+
+[dev-dependencies]
+tempfile = "3.13"
+mockall = "0.13"
+serial_test = "3.1"
+tokio = { version = "1.40", features = ["rt", "macros"] }

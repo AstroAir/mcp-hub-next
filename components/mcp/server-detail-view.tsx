@@ -114,7 +114,7 @@ export function ServerDetailView({ server, connectionState }: ServerDetailViewPr
             <CardDescription>{t('tools.description')}</CardDescription>
           </CardHeader>
           <CardContent>
-            <ScrollArea className="h-[300px]">
+            <ScrollArea className="h-[200px] sm:h-[250px] md:h-[300px]">
               <div className="space-y-3">
                 {connectionState.tools.map((tool) => (
                   <div key={tool.name} className="border rounded-lg p-3">
@@ -140,7 +140,7 @@ export function ServerDetailView({ server, connectionState }: ServerDetailViewPr
             <CardDescription>{t('resources.description')}</CardDescription>
           </CardHeader>
           <CardContent>
-            <ScrollArea className="h-[200px]">
+            <ScrollArea className="h-[150px] sm:h-[175px] md:h-[200px]">
               <div className="space-y-3">
                 {connectionState.resources.map((resource) => (
                   <div key={resource.uri} className="border rounded-lg p-3">
@@ -169,7 +169,7 @@ export function ServerDetailView({ server, connectionState }: ServerDetailViewPr
             <CardDescription>{t('prompts.description')}</CardDescription>
           </CardHeader>
           <CardContent>
-            <ScrollArea className="h-[200px]">
+            <ScrollArea className="h-[150px] sm:h-[175px] md:h-[200px]">
               <div className="space-y-3">
                 {connectionState.prompts.map((prompt) => (
                   <div key={prompt.name} className="border rounded-lg p-3">

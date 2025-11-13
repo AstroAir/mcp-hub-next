@@ -38,10 +38,13 @@
       "forbidden": "您没有权限执行此操作。",
       "notFound": "未找到您要访问的内容。",
       "sectionFallback": "此区域发生错误",
-      "sectionFallbackMessage": "出现未知错误。"
+      "sectionFallbackMessage": "出现未知错误。",
+      "rateLimitExceeded": "超出速率限制。请稍后再试。"
     },
     "a11y": {
-      "more": "更多选项"
+      "more": "更多选项",
+      "home": "首页",
+      "toggleMenu": "切换菜单"
     }
   },
   "metadata": {
@@ -143,6 +146,94 @@
     "error": {
       "title": "市场错误",
       "description": "加载市场时发生错误。请重试。"
+    },
+    "filters": {
+      "searchPlaceholder": "搜索 MCP 服务器...",
+      "sort": {
+        "placeholder": "排序方式",
+        "options": {
+          "stars": "最多星标",
+          "downloads": "最多下载",
+          "updated": "最近更新",
+          "name": "名称 A-Z"
+        }
+      },
+      "category": {
+        "placeholder": "分类",
+        "all": "所有分类"
+      },
+      "tags": {
+        "button": "标签",
+        "dropdownLabel": "选择标签"
+      },
+      "quickFilters": {
+        "recommended": "推荐",
+        "noApiKey": "无需 API 密钥"
+      },
+      "reset": "重置筛选"
+    },
+    "card": {
+      "badges": {
+        "recommended": "推荐"
+      },
+      "author": "作者：{author}",
+      "stats": {
+        "stars": "星标",
+        "downloads": "下载",
+        "requiresApiKey": "需要 API 密钥"
+      },
+      "buttons": {
+        "github": "GitHub",
+        "install": "安装",
+        "installing": "安装中...",
+        "details": "详情"
+      },
+      "dialog": {
+        "installing": "正在安装 {name}"
+      }
+    },
+    "toasts": {
+      "parseRepository": "仅支持 GitHub URL",
+      "installing": "正在安装 {name}...",
+      "installStartFailed": "启动安装失败",
+      "installed": "已安装 {name}"
+    },
+    "detail": {
+      "stats": {
+        "updated": "更新于 {date}"
+      },
+      "meta": {
+        "category": "分类",
+        "tags": "标签"
+      },
+      "mcpId": {
+        "label": "MCP ID",
+        "copied": "已复制",
+        "copy": "复制 ID"
+      },
+      "actions": {
+        "viewOnGitHub": "在 GitHub 上查看"
+      },
+      "readme": {
+        "title": "README"
+      }
+    },
+    "view": {
+      "title": "MCP 服务器市场",
+      "subtitle": "发现、安装并管理社区提供的 MCP 服务器。",
+      "actions": {
+        "refresh": "刷新",
+        "resetFilters": "重置筛选"
+      },
+      "states": {
+        "errorTitle": "加载市场失败",
+        "errorDescription": "请重试。",
+        "emptyTitle": "没有服务器匹配您的筛选条件",
+        "emptyDescription": "尝试调整筛选条件或搜索关键词。"
+      },
+      "stats": {
+        "resultCount": "找到 {count, plural, one {# 个服务器} other {# 个服务器}}"
+      }
     }
   },
   "oauthCallback": {
@@ -233,7 +324,30 @@
       "copy": "复制消息",
       "copied": "已复制！",
       "download": "下载",
-      "preview": "预览"
+      "preview": "预览",
+      "attachmentsCount": "{count, plural, one {# 个附件} other {# 个附件}}",
+      "attachmentIcon": "附件图标",
+      "previewPdf": "预览 PDF",
+      "previewButton": "预览",
+      "previewTooltip": "预览 {name}",
+      "downloadTooltip": "下载 {name}",
+      "imagePreviewAlt": "图片预览",
+      "pdfPreviewTitle": "PDF 预览",
+      "toolCall": {
+        "title": "工具调用：{name}",
+        "parameters": "参数",
+        "response": "响应",
+        "unknownError": "未知错误",
+        "status": {
+          "requested": "已请求",
+          "success": "成功",
+          "error": "错误"
+        }
+      },
+      "toolResult": {
+        "title": "工具：{name}",
+        "error": "错误：{message}"
+      }
     },
     "interface": {
       "messageCount": "{count, plural, one {# 条消息} other {# 条消息}}",
@@ -263,7 +377,8 @@
         "confirm": "清除所有消息"
       },
       "status": {
-        "thinking": "思考中..."
+        "thinking": "思考中...",
+        "streaming": "流式传输中..."
       }
     },
     "selector": {
@@ -272,6 +387,23 @@
     },
     "prompt": {
       "label": "优化提示"
+    },
+    "fileUpload": {
+      "errors": {
+        "maxFilesExceeded": "最多允许 {count} 个文件",
+        "invalidFile": "无效的文件",
+        "processingFailed": "处理 {filename} 失败"
+      },
+      "success": {
+        "filesAdded": "已添加 {count} 个文件"
+      },
+      "accessibility": {
+        "attachButton": "附加文件",
+        "attachTooltip": "附加文件",
+        "maxFilesReached": "已达到最大文件数 {count}",
+        "attachmentPreviewAlt": "附件预览",
+        "pdfPreviewTitle": "PDF 附件预览"
+      }
     }
   },
   "developerPage": {
@@ -309,9 +441,7 @@
           "label": "语言",
           "options": {
             "en": "英语",
-            "zh-CN": "简体中文",
-            "ja": "日语",
-            "es": "西班牙语"
+            "zh-CN": "简体中文"
           }
         }
       },
@@ -527,6 +657,207 @@
         "deleteSuccess": "备份删除成功",
         "deleteError": "删除备份失败"
       }
+    },
+    "models": {
+      "title": "AI 模型",
+      "description": "配置模型、提供商 API 密钥和默认值。",
+      "providers": {
+        "anthropic": "Anthropic",
+        "openai": "OpenAI",
+        "google": "Google (Gemini)",
+        "ollama": "Ollama (本地)",
+        "mistral": "Mistral",
+        "together": "Together",
+        "azure-openai": "Azure OpenAI",
+        "other": "其他"
+      },
+      "sections": {
+        "models": "模型",
+        "providerKeys": "提供商 API 密钥"
+      },
+      "table": {
+        "label": "标签",
+        "modelId": "模型 ID",
+        "provider": "提供商",
+        "temperature": "温度",
+        "maxTokens": "最大令牌数",
+        "topP": "Top P",
+        "default": "默认",
+        "remove": "移除"
+      },
+      "form": {
+        "label": {
+          "label": "标签",
+          "placeholder": "我的自定义模型"
+        },
+        "modelId": {
+          "label": "模型 ID",
+          "placeholder": "claude-3-5-sonnet-20241022"
+        },
+        "provider": {
+          "label": "提供商",
+          "placeholder": "选择提供商"
+        },
+        "temperature": {
+          "label": "温度",
+          "description": "控制随机性 (0-1)"
+        },
+        "maxTokens": {
+          "label": "最大令牌数",
+          "description": "最大响应长度"
+        },
+        "topP": {
+          "label": "Top P",
+          "description": "核采样 (0-1)"
+        },
+        "addModel": "添加模型"
+      },
+      "providerKeys": {
+        "apiKey": {
+          "label": "API 密钥（客户端）",
+          "description": "本地存储在您的浏览器中",
+          "placeholder": "sk-..."
+        },
+        "baseUrl": {
+          "label": "基础 URL",
+          "description": "可选",
+          "placeholder": "http://127.0.0.1:11434"
+        },
+        "envVar": {
+          "label": "环境变量（服务器）",
+          "description": "对于服务器端 API 密钥，请设置环境变量，如 ANTHROPIC_API_KEY、OPENAI_API_KEY 等。这些比客户端密钥更安全，不会在浏览器中暴露。"
+        }
+      }
+    },
+    "updates": {
+      "title": "应用程序版本",
+      "currentVersion": "当前版本",
+      "lastChecked": "上次检查：{time}",
+      "checkForUpdates": "检查更新",
+      "checking": "检查中...",
+      "updateReady": "更新就绪",
+      "updateReadyMessage": "版本 {version} 已准备好安装。重新启动应用程序时将应用更新。",
+      "updateChannel": {
+        "title": "更新通道",
+        "description": "选择您想要接收的更新类型",
+        "options": {
+          "stable": {
+            "label": "稳定版",
+            "description": "推荐给大多数用户。仅接收稳定、经过测试的版本。"
+          },
+          "beta": {
+            "label": "测试版",
+            "description": "提前体验新功能。可能包含小错误。"
+          },
+          "alpha": {
+            "label": "Alpha 版",
+            "description": "最新更新。可能不稳定并包含错误。"
+          }
+        }
+      },
+      "autoDownload": {
+        "label": "自动下载更新",
+        "description": "在后台下载可用的更新"
+      },
+      "installOnQuit": {
+        "label": "退出时安装更新",
+        "description": "退出应用程序时自动安装已下载的更新"
+      },
+      "checkOnStartup": {
+        "label": "启动时检查更新",
+        "description": "应用程序启动时自动检查新更新"
+      },
+      "info": {
+        "title": "关于更新",
+        "description": "更新通过 Tauri 更新系统提供。当有可用更新时，它将在安装前下载并验证。您可以选择立即安装更新或等到重新启动应用程序。"
+      },
+      "time": {
+        "never": "从未",
+        "justNow": "刚刚",
+        "minutesAgo": "{minutes, plural, one {# 分钟前} other {# 分钟前}}",
+        "hoursAgo": "{hours, plural, one {# 小时前} other {# 小时前}}",
+        "daysAgo": "{days, plural, one {# 天前} other {# 天前}}"
+      },
+      "toasts": {
+        "preferencesSaved": "更新偏好已保存",
+        "preferencesFailed": "保存偏好失败",
+        "notAvailableInBrowser": "浏览器模式下无法检查更新",
+        "checkFailed": "检查更新失败",
+        "downloadFailed": "下载更新失败",
+        "installFailed": "安装更新失败",
+        "checkingForUpdates": "正在检查更新...",
+        "updateAvailable": "发现更新：v{version}",
+        "updateDownloaded": "更新已下载，可以安装",
+        "updateError": "更新错误：{message}",
+        "noUpdateAvailable": "您已是最新版本！"
+      },
+      "status": {
+        "updateAvailable": "发现更新",
+        "updateAvailableMessage": "版本 {version} 已准备好下载",
+        "downloading": "正在下载更新",
+        "downloadingMessage": "正在下载版本 {version}...",
+        "downloadComplete": "下载完成",
+        "downloadCompleteMessage": "版本 {version} 已下载并准备好安装",
+        "upToDate": "已是最新",
+        "upToDateMessage": "您正在运行最新版本"
+      },
+      "actions": {
+        "download": "下载更新",
+        "installNow": "重启并安装",
+        "installLater": "稍后",
+        "viewReleaseNotes": "查看更新说明",
+        "dismiss": "关闭"
+      },
+      "releaseNotes": {
+        "title": "v{version} 的新功能",
+        "noNotes": "没有可用的更新说明"
+      },
+      "progress": {
+        "downloading": "下载中... {percent}%",
+        "installing": "正在安装更新..."
+      }
+    },
+    "keyboardShortcuts": {
+      "title": "键盘快捷键",
+      "description": "查看、自定义和重置键盘快捷键",
+      "searchPlaceholder": "搜索快捷键...",
+      "resetAll": "全部重置",
+      "change": "更改",
+      "pressKeys": "按下新键...",
+      "clickThenPress": "点击，然后按下键",
+      "conflict": "与 {action} 冲突。仍然保存。",
+      "labels": {
+        "open-search": "打开命令面板",
+        "open-settings": "打开设置",
+        "new": "新建（上下文相关）",
+        "save": "保存（上下文相关）",
+        "navigate-dashboard": "导航：总览",
+        "navigate-chat": "导航：对话",
+        "navigate-settings": "导航：设置",
+        "help": "显示快捷键帮助",
+        "tab-next": "下一个标签页/窗口",
+        "tab-prev": "上一个标签页/窗口"
+      },
+      "actions": {
+        "toggleCommandPalette": "切换命令面板",
+        "newChat": "新建对话会话",
+        "clearChat": "清除当前对话",
+        "toggleSidebar": "切换侧边栏",
+        "focusInput": "聚焦对话输入",
+        "sendMessage": "发送消息",
+        "cancelMessage": "取消消息",
+        "scrollToTop": "滚动到顶部",
+        "scrollToBottom": "滚动到底部",
+        "nextServer": "下一个服务器",
+        "prevServer": "上一个服务器",
+        "connectServer": "连接选定的服务器",
+        "disconnectServer": "断开选定的服务器",
+        "openSettings": "打开设置",
+        "openDeveloper": "打开开发者工具",
+        "toggleTheme": "切换主题",
+        "search": "搜索",
+        "help": "显示帮助"
+      }
     }
   },
   "dashboard": {
@@ -620,6 +951,21 @@
       "bulkDisconnect": "已断开 {success}/{total}",
       "enableAll": "全部服务器已启用",
       "disableAll": "全部服务器已禁用"
+    },
+    "ideConfigDiscovery": "IDE 配置发现",
+    "ideConfigDiscoveryDesc": "自动发现并导入已安装 IDE 的 MCP 服务器配置",
+    "discoverIDEConfigs": "发现 IDE 配置",
+    "scanning": "正在扫描 IDE 配置...",
+    "noIDEConfigsFound": "未找到 IDE 配置。点击\"发现 IDE 配置\"进行扫描。",
+    "serversFound": "找到 {count} 台服务器",
+    "import": "导入",
+    "toast": {
+      "importSuccess": "成功从 {clientType} 导入 {count} 台服务器",
+      "importError": "导入配置失败：{error}",
+      "noServersFound": "配置文件中未找到服务器",
+      "discoveryError": "发现 IDE 配置失败：{error}",
+      "noConfigsFound": "此系统上未找到 IDE 配置",
+      "duplicatesRenamed": "{count} 个重复服务器已重命名"
     },
     "error": {
       "title": "服务器错误",
@@ -721,7 +1067,8 @@
         "importFailure": "导入服务器失败",
         "exportSuccess": "配置导出成功",
         "exportFailure": "配置导出失败",
-        "downloadSuccess": "示例配置已下载"
+        "downloadSuccess": "示例配置已下载",
+        "validationSuccess": "成功验证 {count} 台服务器"
       },
       "export": {
         "title": "导出配置",
@@ -1193,6 +1540,196 @@
         "restarting": "重启中",
         "error": "错误"
       }
+    }
+  },
+  "commandPalette": {
+    "navigation": {
+      "dashboard": {
+        "label": "前往总览",
+        "description": "查看所有服务器",
+        "keywords": "首页, 服务器, 主页"
+      },
+      "chat": {
+        "label": "前往对话",
+        "description": "与 Claude 对话",
+        "keywords": "会话, claude, ai"
+      },
+      "developer": {
+        "label": "前往开发者工具",
+        "description": "调试和监控",
+        "keywords": "调试, 日志, 指标"
+      },
+      "settings": {
+        "label": "前往设置",
+        "description": "配置应用程序",
+        "keywords": "配置, 偏好, 备份"
+      }
+    },
+    "chat": {
+      "clear": {
+        "label": "清除对话",
+        "description": "清除当前对话中的所有消息",
+        "keywords": "删除, 移除, 重置"
+      },
+      "export": {
+        "label": "导出对话会话",
+        "description": "下载当前对话会话",
+        "keywords": "下载, 保存, 备份"
+      },
+      "modelSonnet": {
+        "label": "切换到 Claude Sonnet",
+        "description": "使用 Claude 3.5 Sonnet 模型",
+        "keywords": "模型, ai, 更改"
+      },
+      "modelHaiku": {
+        "label": "切换到 Claude Haiku",
+        "description": "使用 Claude 3.5 Haiku 模型",
+        "keywords": "模型, ai, 更改, 快速"
+      },
+      "modelOpus": {
+        "label": "切换到 Claude Opus",
+        "description": "使用 Claude 3 Opus 模型",
+        "keywords": "模型, ai, 更改, 强大"
+      },
+      "toggleStreaming": {
+        "label": "切换流式模式",
+        "description": "启用或禁用流式响应",
+        "keywords": "流式, 响应, 模式"
+      },
+      "newSession": {
+        "label": "创建新对话会话",
+        "description": "开始新的对话",
+        "keywords": "新建, 会话, 开始"
+      },
+      "viewSessions": {
+        "label": "查看所有会话",
+        "description": "浏览并切换对话会话",
+        "keywords": "历史, 会话, 切换"
+      }
+    },
+    "server": {
+      "add": {
+        "label": "添加新服务器",
+        "description": "创建新的 MCP 服务器",
+        "keywords": "创建, 新建, 配置"
+      },
+      "templates": {
+        "label": "浏览服务器模板",
+        "description": "使用预配置的模板",
+        "keywords": "示例, 预设, 快速"
+      },
+      "view": {
+        "label": "查看 {name}",
+        "description": "打开 {name} 详情"
+      },
+      "connect": {
+        "label": "连接到 {name}",
+        "description": "建立到 {name} 的连接"
+      },
+      "disconnect": {
+        "label": "断开 {name}",
+        "description": "关闭到 {name} 的连接"
+      }
+    },
+    "settings": {
+      "export": {
+        "label": "导出数据",
+        "description": "下载所有数据",
+        "keywords": "备份, 保存, 下载"
+      },
+      "import": {
+        "label": "导入数据",
+        "description": "从备份恢复",
+        "keywords": "恢复, 加载, 上传"
+      }
+    },
+    "categories": {
+      "navigation": "导航",
+      "server": "服务器",
+      "chat": "对话",
+      "settings": "设置",
+      "recent": "最近"
+    },
+    "empty": {
+      "title": "未找到命令",
+      "description": "尝试不同的搜索词"
+    },
+    "recent": "最近的命令"
+  },
+  "debugPanel": {
+    "title": "调试控制台",
+    "description": "实时 MCP 协议消息、性能指标和错误日志",
+    "stats": {
+      "totalLogs": "总日志数",
+      "activeServers": "活跃服务器",
+      "avgResponse": "平均响应",
+      "successRate": "成功率",
+      "errors": "{count} 个错误",
+      "warnings": "{count} 个警告",
+      "beingMonitored": "正在监控",
+      "operations": "{count} 个操作"
+    },
+    "tabs": {
+      "logs": "调试日志",
+      "metrics": "性能"
+    },
+    "filters": {
+      "searchPlaceholder": "搜索日志...",
+      "level": "级别",
+      "category": "类别",
+      "allLevels": "所有级别",
+      "allCategories": "所有类别",
+      "levels": {
+        "error": "错误",
+        "warn": "警告",
+        "info": "信息",
+        "debug": "调试"
+      },
+      "categories": {
+        "mcp": "MCP",
+        "connection": "连接",
+        "tool": "工具",
+        "chat": "对话",
+        "system": "系统"
+      }
+    },
+    "actions": {
+      "live": "实时",
+      "paused": "已暂停",
+      "export": "导出",
+      "clear": "清除",
+      "clearMetrics": "清除指标"
+    },
+    "logs": {
+      "showing": "显示 {filtered}/{total} 条日志",
+      "empty": {
+        "title": "没有日志可显示",
+        "noLogs": "应用程序运行时日志将显示在这里",
+        "tryFilters": "尝试调整筛选条件"
+      },
+      "viewData": "查看数据 →",
+      "stackTrace": "堆栈跟踪 →"
+    },
+    "metrics": {
+      "tracking": "正在跟踪 {servers} 台服务器的 {count} 个操作",
+      "serverPerformance": "服务器性能概览",
+      "recentOperations": "最近的操作",
+      "avgDuration": "平均耗时",
+      "success": "成功",
+      "failed": "失败",
+      "empty": {
+        "title": "暂无性能指标",
+        "description": "服务器执行操作时指标将显示在这里"
+      }
+    },
+    "dialogs": {
+      "clearLogs": "确定要清除所有调试日志吗？",
+      "clearMetrics": "确定要清除所有性能指标吗？"
+    },
+    "toasts": {
+      "logsCleared": "调试日志已清除",
+      "metricsCleared": "性能指标已清除",
+      "logsExported": "调试日志已导出"
     }
   }
 }

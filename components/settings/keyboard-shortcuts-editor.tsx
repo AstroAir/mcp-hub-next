@@ -11,21 +11,11 @@ import { useSettingsStore } from '@/lib/stores/settings-store';
 import { formatBinding } from '@/lib/utils/shortcuts';
 import type { ShortcutAction } from '@/lib/types';
 import { Keyboard, Undo2 } from 'lucide-react';
-
-const LABELS: Record<ShortcutAction, string> = {
-  'open-search': 'Open command palette',
-  'open-settings': 'Open settings',
-  'new': 'New (contextual)',
-  'save': 'Save (contextual)',
-  'navigate-dashboard': 'Navigate: Dashboard',
-  'navigate-chat': 'Navigate: Chat',
-  'navigate-settings': 'Navigate: Settings',
-  'help': 'Show shortcuts help',
-  'tab-next': 'Next tab/window',
-  'tab-prev': 'Previous tab/window',
-};
+import { useTranslations } from 'next-intl';
 
 export function KeyboardShortcutsEditor() {
+  const t = useTranslations('settings.keyboardShortcuts');
+
   const { shortcuts, setShortcut, resetSection } = useSettingsStore();
   const [filter, setFilter] = useState('');
   const [editing, setEditing] = useState<ShortcutAction | null>(null);
@@ -34,12 +24,12 @@ export function KeyboardShortcutsEditor() {
 
   const items = useMemo(() => {
     return (Object.keys(shortcuts) as ShortcutAction[])
-      .map((id) => ({ id, label: LABELS[id], binding: shortcuts[id] }))
+      .map((id) => ({ id, label: t(`labels.${id}`), binding: shortcuts[id] }))
       .filter((it) =>
         it.label.toLowerCase().includes(filter.toLowerCase()) ||
         it.binding.toLowerCase().includes(filter.toLowerCase())
       );
-  }, [shortcuts, filter]);
+  }, [shortcuts, filter, t]);
 
   const startCapture = (action: ShortcutAction) => {
     setEditing(action);
@@ -75,21 +65,21 @@ export function KeyboardShortcutsEditor() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Keyboard className="h-5 w-5 text-primary" />
-          Keyboard Shortcuts
+          {t('title')}
         </CardTitle>
-        <CardDescription>View, customize, and reset keyboard shortcuts</CardDescription>
+        <CardDescription>{t('description')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
           <Input
-            placeholder="Search shortcuts..."
+            placeholder={t('searchPlaceholder')}
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             className="md:max-w-sm"
           />
           <div className="flex items-center gap-2 justify-between">
             <Button variant="outline" onClick={() => resetSection('shortcuts')} className="gap-2">
-              <Undo2 className="h-4 w-4" /> Reset All
+              <Undo2 className="h-4 w-4" /> {t('resetAll')}
             </Button>
           </div>
         </div>
@@ -111,7 +101,7 @@ export function KeyboardShortcutsEditor() {
                     tabIndex={0}
                     onKeyDown={handleKeyDown}
                   >
-                    Press new keys…
+                    {t('pressKeys')}
                   </div>
                 ) : (
                   <Badge variant="secondary" className="font-mono text-xs break-keep">
@@ -121,16 +111,16 @@ export function KeyboardShortcutsEditor() {
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button size="sm" variant="outline" onClick={() => startCapture(it.id)}>Change</Button>
+                      <Button size="sm" variant="outline" onClick={() => startCapture(it.id)}>{t('change')}</Button>
                     </TooltipTrigger>
-                    <TooltipContent>Click, then press the keys</TooltipContent>
+                    <TooltipContent>{t('clickThenPress')}</TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               </div>
             </div>
           ))}
           {conflict && (
-            <div className="text-xs text-amber-600 dark:text-amber-400">Conflict with {conflict.action}. Saving anyway.</div>
+            <div className="text-xs text-amber-600 dark:text-amber-400">{t('conflict', { action: conflict.action })}</div>
           )}
         </div>
       </CardContent>

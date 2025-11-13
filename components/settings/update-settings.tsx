@@ -9,14 +9,24 @@ import { useState, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import type { UpdatePreferences, UpdateStatus } from '@/lib/types/tauri';
-import { Download, RefreshCw, Info } from 'lucide-react';
+import { Download, RefreshCw, Info, CheckCircle2, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 export function UpdateSettings() {
+  const t = useTranslations('settings.updates');
+  const tToasts = useTranslations('settings.updates.toasts');
+  const tStatus = useTranslations('settings.updates.status');
+  const tActions = useTranslations('settings.updates.actions');
+  const tProgress = useTranslations('settings.updates.progress');
+  const tTime = useTranslations('settings.updates.time');
+
   const [preferences, setPreferences] = useState<UpdatePreferences>({
     autoDownload: true,
     autoInstallOnAppQuit: true,
@@ -24,8 +34,11 @@ export function UpdateSettings() {
     checkOnStartup: true,
   });
   const [checking, setChecking] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [currentVersion, setCurrentVersion] = useState('0.1.0');
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null);
+  const [showReleaseNotes, setShowReleaseNotes] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
 
   useEffect(() => {
     // Check if running in Tauri
@@ -66,17 +79,56 @@ export function UpdateSettings() {
     const unlistenPromise = listen<UpdateStatus>('update-status', (event) => {
       const status = event.payload;
       setUpdateStatus(status);
-      if (status.event === 'checking-for-update') {
-        setChecking(true);
-      } else {
-        setChecking(false);
+
+      switch (status.event) {
+        case 'checking-for-update':
+          setChecking(true);
+          setDownloading(false);
+          break;
+
+        case 'update-available':
+          setChecking(false);
+          if (!preferences.autoDownload) {
+            toast.success(tToasts('updateAvailable', { version: status.data?.version || '' }));
+          }
+          break;
+
+        case 'update-not-available':
+          setChecking(false);
+          setDownloading(false);
+          toast.success(tToasts('noUpdateAvailable'));
+          break;
+
+        case 'download-progress':
+          setChecking(false);
+          setDownloading(true);
+          setDownloadProgress(status.data?.percent || 0);
+          break;
+
+        case 'update-installing':
+          setDownloading(false);
+          toast.info(tProgress('installing'));
+          break;
+
+        case 'update-downloaded':
+          setChecking(false);
+          setDownloading(false);
+          setDownloadProgress(100);
+          toast.success(tToasts('updateDownloaded'));
+          break;
+
+        case 'update-error':
+          setChecking(false);
+          setDownloading(false);
+          toast.error(tToasts('updateError', { message: status.data?.message || 'Unknown error' }));
+          break;
       }
     });
 
     return () => {
       unlistenPromise.then((unlisten) => unlisten());
     };
-  }, []);
+  }, [preferences.autoDownload, tToasts, tProgress]);
 
   const handlePreferenceChange = (key: keyof UpdatePreferences, value: string | boolean) => {
     const newPreferences = { ...preferences, [key]: value };
@@ -86,18 +138,18 @@ export function UpdateSettings() {
     if (typeof window !== 'undefined' && window.__TAURI__) {
       invoke('set_update_preferences', { preferences: newPreferences })
         .then(() => {
-          toast.success('Update preferences saved');
+          toast.success(tToasts('preferencesSaved'));
         })
         .catch((error) => {
           console.error('Failed to save preferences:', error);
-          toast.error('Failed to save preferences');
+          toast.error(tToasts('preferencesFailed'));
         });
     }
   };
 
   const handleCheckForUpdates = async () => {
     if (typeof window === 'undefined' || !window.__TAURI__) {
-      toast.error('Update check not available in browser mode');
+      toast.error(tToasts('notAvailableInBrowser'));
       return;
     }
 
@@ -106,73 +158,188 @@ export function UpdateSettings() {
       await invoke('check_for_updates');
     } catch (error) {
       console.error('Error checking for updates:', error);
-      toast.error('Failed to check for updates');
-    } finally {
+      toast.error(tToasts('checkFailed'));
       setChecking(false);
     }
   };
 
+  const handleDownloadUpdate = async () => {
+    if (typeof window === 'undefined' || !window.__TAURI__) {
+      toast.error(tToasts('notAvailableInBrowser'));
+      return;
+    }
+
+    setDownloading(true);
+    try {
+      await invoke('download_update');
+    } catch (error) {
+      console.error('Error downloading update:', error);
+      toast.error(tToasts('downloadFailed'));
+      setDownloading(false);
+    }
+  };
+
+  const handleInstallUpdate = async () => {
+    if (typeof window === 'undefined' || !window.__TAURI__) {
+      toast.error(tToasts('notAvailableInBrowser'));
+      return;
+    }
+
+    try {
+      await invoke('quit_and_install');
+    } catch (error) {
+      console.error('Error installing update:', error);
+      toast.error(tToasts('installFailed'));
+    }
+  };
+
   const formatLastCheckTime = (timestamp?: number) => {
-    if (!timestamp) return 'Never';
-    const date = new Date(timestamp);
+    if (!timestamp) return tTime('never');
+    const date = new Date(timestamp * 1000); // Convert from seconds to milliseconds
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    if (diffMins < 1) return tTime('justNow');
+    if (diffMins < 60) return tTime('minutesAgo', { minutes: diffMins });
+    if (diffHours < 24) return tTime('hoursAgo', { hours: diffHours });
+    if (diffDays < 7) return tTime('daysAgo', { days: diffDays });
     return date.toLocaleDateString();
   };
+
+  const isUpdateAvailable = updateStatus?.event === 'update-available';
+  const isUpdateDownloaded = updateStatus?.updateDownloaded === true;
+  const releaseNotes = updateStatus?.data?.body || updateStatus?.data?.releaseNotes;
 
   return (
     <div className="space-y-6">
       {/* Current Version */}
       <div className="space-y-2">
-        <h3 className="text-lg font-semibold">Application Version</h3>
+        <h3 className="text-lg font-semibold">{t('title')}</h3>
         <div className="flex items-center justify-between rounded-lg border p-4">
           <div>
-            <p className="text-sm font-medium">Current Version</p>
+            <p className="text-sm font-medium">{t('currentVersion')}</p>
             <p className="text-2xl font-bold">{currentVersion}</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Last checked: {formatLastCheckTime(preferences.lastCheckTime)}
+              {t('lastChecked', { time: formatLastCheckTime(preferences.lastCheckTime) })}
             </p>
           </div>
           <Button
             onClick={handleCheckForUpdates}
-            disabled={checking}
+            disabled={checking || downloading}
             variant="outline"
           >
             {checking ? (
               <>
                 <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                Checking...
+                {t('checking')}
               </>
             ) : (
               <>
                 <RefreshCw className="mr-2 h-4 w-4" />
-                Check for Updates
+                {t('checkForUpdates')}
               </>
             )}
           </Button>
         </div>
       </div>
 
-      {/* Update Status */}
-      {updateStatus?.updateDownloaded && (
+      {/* Update Available */}
+      {isUpdateAvailable && !isUpdateDownloaded && (
+        <div className="rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950 p-4 space-y-3">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+            <div className="flex-1 space-y-2">
+              <div>
+                <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                  {tStatus('updateAvailable')}
+                </p>
+                <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                  {tStatus('updateAvailableMessage', { version: updateStatus.data?.version || '' })}
+                </p>
+              </div>
+
+              {/* Release Notes */}
+              {releaseNotes && (
+                <Collapsible open={showReleaseNotes} onOpenChange={setShowReleaseNotes}>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-auto p-0 text-blue-700 dark:text-blue-300 hover:text-blue-900 dark:hover:text-blue-100">
+                      {tActions('viewReleaseNotes')}
+                      {showReleaseNotes ? (
+                        <ChevronUp className="ml-1 h-3 w-3" />
+                      ) : (
+                        <ChevronDown className="ml-1 h-3 w-3" />
+                      )}
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-2">
+                    <div className="rounded-md bg-blue-100 dark:bg-blue-900 p-3 text-xs text-blue-900 dark:text-blue-100 max-h-40 overflow-y-auto whitespace-pre-wrap">
+                      {releaseNotes}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
+
+              {/* Download Progress */}
+              {downloading && (
+                <div className="space-y-1">
+                  <Progress value={downloadProgress} className="h-2" />
+                  <p className="text-xs text-blue-700 dark:text-blue-300">
+                    {tProgress('downloading', { percent: Math.round(downloadProgress) })}
+                  </p>
+                </div>
+              )}
+
+              {/* Download Button */}
+              {!preferences.autoDownload && !downloading && (
+                <Button
+                  onClick={handleDownloadUpdate}
+                  size="sm"
+                  className="mt-2"
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  {tActions('download')}
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Update Downloaded and Ready */}
+      {isUpdateDownloaded && (
         <div className="rounded-lg border border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950 p-4">
           <div className="flex items-start gap-3">
-            <Download className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-green-900 dark:text-green-100">
-                Update Ready
-              </p>
-              <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-                A new version has been downloaded and will be installed when you restart the application.
-              </p>
+            <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5" />
+            <div className="flex-1 space-y-2">
+              <div>
+                <p className="text-sm font-medium text-green-900 dark:text-green-100">
+                  {tStatus('downloadComplete')}
+                </p>
+                <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+                  {tStatus('downloadCompleteMessage', { version: updateStatus?.data?.version || '' })}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleInstallUpdate}
+                  size="sm"
+                  variant="default"
+                >
+                  {tActions('installNow')}
+                </Button>
+                {!preferences.autoInstallOnAppQuit && (
+                  <Button
+                    onClick={() => setUpdateStatus(null)}
+                    size="sm"
+                    variant="outline"
+                  >
+                    {tActions('installLater')}
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -181,9 +348,9 @@ export function UpdateSettings() {
       {/* Update Channel */}
       <div className="space-y-3">
         <div>
-          <Label htmlFor="update-channel">Update Channel</Label>
+          <Label htmlFor="update-channel">{t('updateChannel.title')}</Label>
           <p className="text-xs text-muted-foreground mt-1">
-            Choose which type of updates you want to receive
+            {t('updateChannel.description')}
           </p>
         </div>
         <Select
@@ -196,25 +363,25 @@ export function UpdateSettings() {
           <SelectContent>
             <SelectItem value="stable">
               <div className="flex flex-col items-start">
-                <span className="font-medium">Stable</span>
+                <span className="font-medium">{t('updateChannel.options.stable.label')}</span>
                 <span className="text-xs text-muted-foreground">
-                  Recommended for most users
+                  {t('updateChannel.options.stable.description')}
                 </span>
               </div>
             </SelectItem>
             <SelectItem value="beta">
               <div className="flex flex-col items-start">
-                <span className="font-medium">Beta</span>
+                <span className="font-medium">{t('updateChannel.options.beta.label')}</span>
                 <span className="text-xs text-muted-foreground">
-                  Get early access to new features
+                  {t('updateChannel.options.beta.description')}
                 </span>
               </div>
             </SelectItem>
             <SelectItem value="alpha">
               <div className="flex flex-col items-start">
-                <span className="font-medium">Alpha</span>
+                <span className="font-medium">{t('updateChannel.options.alpha.label')}</span>
                 <span className="text-xs text-muted-foreground">
-                  Bleeding edge (may be unstable)
+                  {t('updateChannel.options.alpha.description')}
                 </span>
               </div>
             </SelectItem>
@@ -225,9 +392,9 @@ export function UpdateSettings() {
       {/* Auto-download Updates */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <Label htmlFor="auto-download">Automatically download updates</Label>
+          <Label htmlFor="auto-download">{t('autoDownload.label')}</Label>
           <p className="text-xs text-muted-foreground">
-            Download updates in the background when available
+            {t('autoDownload.description')}
           </p>
         </div>
         <Switch
@@ -240,9 +407,9 @@ export function UpdateSettings() {
       {/* Auto-install on Quit */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <Label htmlFor="auto-install">Install updates on quit</Label>
+          <Label htmlFor="auto-install">{t('installOnQuit.label')}</Label>
           <p className="text-xs text-muted-foreground">
-            Automatically install downloaded updates when you quit the app
+            {t('installOnQuit.description')}
           </p>
         </div>
         <Switch
@@ -255,9 +422,9 @@ export function UpdateSettings() {
       {/* Check on Startup */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <Label htmlFor="check-startup">Check for updates on startup</Label>
+          <Label htmlFor="check-startup">{t('checkOnStartup.label')}</Label>
           <p className="text-xs text-muted-foreground">
-            Automatically check for updates when the app starts
+            {t('checkOnStartup.description')}
           </p>
         </div>
         <Switch
@@ -272,14 +439,7 @@ export function UpdateSettings() {
         <div className="flex gap-3">
           <Info className="h-5 w-5 text-muted-foreground mt-0.5" />
           <div className="space-y-2 text-sm text-muted-foreground">
-            <p>
-              Updates are delivered securely using code-signed packages. The app will
-              verify the authenticity of updates before installing them.
-            </p>
-            <p>
-              You can always check for updates manually using the button above, regardless
-              of your automatic update settings.
-            </p>
+            <p>{t('info.description')}</p>
           </div>
         </div>
       </div>

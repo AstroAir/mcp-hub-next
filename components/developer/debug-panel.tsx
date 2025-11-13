@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -44,6 +45,16 @@ import {
 } from '@/lib/services/debug-logger';
 
 export function DebugPanel() {
+  const t = useTranslations('debugPanel');
+  const tStats = useTranslations('debugPanel.stats');
+  const tTabs = useTranslations('debugPanel.tabs');
+  const tFilters = useTranslations('debugPanel.filters');
+  const tActions = useTranslations('debugPanel.actions');
+  const tLogs = useTranslations('debugPanel.logs');
+  const tMetrics = useTranslations('debugPanel.metrics');
+  const tDialogs = useTranslations('debugPanel.dialogs');
+  const tToasts = useTranslations('debugPanel.toasts');
+
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [metrics, setMetrics] = useState<PerformanceMetric[]>([]);
   const [levelFilter, setLevelFilter] = useState<LogLevel | 'all'>('all');
@@ -77,24 +88,24 @@ export function DebugPanel() {
   }, [autoRefresh, loadLogs, loadMetrics]);
 
   const handleClearLogs = () => {
-    if (confirm('Are you sure you want to clear all debug logs?')) {
+    if (confirm(tDialogs('clearLogs'))) {
       clearDebugLogs();
       loadLogs();
-      toast.success('Debug logs cleared');
+      toast.success(tToasts('logsCleared'));
     }
   };
 
   const handleClearMetrics = () => {
-    if (confirm('Are you sure you want to clear all performance metrics?')) {
+    if (confirm(tDialogs('clearMetrics'))) {
       clearPerformanceMetrics();
       loadMetrics();
-      toast.success('Performance metrics cleared');
+      toast.success(tToasts('metricsCleared'));
     }
   };
 
   const handleExportLogs = () => {
     exportDebugLogs();
-    toast.success('Debug logs exported');
+    toast.success(tToasts('logsExported'));
   };
 
   const filteredLogs = logs.filter((log) => {
@@ -105,7 +116,7 @@ export function DebugPanel() {
       return (
         log.message.toLowerCase().includes(query) ||
         log.serverName?.toLowerCase().includes(query) ||
-        JSON.stringify(log.data).toLowerCase().includes(query)
+        (log.data !== undefined && log.data !== null && JSON.stringify(log.data).toLowerCase().includes(query))
       );
     }
     return true;
@@ -180,17 +191,17 @@ export function DebugPanel() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Bug className="h-4 w-4 text-primary" />
-              Total Logs
+              {tStats('totalLogs')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalLogs}</div>
             <div className="flex gap-2 mt-2 text-xs">
               <Badge variant="destructive" className="text-xs">
-                {stats.errorCount} errors
+                {tStats('errors', { count: stats.errorCount })}
               </Badge>
               <Badge variant="default" className="text-xs bg-yellow-500">
-                {stats.warnCount} warnings
+                {tStats('warnings', { count: stats.warnCount })}
               </Badge>
             </div>
           </CardContent>
@@ -200,13 +211,13 @@ export function DebugPanel() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Activity className="h-4 w-4 text-primary" />
-              Active Servers
+              {tStats('activeServers')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.activeServers}</div>
             <p className="text-xs text-muted-foreground mt-2">
-              Being monitored
+              {tStats('beingMonitored')}
             </p>
           </CardContent>
         </Card>
@@ -215,13 +226,13 @@ export function DebugPanel() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Clock className="h-4 w-4 text-primary" />
-              Avg Response
+              {tStats('avgResponse')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.avgDuration.toFixed(0)}ms</div>
             <p className="text-xs text-muted-foreground mt-2">
-              {stats.totalMetrics} operations
+              {tStats('operations', { count: stats.totalMetrics })}
             </p>
           </CardContent>
         </Card>
@@ -230,7 +241,7 @@ export function DebugPanel() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-primary" />
-              Success Rate
+              {tStats('successRate')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -256,10 +267,10 @@ export function DebugPanel() {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Bug className="h-5 w-5" />
-                Debug Console
+                {t('title')}
               </CardTitle>
               <CardDescription className="mt-1.5">
-                Real-time MCP protocol messages, performance metrics, and error logs
+                {t('description')}
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
@@ -268,7 +279,7 @@ export function DebugPanel() {
                 className={`${autoRefresh ? 'animate-pulse' : ''}`}
               >
                 <Activity className="h-3 w-3 mr-1" />
-                {autoRefresh ? 'Live' : 'Paused'}
+                {autoRefresh ? tActions('live') : tActions('paused')}
               </Badge>
             </div>
           </div>
@@ -278,11 +289,11 @@ export function DebugPanel() {
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="logs" className="gap-2">
                 <Bug className="h-4 w-4" />
-                Debug Logs
+                {tTabs('logs')}
               </TabsTrigger>
               <TabsTrigger value="metrics" className="gap-2">
                 <Activity className="h-4 w-4" />
-                Performance
+                {tTabs('metrics')}
               </TabsTrigger>
             </TabsList>
 
@@ -296,34 +307,34 @@ export function DebugPanel() {
                     <Input
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search logs..."
+                      placeholder={tFilters('searchPlaceholder')}
                       className="pl-9"
                     />
                   </div>
                   <div className="flex gap-2">
                     <Select value={levelFilter} onValueChange={(v) => setLevelFilter(v as LogLevel | 'all')}>
                       <SelectTrigger className="w-[130px]">
-                        <SelectValue placeholder="Level" />
+                        <SelectValue placeholder={tFilters('level')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Levels</SelectItem>
-                        <SelectItem value="error">Error</SelectItem>
-                        <SelectItem value="warn">Warning</SelectItem>
-                        <SelectItem value="info">Info</SelectItem>
-                        <SelectItem value="debug">Debug</SelectItem>
+                        <SelectItem value="all">{tFilters('allLevels')}</SelectItem>
+                        <SelectItem value="error">{tFilters('levels.error')}</SelectItem>
+                        <SelectItem value="warn">{tFilters('levels.warn')}</SelectItem>
+                        <SelectItem value="info">{tFilters('levels.info')}</SelectItem>
+                        <SelectItem value="debug">{tFilters('levels.debug')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <Select value={categoryFilter} onValueChange={(v) => setCategoryFilter(v as LogCategory | 'all')}>
                       <SelectTrigger className="w-[150px]">
-                        <SelectValue placeholder="Category" />
+                        <SelectValue placeholder={tFilters('category')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Categories</SelectItem>
-                        <SelectItem value="mcp">MCP</SelectItem>
-                        <SelectItem value="connection">Connection</SelectItem>
-                        <SelectItem value="tool">Tool</SelectItem>
-                        <SelectItem value="chat">Chat</SelectItem>
-                        <SelectItem value="system">System</SelectItem>
+                        <SelectItem value="all">{tFilters('allCategories')}</SelectItem>
+                        <SelectItem value="mcp">{tFilters('categories.mcp')}</SelectItem>
+                        <SelectItem value="connection">{tFilters('categories.connection')}</SelectItem>
+                        <SelectItem value="tool">{tFilters('categories.tool')}</SelectItem>
+                        <SelectItem value="chat">{tFilters('categories.chat')}</SelectItem>
+                        <SelectItem value="system">{tFilters('categories.system')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -331,7 +342,7 @@ export function DebugPanel() {
 
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
-                    Showing {filteredLogs.length} of {logs.length} logs
+                    {tLogs('showing', { filtered: filteredLogs.length, total: logs.length })}
                   </span>
                   <div className="flex gap-2">
                     <Button
@@ -341,15 +352,15 @@ export function DebugPanel() {
                       className="gap-2"
                     >
                       <Activity className={`h-4 w-4 ${autoRefresh ? 'animate-pulse' : ''}`} />
-                      {autoRefresh ? 'Live' : 'Paused'}
+                      {autoRefresh ? tActions('live') : tActions('paused')}
                     </Button>
                     <Button variant="outline" size="sm" onClick={handleExportLogs} className="gap-2">
                       <Download className="h-4 w-4" />
-                      Export
+                      {tActions('export')}
                     </Button>
                     <Button variant="outline" size="sm" onClick={handleClearLogs} className="gap-2">
                       <Trash2 className="h-4 w-4" />
-                      Clear
+                      {tActions('clear')}
                     </Button>
                   </div>
                 </div>
@@ -358,16 +369,16 @@ export function DebugPanel() {
               <Separator />
 
               {/* Logs List */}
-              <ScrollArea className="h-[500px] rounded-lg border bg-muted/30">
+              <ScrollArea className="h-[300px] sm:h-[400px] md:h-[500px] rounded-lg border bg-muted/30">
                 <div className="p-3 space-y-2">
                   {filteredLogs.length === 0 ? (
                     <div className="text-center text-muted-foreground py-12">
                       <Bug className="h-16 w-16 mx-auto mb-4 opacity-30" />
-                      <p className="text-lg font-medium">No logs to display</p>
+                      <p className="text-lg font-medium">{tLogs('empty.title')}</p>
                       <p className="text-sm mt-1">
                         {logs.length === 0
-                          ? 'Logs will appear here as your application runs'
-                          : 'Try adjusting your filters'}
+                          ? tLogs('empty.noLogs')
+                          : tLogs('empty.tryFilters')}
                       </p>
                     </div>
                   ) : (
@@ -399,7 +410,7 @@ export function DebugPanel() {
                         {log.data !== undefined && log.data !== null && (
                           <details className="text-xs">
                             <summary className="cursor-pointer text-muted-foreground hover:text-foreground font-medium">
-                              View data →
+                              {tLogs('viewData')}
                             </summary>
                             <div className="mt-2">
                               <CodeBlock
@@ -415,7 +426,7 @@ export function DebugPanel() {
                             <p className="font-medium">{log.error.name}: {log.error.message}</p>
                             {log.error.stack && (
                               <details>
-                                <summary className="cursor-pointer font-medium">Stack trace →</summary>
+                                <summary className="cursor-pointer font-medium">{tLogs('stackTrace')}</summary>
                                 <pre className="mt-2 p-2 bg-muted rounded text-xs overflow-x-auto">
                                   {log.error.stack}
                                 </pre>
@@ -434,11 +445,11 @@ export function DebugPanel() {
             <TabsContent value="metrics" className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">
-                  Tracking {metrics.length} operations across {getUniqueServers().length} servers
+                  {tMetrics('tracking', { count: metrics.length, servers: getUniqueServers().length })}
                 </span>
                 <Button variant="outline" size="sm" onClick={handleClearMetrics} className="gap-2">
                   <Trash2 className="h-4 w-4" />
-                  Clear Metrics
+                  {tActions('clearMetrics')}
                 </Button>
               </div>
 
@@ -450,7 +461,7 @@ export function DebugPanel() {
                   <div>
                     <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
                       <Activity className="h-4 w-4" />
-                      Server Performance Overview
+                      {tMetrics('serverPerformance')}
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                       {getUniqueServers().map((serverId) => {
@@ -471,11 +482,11 @@ export function DebugPanel() {
                             </CardHeader>
                             <CardContent className="space-y-2.5">
                               <div className="flex items-center justify-between p-2 rounded bg-muted/50">
-                                <span className="text-xs text-muted-foreground">Avg Duration</span>
+                                <span className="text-xs text-muted-foreground">{tMetrics('avgDuration')}</span>
                                 <span className="text-sm font-semibold font-mono">{avgDuration.toFixed(1)}ms</span>
                               </div>
                               <div className="flex items-center justify-between p-2 rounded bg-muted/50">
-                                <span className="text-xs text-muted-foreground">Success Rate</span>
+                                <span className="text-xs text-muted-foreground">{tStats('successRate')}</span>
                                 <span className="text-sm font-semibold">{successRate.toFixed(1)}%</span>
                               </div>
                             </CardContent>
@@ -493,15 +504,15 @@ export function DebugPanel() {
               <div>
                 <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
                   <Clock className="h-4 w-4" />
-                  Recent Operations
+                  {tMetrics('recentOperations')}
                 </h3>
-                <ScrollArea className="h-[400px] rounded-lg border bg-muted/30">
+                <ScrollArea className="h-[250px] sm:h-[325px] md:h-[400px] rounded-lg border bg-muted/30">
                   <div className="p-3 space-y-2">
                     {metrics.length === 0 ? (
                       <div className="text-center text-muted-foreground py-12">
                         <Activity className="h-16 w-16 mx-auto mb-4 opacity-30" />
-                        <p className="text-lg font-medium">No performance metrics yet</p>
-                        <p className="text-sm mt-1">Metrics will appear as servers perform operations</p>
+                        <p className="text-lg font-medium">{tMetrics('empty.title')}</p>
+                        <p className="text-sm mt-1">{tMetrics('empty.description')}</p>
                       </div>
                     ) : (
                       metrics.map((metric) => (
@@ -526,12 +537,12 @@ export function DebugPanel() {
                               {metric.success ? (
                                 <span className="flex items-center gap-1">
                                   <CheckCircle2 className="h-3 w-3" />
-                                  Success
+                                  {tMetrics('success')}
                                 </span>
                               ) : (
                                 <span className="flex items-center gap-1">
                                   <XCircle className="h-3 w-3" />
-                                  Failed
+                                  {tMetrics('failed')}
                                 </span>
                               )}
                             </Badge>

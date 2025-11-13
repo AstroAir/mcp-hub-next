@@ -5,11 +5,13 @@
 
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2 } from 'lucide-react';
 
 export default function Loading() {
+  const t = useTranslations('loadingState');
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4 bg-muted/30">
@@ -20,8 +22,8 @@ export default function Loading() {
               <Loader2 className="h-8 w-8 text-primary animate-spin" />
             </div>
             <div className="text-center space-y-2">
-              <h3 className="font-semibold text-lg">Loading</h3>
-              <p className="text-sm text-muted-foreground">Please wait while we prepare things…</p>
+              <h3 className="font-semibold text-lg">{t('title')}</h3>
+              <p className="text-sm text-muted-foreground">{t('description')}</p>
             </div>
             <div className="w-full space-y-2 pt-4">
               <Skeleton className="h-4 w-full" />

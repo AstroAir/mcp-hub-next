@@ -1,11 +1,29 @@
 {
   "permissions": {
     "allow": [
-      "Bash(pnpm install:*)",
+      "Bash(wsl cat \"d:\\Project\\mcp-hub-next\\components\\layout\\app-sidebar.tsx\")",
+      "Bash(node -e:*)",
+      "Bash(pnpm run lint:*)",
+      "Bash(pnpm run build:*)",
+      "Bash(timeout 10 pnpm dev:*)",
+      "Bash(pnpm typecheck:*)",
       "Bash(pnpm lint:*)",
-      "Bash(pnpm build)",
-      "Bash(pnpm tauri build:*)",
-      "Bash(ls -la \"D:\\Project\\mcp-hub-next\\llmdoc\"\" && echo \"---\" && ls -la \"D:Projectmcp-hub-nextllmdocsop\"\")"
+      "Bash(pnpm run:*)",
+      "Bash(cargo check:*)",
+      "Bash(cargo test:*)",
+      "Bash(cat:*)",
+      "Bash(__NEW_LINE__ echo \"=== Checking mobile-responsiveness.md ===\")",
+      "Bash(rustfmt:*)",
+      "Bash(git restore:*)",
+      "Bash(cargo build:*)",
+      "Bash(cargo clippy:*)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm test:coverage:*)",
+      "Bash(coverage-output.txt)",
+      "Bash(tee:*)",
+      "Bash(node compare-i18n-keys.js:*)",
+      "Bash(node verify-i18n.js:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []

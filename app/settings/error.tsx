@@ -6,6 +6,7 @@
  */
 
 import { useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { ErrorState } from '@/components/error/error-state';
 import { Settings } from 'lucide-react';
 
@@ -16,6 +17,8 @@ export default function SettingsError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations('settings.page');
+
   useEffect(() => {
     console.error('Settings page error:', error);
   }, [error]);
@@ -23,13 +26,13 @@ export default function SettingsError({
   return (
     <div className="container mx-auto py-8 px-4">
       <ErrorState
-        title="Settings Error"
-        description="An error occurred while loading the settings page."
+        title={t('errors.title')}
+        description={t('errors.description')}
         error={error}
         icon={Settings}
         onRetry={reset}
-        showHomeButton={true}
-        showRetryButton={true}
+        showHomeButton
+        showRetryButton
       />
     </div>
   );

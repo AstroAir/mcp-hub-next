@@ -200,13 +200,13 @@ export function ChatInput({
                 type="submit"
                 disabled={!canSend || optimizing}
                 size="icon"
-                className="size-[60px] shrink-0"
+                className="size-11 sm:size-[60px] shrink-0"
                 aria-label={t('aria.send')}
               >
                 {disabled ? (
-                  <Loader2 className="size-5 animate-spin" />
+                  <Loader2 className="size-4 sm:size-5 animate-spin" />
                 ) : (
-                  <Send className="size-5" />
+                  <Send className="size-4 sm:size-5" />
                 )}
               </Button>
             </TooltipTrigger>

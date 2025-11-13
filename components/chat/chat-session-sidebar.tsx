@@ -76,7 +76,7 @@ export function ChatSessionSidebar({
   };
 
   return (
-    <div className="w-64 border-r bg-muted/10 flex flex-col h-full">
+    <>
       <div className="p-4 border-b">
         <Button onClick={onCreateSession} className="w-full" size="sm">
           <Plus className="h-4 w-4 mr-2" />
@@ -108,24 +108,24 @@ export function ChatSessionSidebar({
                         if (e.key === 'Enter') handleSaveEdit(session.id);
                         if (e.key === 'Escape') handleCancelEdit();
                       }}
-                      className="h-7 text-sm"
+                      className="h-9 sm:h-7 text-sm"
                       autoFocus
                     />
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-7 w-7"
+                      className="h-9 w-9 sm:h-7 sm:w-7"
                       onClick={() => handleSaveEdit(session.id)}
                     >
-                      <Check className="h-3 w-3" />
+                      <Check className="h-4 w-4 sm:h-3 sm:w-3" />
                     </Button>
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-7 w-7"
+                      className="h-9 w-9 sm:h-7 sm:w-7"
                       onClick={handleCancelEdit}
                     >
-                      <X className="h-3 w-3" />
+                      <X className="h-4 w-4 sm:h-3 sm:w-3" />
                     </Button>
                   </div>
                 ) : (
@@ -142,30 +142,30 @@ export function ChatSessionSidebar({
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-1 mt-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-6 w-6"
+                        className="h-9 w-9 sm:h-6 sm:w-6"
                         onClick={() => handleStartEdit(session)}
                       >
-                        <Edit2 className="h-3 w-3" />
+                        <Edit2 className="h-4 w-4 sm:h-3 sm:w-3" />
                       </Button>
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-6 w-6"
+                        className="h-9 w-9 sm:h-6 sm:w-6"
                         onClick={() => onExportSession(session.id)}
                       >
-                        <Download className="h-3 w-3" />
+                        <Download className="h-4 w-4 sm:h-3 sm:w-3" />
                       </Button>
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-6 w-6 text-destructive"
+                        className="h-9 w-9 sm:h-6 sm:w-6 text-destructive"
                         onClick={() => handleDelete(session.id)}
                       >
-                        <Trash2 className="h-3 w-3" />
+                        <Trash2 className="h-4 w-4 sm:h-3 sm:w-3" />
                       </Button>
                     </div>
                   </>
@@ -175,7 +175,7 @@ export function ChatSessionSidebar({
           )}
         </div>
       </ScrollArea>
-    </div>
+    </>
   );
 }
 

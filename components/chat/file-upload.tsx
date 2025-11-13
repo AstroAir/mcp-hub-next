@@ -6,6 +6,7 @@
  */
 
 import { useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -71,6 +72,7 @@ export function FileUpload({
   showPreview = true,
   showCount = true,
 }: FileUploadProps) {
+  const t = useTranslations('chat.fileUpload');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [previewSrc, setPreviewSrc] = useState<string | null>(null);
   const [pdfPreviewSrc, setPdfPreviewSrc] = useState<string | null>(null);
@@ -82,7 +84,7 @@ export function FileUpload({
 
     // Check if adding these files would exceed the limit
     if (attachments.length + files.length > config.maxFiles) {
-      toast.error(`Maximum ${config.maxFiles} files allowed`);
+      toast.error(t('errors.maxFilesExceeded', { count: config.maxFiles }));
       return;
     }
 
@@ -91,9 +93,9 @@ export function FileUpload({
     
     for (const file of files) {
       const validation = validateFile(file, config);
-      
+
       if (!validation.valid) {
-        toast.error(validation.error || 'Invalid file');
+        toast.error(validation.error || t('errors.invalidFile'));
         continue;
       }
 
@@ -102,13 +104,13 @@ export function FileUpload({
         newAttachments.push(attachment);
       } catch (error) {
         console.error('Failed to process file:', error);
-        toast.error(`Failed to process ${file.name}`);
+        toast.error(t('errors.processingFailed', { filename: file.name }));
       }
     }
 
     if (newAttachments.length > 0) {
       onAttachmentsChange([...attachments, ...newAttachments]);
-      toast.success(`Added ${newAttachments.length} file${newAttachments.length > 1 ? 's' : ''}`);
+      toast.success(t('success.filesAdded', { count: newAttachments.length }));
     }
 
     // Reset input
@@ -141,7 +143,7 @@ export function FileUpload({
         onChange={handleFileSelect}
         className="hidden"
         disabled={disabled}
-        aria-label="Attach files"
+        aria-label={t('accessibility.attachButton')}
       />
 
       {/* Upload button (optional) */}
@@ -161,8 +163,8 @@ export function FileUpload({
           </TooltipTrigger>
           <TooltipContent>
             {attachments.length >= config.maxFiles
-              ? `Maximum ${config.maxFiles} files reached`
-              : 'Attach files'}
+              ? t('accessibility.maxFilesReached', { count: config.maxFiles })
+              : t('accessibility.attachTooltip')}
           </TooltipContent>
         </Tooltip>
       )}
@@ -248,7 +250,7 @@ export function FileUpload({
         <ImagePreviewDialog
           open={!!previewSrc}
           src={previewSrc}
-          alt="attachment preview"
+          alt={t('accessibility.attachmentPreviewAlt')}
           onOpenChange={(o) => !o && setPreviewSrc(null)}
         />
       )}
@@ -258,7 +260,7 @@ export function FileUpload({
         <PdfPreviewDialog
           open={!!pdfPreviewSrc}
           src={pdfPreviewSrc}
-          title="PDF attachment preview"
+          title={t('accessibility.pdfPreviewTitle')}
           onOpenChange={(o) => !o && setPdfPreviewSrc(null)}
         />
       )}

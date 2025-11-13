@@ -6,8 +6,9 @@
  */
 
 import { useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { ErrorState } from '@/components/error/error-state';
-import { Bug } from 'lucide-react';
+import { Code } from 'lucide-react';
 
 export default function DeveloperError({
   error,
@@ -16,6 +17,8 @@ export default function DeveloperError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations('developerPage.error');
+
   useEffect(() => {
     console.error('Developer page error:', error);
   }, [error]);
@@ -23,13 +26,13 @@ export default function DeveloperError({
   return (
     <div className="container mx-auto py-8 px-4">
       <ErrorState
-        title="Developer Tools Error"
-        description="An error occurred while loading the developer tools."
+        title={t('title')}
+        description={error.message || t('description')}
         error={error}
-        icon={Bug}
+        icon={Code}
         onRetry={reset}
-        showHomeButton={true}
-        showRetryButton={true}
+        showHomeButton
+        showRetryButton
       />
     </div>
   );

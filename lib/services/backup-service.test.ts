@@ -111,11 +111,12 @@ describe('Backup Service', () => {
       const b1 = createBackup();
       const b2 = createBackup();
 
-      // Set retention to 0 days and make first backup old
-      saveBackupSettings({ enabled: true, frequency: 'weekly', retentionDays: 0 });
+      // Set retention to 1 day and make first backup old (2 days ago)
+      saveBackupSettings({ enabled: true, frequency: 'weekly', retentionDays: 1 });
       const history = getBackupHistory();
-      const veryOld = new Date(2000, 0, 1).toISOString();
-      const updated = history.map((h) => (h.id === b1.metadata.id ? { ...h, timestamp: veryOld } : h));
+      const twoDaysAgo = new Date();
+      twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+      const updated = history.map((h) => (h.id === b1.metadata.id ? { ...h, timestamp: twoDaysAgo.toISOString() } : h));
       localStorageMock.setItem('mcp-hub-backup-history', JSON.stringify(updated));
 
       cleanOldBackups();

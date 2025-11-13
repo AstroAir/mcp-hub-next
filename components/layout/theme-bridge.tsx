@@ -23,9 +23,9 @@ export function ThemeBridge() {
 
     // Color scheme as a body class (future CSS can hook into it)
     const cls = `theme-${appearance.colorScheme}`;
-    document.body.classList.forEach((c) => {
-      if (c.startsWith('theme-')) document.body.classList.remove(c);
-    });
+    // Convert to array to avoid issues with modifying during iteration
+    const classesToRemove = Array.from(document.body.classList).filter((c) => c.startsWith('theme-'));
+    classesToRemove.forEach((c) => document.body.classList.remove(c));
     document.body.classList.add(cls);
   }, [appearance.fontScale, appearance.colorScheme]);
 

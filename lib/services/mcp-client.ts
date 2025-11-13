@@ -60,9 +60,9 @@ class HTTPClientTransport implements Transport {
         const result = await limiter.checkLimit(this.serverId);
 
         if (!result.allowed) {
-          const error = new Error(
-            `Rate limit exceeded. Retry after ${result.retryAfter} seconds.`
-          );
+          const error = new Error('ERROR_RATE_LIMIT_EXCEEDED') as Error & { retryAfter?: number };
+          // Store retry time for UI to access if needed
+          error.retryAfter = result.retryAfter;
           if (this.onerror) {
             this.onerror(error);
           }

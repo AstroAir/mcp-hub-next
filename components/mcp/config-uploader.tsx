@@ -6,7 +6,7 @@
  * Supports: Claude Desktop, VS Code, Cursor, Cline/Roo-Cline
  */
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   Dialog,
@@ -46,6 +46,9 @@ import {
 } from '@/lib/utils/config-parser';
 import { useServerStore } from '@/lib/stores';
 import { toast } from 'sonner';
+import { isTauri, invoke } from '@/lib/services/tauri-bridge';
+import { validateIDEConfig, importIDEConfig } from '@/lib/services/ide-config-service';
+import type { MCPClientType } from '@/lib/types/mcp';
 
 interface ConfigUploaderProps {
   open: boolean;
@@ -62,8 +65,14 @@ export function ConfigUploader({ open, onOpenChange }: ConfigUploaderProps) {
   const [importMode, setImportMode] = useState<ImportMode>('single');
   const [parseResult, setParseResult] = useState<ParseResult | AggregatedParseResult | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isTauriMode, setIsTauriMode] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const directoryInputRef = useRef<HTMLInputElement>(null);
+
+  // Detect Tauri mode on mount
+  useEffect(() => {
+    setIsTauriMode(isTauri());
+  }, []);
 
   const getFileSelectionLabel = () => {
     if (files.length > 0) {
@@ -198,6 +207,61 @@ export function ConfigUploader({ open, onOpenChange }: ConfigUploaderProps) {
       console.error('Directory processing error:', error);
       toast.error(t('toast.directoryFailed'));
       setFiles([]);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleTauriFileSelect = async () => {
+    if (!isTauriMode) return;
+
+    try {
+      setIsProcessing(true);
+
+      // Open file dialog
+      const path = await invoke<string | null>('open_file_dialog', {
+        title: 'Select IDE Config File',
+        filters: [{ name: 'JSON', extensions: ['json'] }],
+        multiple: false,
+      });
+
+      if (!path) {
+        setIsProcessing(false);
+        return;
+      }
+
+      // Validate the config
+      const validation = await validateIDEConfig(path);
+
+      if (!validation.valid) {
+        toast.error(t('toast.invalidConfig', { reason: validation.errors.join(', ') }));
+        setIsProcessing(false);
+        return;
+      }
+
+      // Import the config
+      const clientType = (validation.clientType || 'custom') as MCPClientType;
+      const importedServers = await importIDEConfig(path, clientType, 'merge');
+
+      // Create a parse result for display
+      const result: ParseResult = {
+        success: true,
+        valid: true,
+        servers: importedServers,
+        clientType,
+        errors: [],
+        warnings: validation.warnings,
+        serverCount: importedServers.length,
+      };
+
+      setParseResult(result);
+      // Create a pseudo-file for display
+      setFiles([new File([], path.split(/[\\/]/).pop() || 'config.json')]);
+
+      toast.success(t('toast.validationSuccess', { count: String(importedServers.length) }));
+    } catch (error) {
+      console.error('Tauri file selection error:', error);
+      toast.error(t('toast.importFailure'));
     } finally {
       setIsProcessing(false);
     }
@@ -385,6 +449,25 @@ export function ConfigUploader({ open, onOpenChange }: ConfigUploaderProps) {
                         </p>
                       </div>
                     </label>
+                  </>
+                ) : isTauriMode ? (
+                  <>
+                    <Button
+                      variant="outline"
+                      onClick={handleTauriFileSelect}
+                      disabled={isProcessing}
+                      className="w-full h-auto py-8 flex flex-col items-center gap-2"
+                    >
+                      <Upload className="h-8 w-8 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">
+                          {getFileSelectionLabel()}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {t('import.fileHelp')}
+                        </p>
+                      </div>
+                    </Button>
                   </>
                 ) : (
                   <>
